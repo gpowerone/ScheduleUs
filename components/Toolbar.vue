@@ -15,7 +15,7 @@
 import myContentDrawer from "@/components/Drawer"
 
 export default {
-  name: "myToolbar",
+  name: "Toolbar",
   components: {myContentDrawer},
   data: function() {
     return {

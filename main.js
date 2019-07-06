@@ -1,27 +1,25 @@
 import '@babel/polyfill'
 import Vue from 'vue'
+import App from './App.vue'
 import './plugins/vuetify'
 import './plugins/vuetify-extra'
-import App from './App.vue'
 import router from './router/'
-import i18n from './i18n'
 import 'roboto-fontface/css/roboto/roboto-fontface.css'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 Vue.config.productionTip = false
 
+//axios.defaults.baseURL = 'http://localhost:4000';
+
 const init = () => {
   new Vue({
     router,
-    i18n,
     render: h => h(App)
   }).$mount('#app')
 };
 
 // Wait for the deviceready event to start the render
 document.addEventListener("deviceready", () => {
-  // eslint-disable-next-line
-  console.log("Ready, Render the App");
   init();
 });
 
