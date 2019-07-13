@@ -6,7 +6,7 @@
 
     <v-toolbar class="indigo" clipped-left app>
       <v-toolbar-side-icon dark @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-      <v-toolbar-title @click="goHome" class="white--text">{{ $t("title") }}</v-toolbar-title>
+      <v-toolbar-title @click="goHome" class="white--text">Schedule Us</v-toolbar-title>
     </v-toolbar>
   </div>
 </template>

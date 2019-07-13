@@ -1,5 +1,5 @@
 <template>
-  <v-app toolbar>
+  <v-app scheduleus>
     <myToolbar />
     <v-content>
       <v-slide-y-transition mode="out-in">
@@ -18,3 +18,12 @@ export default {
   components: {myToolbar}
 }
 </script>
+
+<style>
+.authenticator > div {
+    padding: 0;
+    min-width: 100%;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+}
+</style>
