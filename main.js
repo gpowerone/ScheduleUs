@@ -4,22 +4,20 @@ import App from './App.vue'
 import './plugins/vuetify'
 import './plugins/vuetify-extra'
 import router from './router/'
-import 'roboto-fontface/css/roboto/roboto-fontface.css'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
-import Amplify, * as AmplifyModules from "aws-amplify";
-import { AmplifyPlugin } from "aws-amplify-vue";
-import awsmobile from "@/auth/aws_exports";
-import apolloProvider from "@/auth/apollo";
+import axios from 'axios'
+import VueAxios from 'vue-axios'
+import config from 'vue-config'
 
-Amplify.configure(awsmobile);
-Vue.use(AmplifyPlugin, AmplifyModules);
+const configs = require('../schus_config')
 
-Vue.config.productionTip = false
+Vue.use(config, configs)
+Vue.use(VueAxios, axios)
 
 const init = () => {
   new Vue({
     router,
-    apolloProvider,
+    config,
     render: h => h(App)
   }).$mount('#app')
 };

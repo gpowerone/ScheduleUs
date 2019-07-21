@@ -2,6 +2,10 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import CreateEvent from '@/views/CreateEvent'
 import Auth from '@/views/Auth'
+import Signup from '@/views/Signup'
+import About from '@/views/About'
+import Contact from '@/views/Contact'
+import Premium from '@/views/Premium'
 
 Vue.use(Router);
 
@@ -10,36 +14,34 @@ const router =  new Router({
     {     
        path: '/',
        name: 'Create Event',
-       component: CreateEvent,
-       meta: { requiresAuth: false }
+       component: CreateEvent
     },
     {
-       path: '/Auth',
-       name: 'Login',
-       component: Auth,
-       meta: { requiresAuth: false },
-       props: {
-         class: "authenticator"
-       }
-    }
+      path: '/auth',
+      name: 'Login',
+      component: Auth
+    },
+    {
+       path: '/signup',
+       name: 'Sign Up',
+       component: Signup
+    },
+    {
+      path: '/about',
+      name: 'About',
+      component: About
+    },
+    {
+      path: '/premium',
+      name: 'Premium',
+      component: Premium
+    },
+    {
+      path: '/contact',
+      name: 'Contact Us',
+      component: Contact
+    },
   ]
 })
-
-router.beforeResolve(async (to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    try {
-      await Vue.prototype.$Amplify.Auth.currentAuthenticatedUser();
-      next();
-    } catch (e) {
-      next({
-        path: "/",
-        query: {
-          redirect: to.fullPath
-        }
-      });
-    }
-  }
-  next();
-});
 
 export default router;

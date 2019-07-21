@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-toolbar class="indigo" flat/>
+    <v-toolbar/>
     <v-list dense>
       <template v-for="(item, i) in items">
         <div v-if="item.display" :key="i">
@@ -21,15 +21,21 @@
   </div>
 </template>
 
-
 <script>
+
 export default {
   name: "drawer",
   data: function() {
     return {
-      items: [
-        { icon: 'nfc', text: "Create Event", action: '/',  display:true },
-        { icon: 'nfc', text: "Login", action: '/Auth', display:true }
+      items: [       
+        { icon: 'event', text: "Create Event", action: '/', display: true },
+        { icon: 'event_seat', text: "My Events", action: '/myevents', display: false },
+        { icon: 'https', text: "Log In", action: '/auth', display: true },
+        { icon: 'person_add', text: "Sign Up", action: '/signup', display: true },
+        { icon: 'cake', text: "About", action: '/about', display: true },    
+        { icon: 'all_inclusive', text: "Premium", action: '/premium', display: true },
+        { icon: 'phone', text: "Contact Us", action: '/contact', display: true },
+        { icon: 'exit_to_app', text: "Logout", action: '/logout', display: false }
       ]
     }
   }

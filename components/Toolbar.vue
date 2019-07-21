@@ -1,13 +1,17 @@
 <template>
   <div>
+    <div>
     <v-navigation-drawer v-model="drawer" app>
       <myContentDrawer />
     </v-navigation-drawer>
 
-    <v-toolbar class="indigo" clipped-left app>
-      <v-toolbar-side-icon dark @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-      <v-toolbar-title @click="goHome" class="white--text">Schedule Us</v-toolbar-title>
+    <v-toolbar clipped-left flat app>
+      <v-toolbar-side-icon  @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+      <v-spacer></v-spacer>
+      <v-toolbar-title class="mt-2" @click="goHome"><img src="@/assets/ScheduleUsWeb.png" width="150" alt="Schedule Us Logo" /></v-toolbar-title>
     </v-toolbar>
+    </div>
+   
   </div>
 </template>
 
