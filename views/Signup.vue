@@ -1,10 +1,15 @@
 <template>
   <div class="moduleWrapper">
     <h1>Signup</h1>
+
+    <div class='errorBox' v-show='isError===1'>
+        {{ errorMessage }}
+    </div>
+
     <div v-show='formStep === 0'>
       <div class='mt-3'>
            <span class='emphasis1'>Phone Number with Area Code (US only)</span><br />
-           <input type='text' id='fPhoneNumber' class='textfield'/>
+           <input type='text' id='fPhoneNumber' v-model="PhoneNumber" class='textfield'/>
       </div>
 
       <div class='mt-3'>
@@ -12,13 +17,13 @@
            <span class='emphasis1'>Choose A Password</span>
            </div>
            <div class='highlightbox'>
-              <em>(your password must be at least 8 alphanumeric characters and contain an uppercase letter, a lowercase letter, and a number</em>
+              <em>(your password must be at least 8 alphanumeric characters and contain an uppercase letter, a lowercase letter, and a number)</em>
            </div>
-           <input type='password' id='fPassword' class='textfield' />
+           <input type='password' id='fPassword' v-model="TPasswd" class='textfield' />
         </div>
         <div class='mt=3'>
            Verify Your Password<br />
-           <input type='password' id='vPassword' class='textfield' />
+           <input type='password' id='vPassword' v-model="RPasswd" class='textfield' />
         </div>
 
        <button class='fullWidth mt-3' @click='goStepTwo'>Proceed</button>
@@ -36,7 +41,7 @@
              Question
         </div>
         <div>
-          <select class='textfield'>
+          <select class='textfield' v-model="SecQuestion">
             <option value='-'>--- Choose One ---</option>
             <option value='0'>What was the name of your first pet?</option>
             <option value='1'>What was the name of your first kiss?</option>
@@ -54,17 +59,29 @@
         </div>
         <div class='mt-3'>
             Answer<br />
-           <input type='text' id='fAnswer' class='textfield'/>
+           <input type='text' id='fAnswer' v-model="SecAnswer" class='textfield'/>
         </div>
-        <div id='captchaDiv' class='mt-3'>
+        <div class="mt-3">
+            <span class="emphasis1">Verify That You Are Human</span>
+        </div>
+        <div id='captchaDiv' class='mt-4'>
              <vue-recaptcha 
                   ref="recaptcha"
                   @verify="onCaptchaVerified"
                   @expired="onCaptchaExpired"
-                  size="invisible"
+                  loadRecaptchaScript=true
                   sitekey="6Lc1xa4UAAAAAFWU99D-J6-RzsMZILRT2kaFCIy7"></vue-recaptcha> 
         </div>
         <button class='fullWidth mt-3' :disabled="status==='submitting'"  @click='submitSignup()'>Sign Up</button>
+    </div>
+    <div v-show='formStep===2'>
+        <p class='mt-3'>
+        You have successfully created an account. We are sending a verification text to your phone now. Once you click the verification link inside
+        of the text you will be able to log in.
+        </p>
+        <p>
+            <button @click="goToAuth()" class="linkbtn">Go to Login</button>
+        </p>
     </div>
   </div>
 </template>
@@ -74,29 +91,102 @@ import VueRecaptcha from 'vue-recaptcha';
 
 export default {
     components: {
-        VueRecaptcha
+        'vue-recaptcha': VueRecaptcha
     },
     data() {
        return {
           formStep: 0,
-          status: ''
+          isError: 0,
+          errorMessage: '',
+          PhoneNumber: '',
+          RPasswd: '',
+          status: 'submitting',
+          RToken: '',
+          TPasswd: '',
+          SecQuestion: '',
+          SecAnswer: ''
        }
     },
     methods: {
-        goStepTwo: function() {
-            this.formStep=1;
+        doError: function(msg) {   
+          this.errorMessage=msg;
+          this.isError=1;  
+          this.$forceUpdate();         
         },
-        submitSignup: function() {
-            this.$refs.recaptcha.execute();
+        goStepTwo: function() {
+           
+           var msg = this.verifyStep1();
+           if (msg==="OK") {
+              this.formStep=1;
+              this.undoError(); 
+           }
+           else {
+               this.doError(msg);
+           }
+        },
+        goToAuth: function() {
+            this.$router.push('auth');
         },
         onCaptchaVerified: function (recaptchaToken) {
             const self = this;
-            self.status = "submitting";
-            self.$refs.recaptcha.reset();
+            this.RToken=recaptchaToken;
+            self.status = "";
         },
         onCaptchaExpired: function () {
             this.$refs.recaptcha.reset();
+        },
+        submitSignup: function() {
+            const self = this;
+            self.status = "submitting";
+            self.$refs.recaptcha.reset();
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/createaccount',
+                data: {
+                    Phone:this.PhoneNumber,
+                    Passwd:this.TPasswd,
+                    SecQuestion:this.SecQuestion,
+                    SecAnswer:this.SecAnswer,
+                    recaptchaToken:this.RToken
+                }
+            }).then(r=> {
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        this.formStep=2;
+                        this.undoError();
+                    }
+                    else {
+                        this.doError(r.data.message);
+                    }
+                }
+                else {
+                    this.doError("Error connecting to Schedule Us service, please try again")
+                }
+            });
+        },
+        undoError: function() {
+            this.isError=0;
+            this.errorMessage="";
+            this.$forceUpdate();
+        },
+        verifyStep1: function() {
+            var phoneVerification = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im;
+            if (!phoneVerification.test(this.PhoneNumber)) {
+                 return "Invalid Phone Number"
+            }
+              
+            if (this.TPasswd.length<8 || !/[a-z]/.test(this.TPasswd) || !/[0-9]/.test(this.TPasswd) || !/[A-Z]/.test(this.TPasswd)) {
+                 return "Password must be at least 8 characters and contain an uppercase character, a lowercase character, and a number";
+            }
+
+            if (this.TPasswd !== this.RPasswd) {
+                 return "The password and re-typed password must match";
+            }
+
+             return "OK"
         }
+        
     }
 }
 </script>

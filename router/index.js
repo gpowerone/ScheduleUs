@@ -6,6 +6,9 @@ import Signup from '@/views/Signup'
 import About from '@/views/About'
 import Contact from '@/views/Contact'
 import Premium from '@/views/Premium'
+import MyEvents from '@/views/MyEvents'
+import Logout from '@/views/Logout'
+import MyAccount from '@/views/MyAccount'
 
 Vue.use(Router);
 
@@ -41,6 +44,21 @@ const router =  new Router({
       name: 'Contact Us',
       component: Contact
     },
+    {
+       path: '/myevents',
+       name: 'My Events',
+       component: MyEvents
+    },
+    {
+       path: '/logout',
+       name: 'Logout',
+       component: Logout
+    },
+    {
+       path: '/myaccount',
+       name: 'My Account',
+       component: MyAccount
+    }
   ]
 })
 

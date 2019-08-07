@@ -7,25 +7,31 @@ import router from './router/'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
-import config from 'vue-config'
+import VModal from 'vue-js-modal'
+import VueCollapse from 'vue2-collapse'
 
-const configs = require('../schus_config')
-
-Vue.use(config, configs)
+Vue.prototype.$hostname="http://localhost:3000";
 Vue.use(VueAxios, axios)
+Vue.use(VModal)
+Vue.use(VueCollapse)
 
 const init = () => {
   new Vue({
     router,
-    config,
     render: h => h(App)
   }).$mount('#app')
 };
 
+// Give us a string splice method
+if (!String.prototype.splice) {
+  String.prototype.splice = function(start, delCount, newSubStr) {
+      return this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount));
+  };
+}
+
 // Wait for the deviceready event to start the render
 document.addEventListener("deviceready", () => {
   init();
-
   document.addEventListener("offline", function(){
     alert("NO_NETWORK");
   });
@@ -35,4 +41,10 @@ document.addEventListener("deviceready", () => {
 const isCordovaApp = (typeof window.cordova !== "undefined");
 if (!isCordovaApp){
   document.dispatchEvent(new CustomEvent("deviceready", {}));
+}
+else {
+  //navigator.camera.sourceType=Camera.PictureSourceType.PHOTOLIBRARY;
+  if (window.cordova.platformId==="android") {
+    Vue.prototype.$hostname="http://10.0.2.2:3000";
+  }
 }
