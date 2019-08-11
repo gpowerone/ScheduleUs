@@ -7,23 +7,48 @@
     </div>
 
     <div v-show='formStep === 0'>
+
       <div class='mt-3'>
-           <span class='emphasis1'>Phone Number with Area Code (US only)</span><br />
-           <input type='text' id='fPhoneNumber' v-model="PhoneNumber" class='textfield'/>
+           <div class='boldchoice fieldwell'>First Name</div>
+           <div class='fieldwell'>
+           <input type='text' v-model="FirstName" class='textfield'/>
+           </div>
+      </div>
+
+      <div class='mt-3'>
+           <div class='boldchoice fieldwell'>Last Name</div>
+           <div class='fieldwell'>
+           <input type='text' v-model="LastName" class='textfield'/>
+           </div>
+      </div>
+
+      <div class='mt-3'>
+        <div class='boldchoice fieldwell'>
+           Phone Number with Area Code (US only)
+        </div>
+        <div class='fieldwell'>
+           <input type='text' v-model="PhoneNumber" class='textfield'/>
+         </div>
       </div>
 
       <div class='mt-3'>
            <div>
-           <span class='emphasis1'>Choose A Password</span>
+           <span class='boldchoice fieldwell'>Choose A Password</span>
            </div>
-           <div class='highlightbox'>
+           <div class='highlightbox fieldwell'>
               <em>(your password must be at least 8 alphanumeric characters and contain an uppercase letter, a lowercase letter, and a number)</em>
            </div>
-           <input type='password' id='fPassword' v-model="TPasswd" class='textfield' />
+           <div class='fieldwell'>
+               <input type='password' id='fPassword' v-model="TPasswd" class='textfield' />
+           </div>
         </div>
-        <div class='mt=3'>
-           Verify Your Password<br />
-           <input type='password' id='vPassword' v-model="RPasswd" class='textfield' />
+        <div class='mt-2'>
+           <div class='boldchoice fieldwell'>
+           Verify Your Password
+           </div>
+           <div class='fieldwell'>
+                <input type='password' id='vPassword' v-model="RPasswd" class='textfield' />
+           </div>
         </div>
 
        <button class='fullWidth mt-3' @click='goStepTwo'>Proceed</button>
@@ -32,15 +57,15 @@
     <div v-show='formStep === 1'>
        
         <div class='mt-3'>
-        <span class='emphasis1'>Choose Security Question and Answer</span>
+        <span class='boldchoice fieldwell'>Choose Security Question and Answer</span>
         </div>
-        <div class='highlightbox'>
+        <div class='highlightbox fieldwell'>
             <em>(if you need to reset your password we will ask you your security question)</em>
         </div>
-        <div class='mt-3'>
+        <div class='mt-3 fieldwell'>
              Question
         </div>
-        <div>
+        <div class='fieldwell'>
           <select class='textfield' v-model="SecQuestion">
             <option value='-'>--- Choose One ---</option>
             <option value='0'>What was the name of your first pet?</option>
@@ -57,12 +82,12 @@
             <option value='11'>What was your favorite book when you were a kid?</option>
           </select>
         </div>
-        <div class='mt-3'>
+        <div class='mt-3 fieldwell'>
             Answer<br />
            <input type='text' id='fAnswer' v-model="SecAnswer" class='textfield'/>
         </div>
         <div class="mt-3">
-            <span class="emphasis1">Verify That You Are Human</span>
+            <span class="fieldwell boldchoice">Verify That You Are Human</span>
         </div>
         <div id='captchaDiv' class='mt-4'>
              <vue-recaptcha 
@@ -98,6 +123,8 @@ export default {
           formStep: 0,
           isError: 0,
           errorMessage: '',
+          FirstName: '',
+          LastName: '',
           PhoneNumber: '',
           RPasswd: '',
           status: 'submitting',
@@ -144,6 +171,8 @@ export default {
                 method:'post',
                 url:this.$hostname+'/createaccount',
                 data: {
+                    FirstName:this.FirstName,
+                    LastName:this.LastName,
                     Phone:this.PhoneNumber,
                     Passwd:this.TPasswd,
                     SecQuestion:this.SecQuestion,
@@ -171,6 +200,23 @@ export default {
             this.$forceUpdate();
         },
         verifyStep1: function() {
+
+            if (this.FirstName.length<1) {
+                return "First name is required";
+            }
+
+            if (this.LastName.length<1) {
+                return "Last name is required";
+            }
+
+            if (this.FirstName.length>64) {
+                return "First name is too long";
+            }
+
+            if (this.LastName.length>64) {
+                return "Last name is too long";
+            }
+
             var phoneVerification = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im;
             if (!phoneVerification.test(this.PhoneNumber)) {
                  return "Invalid Phone Number"
@@ -187,7 +233,11 @@ export default {
              return "OK"
         }
         
-    }
+    },
+    beforeRouteLeave(to, from, next) {
+        this.formStep=0;
+        next();
+    },
 }
 </script>
 

@@ -35,7 +35,6 @@ export default {
         { icon: 'event_seat', text: "My Events", action: '/myevents', display:false },
         { icon: 'https', text: "Log In", action: '/auth', display:false },
         { icon: 'person_add', text: "Sign Up", action: '/signup', display:false },
-        { icon: 'cake', text: "About", action: '/about', display: false },    
         { icon: 'all_inclusive', text: "Premium", action: '/premium', display:false },
         { icon: 'person', text: "My Account", action: '/myaccount', display:false },
         { icon: 'phone', text: "Contact Us", action: '/contact', display:false },
@@ -65,10 +64,9 @@ export default {
         this.items[2].display=(this.isLoggedIn()===false);
         this.items[3].display=(this.isLoggedIn()===false);
         this.items[4].display=true;
-        this.items[5].display=true;
-        this.items[6].display=(this.isLoggedIn()===true);    
-        this.items[7].display=true;
-        this.items[8].display=(this.isLoggedIn()===true);
+        this.items[5].display=(this.isLoggedIn()===true);    
+        this.items[6].display=true;
+        this.items[7].display=(this.isLoggedIn()===true);
      }
   }
 }

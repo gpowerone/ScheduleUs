@@ -56,7 +56,7 @@
                     <div class="flex xs4 mt-1">
                         First
                     </div>          
-                    <div class="flex xs8">
+                    <div class="flex xs8 fieldwell">
                         <input type="text" v-model="firstName" class="textfield" />
                     </div>
                 </div>
@@ -65,7 +65,7 @@
                     <div class="flex xs4 mt-1">
                         Last
                     </div>            
-                    <div class="flex xs8">
+                    <div class="flex xs8 fieldwell">
                         <input type="text" v-model="lastName" class="textfield" />
                     </div>
                 </div>
@@ -88,7 +88,7 @@
                     <div class="flex xs4 mt-1">
                         Street
                     </div>          
-                    <div class="flex xs8">
+                    <div class="flex xs8 fieldwell">
                         <input type="text" v-model="address" class="textfield" />
                     </div>
                 </div>              
@@ -96,7 +96,7 @@
                     <div class="flex xs4 mt-1">
                         City
                     </div>            
-                    <div class="flex xs8">
+                    <div class="flex xs8 fieldwell">
                         <input type="text" v-model="city" class="textfield" />
                     </div>
                 </div>
@@ -104,7 +104,7 @@
                     <div class="flex xs4 mt-1">
                         State
                     </div>            
-                    <div class="flex xs8">
+                    <div class="flex xs8 fieldwell">
                         <select v-model="state" class="textfield">
                                 <option value="--">-Choose-</option>
                                 <option value="AL">Alabama</option>
@@ -165,7 +165,7 @@
                     <div class="flex xs4 mt-1">
                         Postal Code
                     </div>            
-                    <div class="flex xs8">
+                    <div class="flex xs8 fieldwell">
                         <input type="text" v-model="postalcode" class="textfield" />
                     </div>
                 </div>
@@ -185,7 +185,7 @@
                     Add an email address to login and optionally receive event notices via email
                 </div>
                 <div class="layout row mt-3">
-                    <div class="flex xs12">
+                    <div class="flex xs12 fieldwell">
                         <input type="text" v-model="email" class="textfield" />
                     </div>
                 </div>
@@ -215,7 +215,7 @@
                     <div class="flex xs4 mt-1">
                         Old Password
                     </div>          
-                    <div class="flex xs8">
+                    <div class="flex xs8 fieldwell">
                         <input type="password" v-model="cpassold" class="textfield" />
                     </div>
                 </div>
@@ -223,7 +223,7 @@
                     <div class="flex xs4 mt-1">
                         New Password
                     </div>           
-                    <div class="flex xs8">
+                    <div class="flex xs8 fieldwell">
                         <input type="password" v-model="cpassnew" class="textfield" />
                     </div>
                 </div>
@@ -231,7 +231,7 @@
                     <div class="flex xs4 mt-1">
                         Retype
                     </div>            
-                    <div class="flex xs8">
+                    <div class="flex xs8 fieldwell">
                         <input type="password" v-model="cpassrnew" class="textfield" />
                     </div>
                 </div>
@@ -251,7 +251,7 @@
                     Change the phone number on your account (you will need to verify the new number)
                 </div>
                 <div class="layout row mt-3">
-                    <div class="flex xs12">
+                    <div class="flex xs12 fieldwell">
                         <input type="text" v-model="phone" class="textfield" />
                     </div>
                 </div>
@@ -438,6 +438,20 @@ export default {
                 this.handleHTTPResult(r);                
             })
         },
+        doSaveEmail: function() {
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/setemail',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),
+                    EmailAddress: this.email
+                }
+            }).then(r=> {
+                this.handleHTTPResult(r);  
+            })
+        },
         doSaveName: function() {
             this.$http({
                 method:'post',
@@ -451,6 +465,9 @@ export default {
                 }
             }).then(r=> {
                 this.handleHTTPResult(r);  
+                if (r.data.status===200) {
+                    localStorage.setItem("_n",this.firstName+" "+this.lastName);
+                }
             })
         },
         doSavePhone: function() {
@@ -507,7 +524,17 @@ export default {
             }
         },
         proceedDeleteModal: function() {
-
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/deleteaccount',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),                    
+                }
+            }).then(r=> {
+                 this.$router.push("logout")
+            })
         },
         undoError: function() {
             this.isError=0;

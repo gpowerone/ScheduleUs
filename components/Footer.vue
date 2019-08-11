@@ -7,7 +7,7 @@
           Want to remove ads? Sign up for premium!
       </div>
       <div class="infoLine">
-          Schedule Us v1.0 (ALPHA), &copy;2019 Michael McDermott
+          <span class="schdusPurple">Schedule Us</span> v1.0 (ALPHA), &copy;2019 Michael McDermott
       </div>
   </div>
 </template>
@@ -36,8 +36,7 @@
     text-align:center;
 }
 .infoLine {
-    border-top:1px solid #666699; 
-    background-color:#ffffe6;
+    border-top:1px solid #777; 
 }
 </style>
 

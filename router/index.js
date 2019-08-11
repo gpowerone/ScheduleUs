@@ -3,7 +3,6 @@ import Router from 'vue-router'
 import CreateEvent from '@/views/CreateEvent'
 import Auth from '@/views/Auth'
 import Signup from '@/views/Signup'
-import About from '@/views/About'
 import Contact from '@/views/Contact'
 import Premium from '@/views/Premium'
 import MyEvents from '@/views/MyEvents'
@@ -28,11 +27,6 @@ const router =  new Router({
        path: '/signup',
        name: 'Sign Up',
        component: Signup
-    },
-    {
-      path: '/about',
-      name: 'About',
-      component: About
     },
     {
       path: '/premium',

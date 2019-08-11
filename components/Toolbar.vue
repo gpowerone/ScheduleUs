@@ -7,7 +7,7 @@
 
     <v-toolbar clipped-left flat app>
       <v-toolbar-side-icon  @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-      <v-avatar size="36px" v-show="loggedIn===true"><img @click="pictureUploader()" v-bind:src="this.imgsrc" width="36" height="36" alt="User Avatar" /></v-avatar>
+      <avatar :size="36" :username="uname" v-show="loggedIn===true"></avatar>
       <v-spacer></v-spacer>
       <v-toolbar-title class="mt-2" @click="goHome"><img src="@/assets/ScheduleUsWeb.png" width="150" alt="Schedule Us Logo" /></v-toolbar-title>
     </v-toolbar>
@@ -22,17 +22,18 @@
 </template>
 
 <script>
+import Avatar from 'vue-avatar'
 import myContentDrawer from "@/components/Drawer"
 import { EventBus } from '../bus';
 
 export default {
   name: "Toolbar",
-  components: {myContentDrawer},
+  components: {myContentDrawer, Avatar},
   data: function() {
     return {
       loggedIn: false,
       drawer: false,
-      imgsrc: "http://schedus-images.s3-website.us-east-2.amazonaws.com/avatar_generic.png"
+      uname: ""
     }
   },
   mounted: function () {
@@ -57,12 +58,13 @@ export default {
        this.$modal.show('picture-uploader');
     },
     updateAvatar() {
+
         var c = localStorage.getItem("_c");
         if (typeof(c)==="undefined" || c===null || c==="null") {          
             this.loggedIn=false;
         }
         else {
-          this.imgsrc="http://schedus-avatars.s3-website.us-east-2.amazonaws.com/"+c+".png";
+          this.uname=localStorage.getItem("_n");
           this.loggedIn=true;
         }
     }

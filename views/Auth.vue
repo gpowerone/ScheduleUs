@@ -101,6 +101,7 @@ export default {
                         localStorage.setItem("_c",r.data.message.ClientID);
                         localStorage.setItem("_s",r.data.message.SessionID);
                         localStorage.setItem("_r", r.data.message.SessionLong);
+                        localStorage.setItem("_n",r.data.message.UserName);
                         EventBus.$emit("MenuUpdateEvent");
                         EventBus.$emit("AvatarUpdateEvent");
                         this.$router.push('myaccount');

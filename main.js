@@ -9,11 +9,14 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 import VModal from 'vue-js-modal'
 import VueCollapse from 'vue2-collapse'
+import ToggleButton from 'vue-js-toggle-button'
+
 
 Vue.prototype.$hostname="http://localhost:3000";
 Vue.use(VueAxios, axios)
 Vue.use(VModal)
 Vue.use(VueCollapse)
+Vue.use(ToggleButton)
 
 const init = () => {
   new Vue({
