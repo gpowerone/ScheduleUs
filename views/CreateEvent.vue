@@ -1,28 +1,32 @@
 <template>
     <div class="moduleWrapper">
 
+        <div class='errorBox' v-show='errorMessage!==null'>
+            {{ errorMessage }}
+        </div>
+
         <div id='eventStepOne' v-show='formStep === 0'>
             
             <h1>Schedule It!</h1>
 
             <div>
 
-                <div class='fieldwell xs-12 mt-4'>
-                    <label>Name of Event (what would you like to do?)</label><br />
+                <div class='fieldwell xs-12 topEvent'>
+                    <label>Name of Event or Activity</label><br />
                     <input type='text' v-model="evname" class='textfield' />
                 </div>
 
-                <div class='fieldwell xs-12 mt-5'>
-                    <label>Your Name (will appear on message to guests)</label><br />
+                <div class='fieldwell xs-12 mtp-10'>
+                    <label>Your Name</label><br />
                     <input type='text' v-model="cliname" class='textfield' />
                 </div>
 
-                <div class='fieldwell xs-12 mt-5' >
+                <div class='fieldwell xs-12 mtp-10' >
                     <label>Your Phone Number</label><br />
                     <input type='text' v-model="cliphone" class='textfield' />
                 </div>
                 
-                <div class='fieldwell xs-12 mt-5'>
+                <div class='fieldwell xs-12 mtp-10'>
                     <label>Location</label>
                     <div class="layout row">
                         <div class="flex xs6 spfield textleft">
@@ -36,7 +40,7 @@
                         <input type='text' class='textfield' v-model="evstreet" />
                     </div>
                 </div>
-                <div class="layout row mt-3">
+                <div class="layout row mt-2">
                     <div class='fieldwell flex xs6'>
                         <label>City:</label><br />
                         <input type='text' class='textfield' v-model="evcity"  />
@@ -106,7 +110,7 @@
             </div>
             
     
-            <div class='buttonwell mt-5 textright'>
+            <div class='buttonwell mt-4 textright'>
                 <button @click='goStepTwo'><span>Tell Us Who&rsquo;s Going</span> <v-icon color="#FFF">arrow_forward</v-icon></button>
             </div>
      
@@ -122,29 +126,29 @@
                             <button class='transButton' @click='turnOnManualAddGuest'><v-icon>person_add</v-icon>&nbsp;<span>Add</span></button> 
                         </div>
                         <div class='flex xs9 textright spfield'>
-                            <v-icon>group_add</v-icon>&nbsp;Add From:<button v-show="isCordova === true" @click='loadContacts' class='transButton'><span>Contacts</span></button>&nbsp;<button v-show="loggedin === true" @click='loadPastEvents' class='transButton'><span>Past Events</span></button>
+                            Add From:<button v-show="isCordova === true" @click='loadContacts' class='transButton'><v-icon>contacts</v-icon></button>&nbsp;<button v-show="loggedin === true" @click='loadPastEvents' class='transButton'><v-icon>event_note</v-icon></button>
                         </div>
                     </div>
                     <div class='guestlistcontents textcenter'>
-                        <div v-show="guests.length===0">
-                            Invite guests by clicking the buttons above!
+                        <div v-show="guests.length===0" class="p4">
+                            Invite others by clicking the buttons above!
                         </div>
                         <v-list v-show="guests.length>0">
                             <template v-for="(item, i) in guests">
                                <v-list-item :key="i">
-                                   <div class='layout row btop p2'>
+                                   <div class='layout row btop p4' @click="editGuest(item)">
                                         <div class='flex xs2 pl2 relative'>
-                                            <div v-if="item.hasimage===true">
-
+                                            <div v-if="item.photo!==null">
+                                                <div class="vertical-center">
+                                                    <img :src="item.photo" class="imgcircle" alt="photo" width="30" height="30" />
+                                                </div>
                                             </div>
-                                            <div v-if="item.hasimage===false">
-                                                 <avatar class="vertical-center" :username="item.gname"></avatar>
+                                            <div v-if="item.photo===null">
+                                                 <avatar class="vertical-center" size="30" :username="item.gname"></avatar>
                                             </div>
                                         </div>
                                         <div class='flex xs10 textleft fieldwell indented1 spfield'>
-                                            {{item.gname}}<br />
-                                            <v-icon>phone</v-icon> {{item.gphone}}<br />
-                                            <v-icon>email</v-icon> {{item.gemail}}
+                                            {{item.gname}}
                                         </div>
                                     </div>
                                 </v-list-item>
@@ -167,90 +171,189 @@
 
         <div id='eventStepThree' v-show='formStep === 2'>
            <h1>Pick a Date and Time</h1>
-           <div class="fieldwell mt-3">
-               <datetime format="MM-DD-YYYY h:i:s" v-model="evdate" ></datetime>
-           </div>
-           <div class="fieldwell mt-1 textright">
-               <button class='tanButton' @click='pickForUs'>Pick for Us</button>
-           </div>
-           <div class="fieldwell mt-3">
-                Use Pick for Us to let Schedule Us choose the best date and time based upon who you've invited
-           </div>
-           <div class='fieldwell mt-3 boldchoice biggerisbadder'>
-                Additional Options
-           </div>
-           <div class='fieldwell mt-3'>
-               <div>
-                   <toggle-button color="#cc3300" v-model="guestlistvisible"/> Guest List is Visible to Guests
-               </div>
-               <div v-show="guestlistvisible===true" class="indented1">
-                   <div class="mt-1">
-                        <toggle-button color="#cc3300" v-model="guestscandiscuss"/> Guests Can Discuss Event
-                   </div>
-               </div>
-               <div class='mt-3'>
-                   <toggle-button color="#cc3300" v-model="guestsbringothers"/> Guests Can Bring Others
-               </div>
-                <div v-show="guestsbringothers===true" class="indented1">
-                   <div class="mt-1">
-                        <toggle-button color="#cc3300" v-model="guestsmustregister"/> New Guests Must Register
-                   </div>
-                   <div class="mt-1">
-                        <toggle-button color="#cc3300" v-model="guestslimitperperson"/> Limit New Guests Per Person
-                   </div>
-                   <div class="mt-1">
-                        <toggle-button color="#cc3300" v-model="guestsbringchildren"/> Guests May Bring Children
-                   </div>
-                   <div class="mt-1">
-                        <toggle-button color="#cc3300" v-model="guestsbringpets"/> Guests May Bring Pets
-                   </div>
-                   <div class="mt-1">
-                        <toggle-button color="#cc3300" v-model="guestslimittotal"/> Set Max Attendee Limit
-                   </div>
-
-               </div>
-               <div class='mt-3'>
-                   <toggle-button color="#cc3300" v-model="guestsreschedule"/> Guests Can Reschedule Event
-               </div>
-               <div class='mt-3'>
-                   <toggle-button color="#cc3300" v-model="guestschangelocation"/> Guests Can Change Location
-               </div>
-               <div class='mt-3'>
-                   <toggle-button color="#cc3300" v-model="eventrecurring"/> Event Will Occur Again
-               </div>
-               <div class='mt-3'>
-                   <toggle-button color="#cc3300" v-model="notificationoptions"/> Change Notification Options
-               </div>
-               <div v-show="notificationoptions===true" class="indented1">
-                    <div class="mt-1">
-                        <toggle-button color="#cc3300" v-model="notifyschedulecomplete"/> When Scheduling is Complete
-                   </div>
-                   <div class="mt-1">
-                        <toggle-button color="#cc3300" v-model="notifynewmessages"/> When There Are New Messages
-                   </div>
-                   <div class="mt-1">
-                        <toggle-button color="#cc3300" v-model="notifyguestaccept"/> When Guests RSVP
-                   </div>
-                    <div class="mt-1">
-                        <toggle-button color="#cc3300" v-model="notifyeventrescheduled"/> When Event is Rescheduled
-                   </div>
-                     <div class="mt-1">
-                        <toggle-button color="#cc3300" v-model="notifyeventlocationchanges"/> When Event Location Changes
-                   </div>
-               </div>
+           
+          
+            <div class="fieldwell mt-3">
+               <label>How Long is this Event:</label><br />
+                <select class="textfield" v-model="evlength">
+                    <option value="">---Pick a Length---</option>
+                    <option value="15">15 minutes</option>
+                    <option value="30">30 minutes</option>
+                    <option value="45">45 minutes</option>
+                    <option value="60">1 hour</option>
+                    <option value="90">1 hour and a half</option>
+                    <option value="120">2 hours</option>
+                    <option value="150">2 and a half hours</option>
+                    <option value="180">3 hours</option>
+                    <option value="240">4 hours</option>
+                    <option value="300">5 hours</option>
+                    <option value="360">6 hours</option>
+                    <option value="420">7 hours</option>
+                    <option value="480">8 hours</option>
+                    <option value="1440">1 day</option>
+                    <option value="2880">2 days</option>
+                    <option value="4320">3 days</option>
+                    <option value="5760">4 days</option>
+                    <option value="7200">5 days</option>
+                    <option value="8640">6 days</option>
+                    <option value="10080">7 days</option>
+                </select>
            </div>
 
+            <div class="fieldwell mt-3">
+                Pick a date and time or use Pick for Us to let Schedule Us choose the best date and time based upon who you've invited
+           </div>
+            <div class="fieldwell mt-1 textright">
+               <button class='schdusButton' @click='pickForUs'>Pick for Us!</button>
+           </div>
+
+           <div class="fieldwell mt-3">
+               <label>Date:</label>
+               <datetime format="MM-DD-YYYY" v-model="evday" ></datetime>
+           </div>
+           <div class="fieldwell mt-3">
+               <label>Time:</label>
+               <datetime format="h:i:s" v-model="evtime" ></datetime>
+           </div>
+                  
+
+            <div class="fieldwell mt-3">
+               <label>Remind Attendees:</label><br />
+                <select class="textfield" v-model="remindertime">
+                    <option value="24">1 day before</option>
+                    <option value="">No reminder</option>
+                    <option value="Custom">Custom reminder time</option>
+                </select>
+           </div>
+
+           <div class="fieldwell mt-3">
+               <label>How Long Do Attendees Have to Reply?</label><br />
+                <select class="textfield" v-model="schedulecutofftime">
+                    <option value="72">3 days to reply</option>
+                    <option value="24">1 day to reply</option>
+                    <option value="8">8 hours to reply</option>
+                    <option value="3">3 hours to reply</option>
+                    <option value="1">1 hour to reply</option>
+                    <option value="Custom">Custom reply time</option>
+                    <option value="">Attendees do not have to reply</option>
+                </select>
+           </div>
+
+        
             <div class='layout row mt-4'>
                 <div class='flex xs6 textleft'>
                     <button @click='goStepTwo'><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
                 </div>
 
-                <div class='flex xs6 textright'>
-                    <button @click='scheduleIt' class='schdusButton'><span>Schedule It!</span></button>
+                 <div class='flex xs6 textright'>
+                     <button @click='goStepFour'><span>Finalize It!</span><v-icon color="#FFF">arrow_forward</v-icon></button>
                 </div>
             </div>
         </div>
 
+        <div class='eventStepFour' v-show="formStep === 5">
+           <h1>Additional Options</h1>
+           <div class='fieldwell'>
+               <div class="fieldwell mt-2">
+                   <label>Send a message to attendees:</label><br />
+                   <textarea rows="1" cols="1" v-model="evdescription"></textarea>
+               </div>
+               <div class="mt-3">
+                   <label>Event Options:</label>
+               </div>
+               <div class="mt-2">
+                   <toggle-button width="35" height="16" v-model="willattend"/> I Will Attend
+               </div>
+               <div class="mt-2">
+                   <toggle-button width="35" height="16" v-model="guestlistvisible"/> Attendees List is Visible to All
+               </div>
+               <div v-show="guestlistvisible===true" class="indented1">
+                   <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="guestscandiscuss"/> Attendees Can Discuss Event
+                   </div>
+                    <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="guestsseervsp"/> Attendees Can See Who is Coming
+                   </div>
+               </div>
+               <div class='mt-2'>
+                   <toggle-button width="35" height="16" v-model="guestsbringothers"/> Attendees Can Bring Others
+               </div>
+                <div v-show="guestsbringothers===true" class="indented1">
+                   <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="guestsmustregister"/> New Attendees Must Register
+                   </div>
+                   <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="guestslimitperperson"/> Limit New Attendees Per Person
+                   </div>
+                   <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="guestsbringchildren"/> Attendees May Bring Children
+                   </div>
+                   <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="guestsbringpets"/> Attendees May Bring Pets
+                   </div>
+                     <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="guestsprovidesharing"/> Provide Social Share Options
+                   </div>
+                   <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="guestslimittotal"/> Set Max Attendee Limit
+                   </div>
+
+               </div>
+               <div class='mt-2'>
+                   <toggle-button width="35" height="16" v-model="guestsreschedule"/> Attendees Can Suggest a Different Time
+               </div>
+               <div v-show="guestsreschedule===true" class="indented1">
+                   <div class="mt-2">
+                      <toggle-button width="35" height="16" v-model="guestsrescheduleperm"/> I Must Approve Different Time
+                    </div>
+               </div>
+               <div class='mt-2'>
+                   <toggle-button width="35" height="16" v-model="guestschangelocation"/> Attendees Can Suggest a Different Location
+               </div>
+               <div v-show="guestschangelocation===true" class="indented1">
+                   <div class="mt-2">
+                       <toggle-button width="35" height="16" v-model="guestschangelocationperm"/> I Must Approve Different Location
+                    </div>
+               </div>
+               <div class='mt-2' v-show="isPremium===true" >
+                   <toggle-button width="35" height="16" v-model="eventrecurring"/> Event/Activity Will Occur Again
+               </div>
+               <div v-show="eventrecurring===true">
+
+               </div>
+               <div class='mt-2'>
+                   <toggle-button width="35" height="16" v-model="notificationoptions"/> Change Notification Options
+               </div>
+               <div v-show="notificationoptions===true" class="indented1">
+                    <div class="mt-1">
+                        <toggle-button width="35" height="16" v-model="notifyschedulecomplete"/> When Scheduling is Complete
+                   </div>
+                   <div class="mt-1">
+                        <toggle-button width="35" height="16" v-model="notifynewmessages"/> When There Are New Messages
+                   </div>
+                   <div class="mt-1">
+                        <toggle-button width="35" height="16" v-model="notifyguestaccept"/> When Guests RSVP
+                   </div>
+                    <div class="mt-1">
+                        <toggle-button width="35" height="16" v-model="notifyeventrescheduled"/> When Event is Rescheduled
+                   </div>
+                     <div class="mt-1">
+                        <toggle-button width="35" height="16" v-model="notifyeventlocationchanges"/> When Event Location Changes
+                   </div>
+               </div>
+
+                <div class='layout row mt-4'>
+                    <div class='flex xs6 textleft'>
+                        <button @click='goStepThree'><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
+                    </div>
+
+                    <div class='flex xs6 textright'>
+                        <button @click='scheduleIt' class='schdusButton'><span>Schedule It! </span><v-icon color="#FFF">event</v-icon></button>
+                    </div>
+                </div>
+ 
+            </div>
+         </div>
 
         <div class='manualaddguest mt-2 p2' v-show="formStep === 3">
 
@@ -258,60 +361,167 @@
                 {{guesterror}}
             </div>
 
-            <h1>Add Guest</h1>
+            <h1>Add Attendee</h1>
 
             <div class='fieldwell mt-2'>
-                    <label>Guest Name</label><br />
+                    <label>Name</label><br />
                     <input type='text' class='textfield' v-model='guestname' />
             </div>
             <div class='fieldwell mt-2'>
-                    <label>Guest Phone</label><br />
+                    <label>Phone</label><br />
                     <input type='text' class='textfield' v-model='guestphone' />
             </div>
             <div class='fieldwell mt-2'>
-                    <label>Guest Email</label><br />
+                    <label>Email</label><br />
                     <input type='text' class='textfield' v-model='guestemail' />
             </div>
+            <div class='fieldwell mt-2'>
+                    <toggle-button width="35" height="16" v-model="guestisrequired"/> Is Required
+            </div>
             <div class='layout row mt-2'>
-                <div class='flex xs6 textleft'>
-                    <button @click="closeManualAddGuest">Cancel</button>
+                <div class='flex xs4 textleft'>
+                    <button @click="closeManualAddGuest" class="tanButton">Cancel</button>
                 </div>
-                <div class='flex xs6 textright'>
-                    <button @click="addGuest">Add Guest</button>
+                <div class='flex xs4'>
+                    <div class='textcenter' v-show="guesteditmode!==null">
+                        <button @click="removeGuest" class="redButton">Remove</button>
+                    </div>
+                </div>
+                <div class='flex xs4 textright'>
+                    <button @click="addGuest" class="tanButton">Save</button>
                 </div>
             </div>
         </div>
+       
 
         <div class='loadcontacts' v-show="formStep === 4">
 
-             <div v-show="contacts.length===0">
-                You don't have any contacts
-            </div>
-            <v-list v-show="contacts.length>0">
-                <template v-for="(item, i) in contacts">
-                    <v-list-item :key="i">
-                        <div class='layout row btop p2'>
-                            <div class='flex xs2 pl2 relative'>
-                                <div v-if="item.hasimage!==null">
-                                    <div class="vertical-center">
-                                        <img :src="item.hasimage" alt="photo" width="50" height="50" />
+            <div class="manualaddguest">
+                <div class="layout row p2">
+                    <div class="flex xs6 textleft">
+                        <button class="tanButton" @click="closeContacts">Close</button>
+                    </div>
+                    <div class="flex xs6 textright">
+                        <button class="modifiedNormal" @click="saveContacts">Done</button>
+                    </div>
+                </div>
+                <div v-show="contacts.length===0">
+                    You don't have any contacts
+                </div>
+                <v-list class="nopadding" v-show="contacts.length>0">
+                    <div class="fieldwell p2">
+                        Search:&nbsp;&nbsp;<input class="textfield" v-model="csearch">
+                    </div>
+                    <template v-for="(item, i) in contacts">
+                        <v-list-item :key="i" >
+                            <div v-bind:class="{ selectedTile: item.isselected }" @click="selectContact(item)">
+                                <div class='layout row btop p4'>
+                                    <div class='flex xs2 pl2 relative'>
+                                        <div v-if="item.hasimage!==null">
+                                            <div class="vertical-center">
+                                                <img :src="item.hasimage" class="imgcircle" alt="photo" width="30" height="30" />
+                                            </div>
+                                        </div>
+                                        <div v-if="item.hasimage===null">
+                                                <avatar class="vertical-center" :username="item.cname" size="30"></avatar>
+                                        </div>
+                                    </div>
+                                    <div class='flex xs10 textleft fieldwell indented1 spfield'>
+                                        {{item.cname}}                                      
                                     </div>
                                 </div>
-                                <div v-if="item.hasimage===null">
-                                        <avatar class="vertical-center" :username="item.cname"></avatar>
-                                </div>
                             </div>
-                            <div class='flex xs10 textleft fieldwell indented1 spfield'>
-                                {{item.cname}}<br />
-                                <v-icon>phone</v-icon> {{item.cphone}}<br />
-                                <v-icon>email</v-icon> {{item.cemail}}
-                            </div>
-                        </div>
-                    </v-list-item>
-                </template>
-            </v-list>
+                        </v-list-item>
+                    </template>
+                </v-list>
+            </div>
         </div>
         
+
+        <div class='pickforus' v-show="formStep === 6">
+            <h1>Pick for Us</h1>
+            <div class="mt-2">
+                If attendees have integrated their calendars with Schedule Us then 
+                Pick for Us will use that information in addition to these settings and our AI to find the best time.  
+            </div>
+            <div class="mt-2">
+                <toggle-button width="35" height="16" v-model="pfusrequiretoday"/> Schedule Today
+            </div>
+            <div class="mt-2 btop boldchoice">
+                Allow Days of the Week
+            </div>
+            <div class="mt-2 layout row">
+                <div class="flex xs6">
+                    <div>
+                        <toggle-button width="35" height="16" v-model="pfussunday"/> Sunday
+                    </div>
+                    <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="pfusmonday"/> Monday
+                    </div>
+                    <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="pfustuesday"/> Tuesday
+                    </div>
+                    <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="pfuswednesday"/> Wednesday
+                    </div>
+                </div>
+                <div class="flex xs6">
+                    <div>
+                        <toggle-button width="35" height="16" v-model="pfusthursday"/> Thursday
+                    </div>
+                    <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="pfusfriday"/> Friday
+                    </div>
+                    <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="pfussaturday"/> Saturday
+                    </div>
+                </div>
+            </div>
+            <div class="mt-2 btop boldchoice">
+                Allow Times of Day
+            </div>
+            <div class="mt-2 layout row">
+                <div class="flex xs6">
+                    <div >
+                        <toggle-button width="35" height="16" v-model="pfusmorning"/> Morning
+                    </div>
+                    <div class="mt-2">
+                        <toggle-button width="35" height="16" v-model="pfusafternoon"/> Afternoon
+                    </div>
+                </div>
+                <div class="flex xs6">
+                    <div>
+                        <toggle-button width="35" height="16" v-model="pfusevening"/> Evening
+                    </div>
+                </div>
+            </div>
+             <div class="mt-2 btop">
+                  <toggle-button width="35" height="16" v-model="pfusmeal" class="mt-2" /> This Event/Activity Includes a Meal
+             </div>
+             <div class="mt-2 btop boldchoice">
+                 Consider Dates
+            </div>
+            <div class="mt-2">
+                  <toggle-button width="35" height="16" v-model="pfussoon"/> Soon (1-3 days)
+             </div>
+             <div class="mt-2">
+                  <toggle-button width="35" height="16" v-model="pfusweek"/> Within a Week (3-7 days)
+             </div>
+              <div class="mt-2">
+                  <toggle-button width="35" height="16" v-model="pfusmonth"/> Within a Month (1-4 weeks)
+             </div>
+              <div class="mt-2">
+                  <toggle-button width="35" height="16" v-model="pfusmonthmore"/> More Than a Month (1 month+)
+             </div>
+              <div class="mt-3 layout row">
+                  <div class="flex xs6 textleft">
+                      <button @click="pickForUsClose">Cancel</button>
+                  </div>
+                  <div class="flex xs6 textright">
+                      <button class="schdusButton" @click="pickForUsDo">Pick for Us!</button>
+                  </div>
+             </div>
+        </div>
 
     </div>
 </template>
@@ -336,38 +546,72 @@ export default {
             formStep: 0,
             cliname: "",
             contacts: [],
+            evdescription:"",
             evname: "",
             cliphone: "",
+            csearch: "",
+            errorMessage: null,
+            evdate:null,
             evstreet: "",
             evcity: "",
+            evlength:"",
             evstate: "",
             evzip: "",   
-            evdate: null,
+            evday:null,
+            evtime:null,
+            guesteditmode:null,
             guestname: "",
             guestphone: "",
             guestemail: "",
             guesterror: "",
+            guestsrescheduleperm:false,
+            guestschangelocationperm:false,
             guestscandiscuss:true,
             guestsmustregister:true,
+            guestsprovidesharing:true,
             guestslimitperperson:false,
             guestsbringchildren:false,
             guestsbringpets:false,
             guestslimittotal:false,
             guestlistvisible: true,
+            guestisrequired:false,
             guestsbringothers: false,
+            guestsseersvp: true,
             guestsreschedule:false,
             guestschangelocation:false,
             eventrecurring:false,
-            notificationoptions:false,
-            guests:[],
+            guests:[],            
             isCordova: (typeof window.cordova !== "undefined"),
+            isPremium: false,
+            isPro: false,
             loggedin: false,
             notificationoptions:false,
             notifyschedulecomplete:true,
             notifynewmessages:false,
             notifyguestaccept:false,
             notifyeventrescheduled:true,
-            notifyeventlocationchanges:true
+            notifyeventlocationchanges:true,
+            pfusrequiretoday:false,
+            pfussunday:true,
+            pfusmonday:true,
+            pfustuesday:true,
+            pfuswednesday:true,
+            pfusthursday:true,
+            pfusfriday:true,
+            pfussaturday:true,
+            pfusmorning:true,
+            pfusafternoon:true,
+            pfusevening:true,
+            pfuslatenight:false,
+            pfusmeal:false,
+            pfussoon:true,
+            pfusweek:true,
+            pfusmonth:false,
+            pfusmonthmore:false,
+            remindertime: "24",
+            schedulecutofftime: "72",
+            visiblehidecontacts:[],
+            willattend:true
         }
     },
 
@@ -397,14 +641,23 @@ export default {
                 this.guestemail="Not Specified";
             }
 
-            this.guests.push({
-                gname: this.guestname,
-                gphone: this.guestphone,
-                gemail: this.guestemail,
-                photo: null,
-                clientid: null,
-                hasimage: false
-            });
+            if (this.guesteditmode===null) {
+                this.guests.push({
+                    gid: this.$uuid.v1(),     
+                    gname: this.guestname,
+                    gphone: this.guestphone,
+                    gemail: this.guestemail,
+                    greq: this.guestisrequired,
+                    photo: null
+                });
+            }
+            else {
+                this.guesteditmode.gname=this.guestname;
+                this.guesteditmode.gphone=this.guestphone;
+                this.guesteditmode.gemail=this.guestemail;
+                this.guesteditmode.gid=this.gid;
+            }
+
             this.guesterror=""; 
             this.guestname=""; 
             this.guestphone="";
@@ -412,11 +665,34 @@ export default {
             this.formStep=1;
             this.$forceUpdate();
         },
+        closeContacts: function() {
+            this.formStep=1;
+            this.$forceUpdate();
+        },
         closeManualAddGuest: function() {
             this.formStep=1;
+            this.$forceUpdate();
+        },
+        compareContacts: function( a, b ) {
+            if ( a.cname < b.cname ){
+                return -1;
+            }
+            if ( a.cname > b.cname ){
+                return 1;
+            }
+            return 0;
+        },
+        compareGuests: function( a, b ) {
+            if ( a.guestname < b.guestname ){
+                return -1;
+            }
+            if ( a.guestname > b.guestname ){
+                return 1;
+            }
+            return 0;
         },
         contactFailure: function() {
-         
+            window.alert("Could not load contacts. Please check app contact permissions");
         },
         contactSuccess: function(ctcs) {
             this.contacts=[];
@@ -427,48 +703,55 @@ export default {
                 var ctcemail="Not Specified";
                 var ctcphone="Not Specified";
         
-                try {
-                    ctcname = ctcs[i].name.formatted;
+                ctcname = ctcs[i].name.formatted;
+                 
+                if (typeof(ctcs[i].emails)!=="undefined" && ctcs[i].emails.length>0) {
+                    ctcemail = ctcs[i].emails[0].value;
                 }
-                catch(e) {}
-
-                try {
-                    if (ctcs[i].emails.length>0) {
-                        ctcemail = ctcs[i].emails[0].value;
-                    }
-                }
-                catch(e) {}
-
-                try {
-                    if (ctcs[i].phoneNumbers.length>0) {
-                        for (var x=0; x<ctcs[i].phoneNumbers.length; x++) {
-                            if (ctcs[i].phoneNumbers[x].type==="mobile") {
-                                ctcphone = ctcs[i].phoneNumbers[0].value;
-                                break;
-                            }
+        
+                if (typeof(ctcs[i].phoneNumbers)!=="undefined" && ctcs[i].phoneNumbers.length>0) {
+                    for (var x=0; x<ctcs[i].phoneNumbers.length; x++) {
+                        if (ctcs[i].phoneNumbers[x].type==="mobile") {
+                            ctcphone = ctcs[i].phoneNumbers[0].value;
+                            break;
                         }
                     }
                 }
-                catch(e) {}
-
-
+         
                 var hasimage=null;
-                try {
-                    if (ctcs[i].photos.length>0) {                    
-                        hasimage=window.Ionic.WebView.convertFileSrc(ctcs[i].photos[0].value);                           
-                    }
+          
+                if (typeof(ctcs[i].photos)!=="undefined" && ctcs[i].photos.length>0) {                    
+                    hasimage=window.Ionic.WebView.convertFileSrc(ctcs[i].photos[0].value);                           
                 }
-                catch(e) {}
-
-                this.contacts.push({
-                      cname: ctcname,
-                      cemail: ctcemail,
-                      cphone: ctcphone,
-                      hasimage: hasimage
-                })      
-            } 
             
+
+                if (ctcname!=="Not Specified" && (ctcemail!=="Not Specified" || ctcphone!=="Not Specified"))
+                {
+                    this.contacts.push({
+                        cname: ctcname,
+                        cemail: ctcemail,
+                        cphone: ctcphone,
+                        hasimage: hasimage,
+                        isselected: false
+                    })
+                }      
+            } 
+
+            this.contacts.sort(this.compareContacts);
+            this.visiblehidecontacts=[];
+            for(var y=0; y<this.contacts.length; y++) {
+                this.visiblehidecontacts.push(this.contacts[y]);
+            }
+
             this.formStep=4;
+            this.$forceUpdate();
+        },
+        editGuest: function(item) {
+            this.guesteditmode=item;
+            this.guestname=item.gname;
+            this.guestphone=item.gphone==="Not Specified"?"":item.gphone;
+            this.guestemail=item.gemail==="Not Specified"?"":item.gemail;
+            this.formStep=3;
             this.$forceUpdate();
         },
         formatPhone: function(ed) {
@@ -484,6 +767,9 @@ export default {
         },
         goStepThree: function() {
             this.formStep=2;
+        },
+        goStepFour: function() {
+            this.formStep=5;
         },
         goToLogIn: function() {
             this.$router.push('auth');
@@ -506,25 +792,153 @@ export default {
 
         },
         pickForUs: function() {
+            this.formStep=6;
+        },
+        pickForUsClose: function() {
+            this.formStep=2;  
+        },
+        pickForUsDo: function() {
 
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/pickforus',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),   
+                    Users: this.guests,   
+                    Offset:  new Date().getTimezoneOffset(),
+                    Mondays: this.pfusmonday,
+                    Tuesdays: this.pfustuesday,
+                    Wednesdays: this.pfuswednesday,
+                    Thursdays: this.pfusthursday,
+                    Fridays: this.pfusfriday,
+                    Saturdays: this.pfussaturday,
+                    Sundays: this.pfussunday,   
+                    RequireToday: this.pfusrequiretoday,
+                    Mornings: this.pfusmorning,
+                    Afternoons: this.pfusafternoon,
+                    Evenings: this.pfusevening,
+                    LateNight: this.pfuslatenight,
+                    Meal: this.pfusmeal,
+                    LSoon: this.pfussoon,
+                    LWeek: this.pfusweek,
+                    LMonth: this.pfusmonth,
+                    LMonthPlus: this.pfusmonthmore,
+                    Length: this.evlength 
+                }
+            }).then(r=> {
+                if (r.status===200 && r.data.status===200) {
+                }
+            })
+        },
+        removeGuest: function() {
+            for(var x=0; x<this.guests.length; x++) {
+                if (this.guests[x].gid===this.guesteditmode.gid) {
+                    this.guests.splice(x,1);
+                }
+            }
+            this.formStep=1;
+            this.$forceUpdate();
+        },
+        saveContacts: function() {   
+            for(var x=0; x<this.contacts.length; x++) {
+                if (this.contacts[x].isselected) {
+
+                    var pass=true;
+                    for(var y=0; y<this.guests.length; y++) {
+                        if (this.guests[y].gphone===this.contacts[x].cphone || this.guests[y].gemail===this.contacts[x].cemail) {
+                            pass=false;
+                        }
+                    }
+
+                    if (pass) {
+                        this.guests.push({    
+                            gid: this.$uuid.v1(),               
+                            gname: this.contacts[x].cname,
+                            gphone: this.contacts[x].cphone,
+                            gemail: this.contacts[x].cemail,
+                            photo: this.contacts[x].hasimage,
+                            greq: false
+                        });
+                    }
+                }
+            }
+            
+            this.contacts=[];
+            this.visiblehidecontacts=[];
+            this.formStep=1;
+            this.$forceUpdate();
         },
         scheduleIt: function() {
-
+             this.$http({
+                method:'post',
+                url:this.$hostname+'/createevent',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),
+                    EventName: this.evname,
+                    ClientName: this.cliname,
+                    ClientPhone: this.cliphone,
+                    EventDate: this.evdate,
+                    EventDescription: this.evdescription,
+                    EventStreet: this.evstreet,
+                    EventCity: this.evcity,
+                    EventState: this.evstate,
+                    EventZip: this.evzip,
+                    GuestsCanDiscuss: this.guestscandiscuss,
+                    GuestsMustRegister: this.guestsmustregister,
+                    GuestLimitPerPerson: 0,
+                    GuestLimitTotal: 0,
+                    GuestsProvideSharing: this.guestsprovidesharing,
+                    GuestListVisible: this.guestlistvisible,
+                    GuestsBringChildren: this.guestsbringchildren,
+                    GuestsBringPets: this.guestsbringpets,
+                    GuestsSeeRSVPs: this.guestsseersvps,
+                    GuestsReschedule: this.guestsreschedule,
+                    GuestsChangeLocation: this.guestschangelocation,
+                    EventIsRecurring: this.eventrecurring,
+                    Guests: this.guests,
+                    NotifyScheduleComplete: this.notifyschedulecomplete,
+                    NotifyNewMessages: this.notifynewmessages,
+                    NotifyGuestAccept: this.notifyguestaccept,
+                    NotifyEventRescheduled: this.notifyeventrescheduled,
+                    NotifyEventLocationChanges: this.notifyeventlocationchanges,
+                    ReminderTime: this.remindertime,
+                    ScheduleCutoffTime: this.schedulecutofftime,
+                    MustApproveDiffTime: this.guestsrescheduleperm,
+                    MustApproveDiffLocation: this.guestschangelocationperm,
+                    UTCOffset: new Date().getTimezoneOffset(),
+                    WillAttend: this.willattend,
+                    YourName: this.cliname
+                }
+            }).then(r=> {
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        this.$router.push({path: 'dashboard', params: { newEvent:"Y"}});
+                    }
+                }
+            });
+        },
+        selectContact: function(item) {
+            item.isselected=!item.isselected;
+            this.$forceUpdate();
         },
         turnOnManualAddGuest: function() {
             this.formStep=3;
         },
         verifyEmail: function(email) {
-            var emailVerification = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+            var emailVerification = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/;
             if (!emailVerification.test(email)) {
-                return "";
+                return "Email address is invalid";
             }
             return "OK";
         },
         verifyPhone: function(phone) {
-            var phoneVerification = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
+            var phoneVerification = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im;
             if (!phoneVerification.test(phone)) {
-                return "";
+                return "Phone number is invalid";
             }
             return "OK";
         }
@@ -551,8 +965,30 @@ export default {
                     this.cliname=clidetails.FirstName+" "+clidetails.LastName;
                     this.cliphone=this.formatPhone(clidetails.PhoneNumber);
                     this.loggedin=true;
+                    this.isPremium=clidetails.isPremium;
                 }
             })
+        }
+    },
+    watch: {
+        csearch: function(val) {
+            this.contacts=[]; 
+            if (val===null || val.length===0) {     
+                for(var x=0; x<this.visiblehidecontacts.length; x++) {
+                     this.contacts.push(this.visiblehidecontacts[x]);                   
+                }
+                return;
+            }
+   
+            for(var y=0; y<this.visiblehidecontacts.length; y++) {
+                if (this.visiblehidecontacts[y].cname.toLowerCase().indexOf(val.toLowerCase())>-1 ||
+                    this.visiblehidecontacts[y].cemail.toLowerCase().indexOf(val.toLowerCase())>-1 ||
+                    this.visiblehidecontacts[y].cphone.toLowerCase().indexOf(val.toLowerCase())>-1) {
+                    this.contacts.push(this.visiblehidecontacts[y]);
+                }
+            }
+
+            this.$forceUpdate();
         }
     }
 }

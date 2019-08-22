@@ -8,8 +8,10 @@
         <div id='loginFlow' v-show="formStep===0">
             <h1>Login</h1>
 
-            <p><button @click="goToCreateAccount()" class="linkbtn">Register here</button> for an account</p>
-            <div class="layout row mt-3">
+            <div class="textright mt-3">
+                <button @click="goToCreateAccount()" class="schdusButton">Register</button>
+            </div>
+            <div class="layout row mt-2">
                 <div class="fieldwell flex xs12">
                     Phone Number or Email Address:<br />
                     <input type='text' id='user' v-model="Phone" class='textfield' />
@@ -28,19 +30,24 @@
             </div>
               <div class="layout row mt-2">
                 <div class="fieldwell flex xs12">
-                    <button @click="goToAccountRecovery()" class="fullWidth textcenter linkbtn">Forgot your password?</button>
+                    <button @click="goToAccountRecovery()" class="fullWidth textcenter tanButton">Forgot your password?</button>
                 </div>
             </div>
         </div>    
         <div id='accountRecoveryFlow' v-show="formStep===1">
              <h1>Recover Your Account</h1>
-              <p><button @click="goToLogin()" class="linkbtn">Return to Login</button></p>
-               <div class="layout row mt-3">
-                <div class="fieldwell flex xs12">
+                <div class="textright mt-3">
+                    <button @click="goToLogin()" class="tanButton">Return to Login</button>
+                </div>
+                <div class="mt-2">
+                  <div class="fieldwell">
                     Enter the Phone Number associated this account:<br />
                     <input type='text' id='arph' v-model="ARPhone" class='textfield' />
+                  </div>
+                  <div class="fieldwell mt-2">
+                      <button @click="doAR">Submit</button>
+                  </div>
                 </div>
-            </div>
         </div>
         <div id='accountVerificationFlow' v-show="formStep===2">
              <h1>Verification Required</h1>
@@ -51,6 +58,12 @@
                  The text message has been resent
                  </p>
                  <p><button @click="goToLogin()" class="linkbtn">Return to Login</button></p>               
+             </div>
+        </div>
+        <div id='accountRecoveryStep2' v-show="formStep===3">
+             <h1>Account Recovery</h1>
+             <div class="mt-2">
+                 A text message with information to recover your account has been sent.
              </div>
         </div>
     </div>
@@ -75,6 +88,35 @@ export default {
         }
     },
     methods: {
+        doAR: function() {
+
+            if (this.ARPhone.length===0) {
+                this.doError("Phone number is required");
+                return;
+            }
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/accountrecovery',
+                data: {
+                    PhoneNumber: this.ARPhone             
+                }
+            }).then(r=> {
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        this.isError=0;
+                        this.formStep=3;
+                        this.$forceUpdate();
+                    }
+                    else {
+                        this.doError(r.data.message);
+                    }
+                }
+                else {
+                    this.doError("An internet connection error occurred. Please check your connection");
+                }
+            })
+        },
         doError: function(msg) {   
             this.errorMessage=msg;
             this.isError=1;  
@@ -137,7 +179,7 @@ export default {
             this.undoError();
         },
         mounted() {
-            console.log("kled jumps on his fucking horse");
+          
         },
         resendTextMessage: function() {
 

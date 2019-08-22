@@ -1,0 +1,74 @@
+@media (min-width: 1281px) {
+  
+    html {
+        background-color: #444;
+    }
+
+    body {
+        width: 1366px;
+        margin: 0 auto;
+    }
+
+    h1 {
+        font-size:2rem;
+    }
+
+    .desktopOnly {
+        display:block;
+    }
+
+    .dmRowContainer, .dmContainer {
+        height:100%;
+    }
+
+    .drawerHeader {
+        display:none;
+    }
+
+    .toolbarDesktop {
+        padding:1%;
+        background-color:#FFF;
+        border-bottom:1px solid gray;
+    }
+
+    .toolbarMenu {
+        padding:1%;
+        border-right:1px solid gray;
+    }
+
+    .mobileOnly {
+        display:none;
+    }
+
+    .v-toolbar--fixed {
+        position: relative!important;
+    }
+
+    .v-toolbar__content button {
+        display:none!important;
+    }
+
+    .v-content {
+        padding:0px!important;
+    }
+
+    .mtp-10 {
+        margin-top:5%;
+    }
+
+    .topEvent {
+        margin-top:2%;
+    }
+
+    .moduleWrapper {
+        padding:2.5%;
+    }
+
+    .dmRouter {
+        flex-basis: 0;
+        flex-grow: 1;
+        width:84%;
+     }
+}
+  
+  

@@ -8,6 +8,9 @@ import Premium from '@/views/Premium'
 import MyEvents from '@/views/MyEvents'
 import Logout from '@/views/Logout'
 import MyAccount from '@/views/MyAccount'
+import Verify from '@/views/Verify'
+import Recover from '@/views/Recover'
+import VerifyEmail from '@/views/VerifyEmail'
 
 Vue.use(Router);
 
@@ -30,7 +33,7 @@ const router =  new Router({
     },
     {
       path: '/premium',
-      name: 'Premium',
+      name: 'Premium/Pro',
       component: Premium
     },
     {
@@ -39,8 +42,8 @@ const router =  new Router({
       component: Contact
     },
     {
-       path: '/myevents',
-       name: 'My Events',
+       path: '/dashboard',
+       name: 'Dashboard',
        component: MyEvents
     },
     {
@@ -52,6 +55,21 @@ const router =  new Router({
        path: '/myaccount',
        name: 'My Account',
        component: MyAccount
+    },
+    {
+       path: '/verify',
+       name: 'Verification',
+       component: Verify
+    },
+    {
+       path: '/recover',
+       name: 'Recover',
+       component: Recover
+    },
+    {
+       path: '/verifyemail',
+       name: 'Verify Email',
+       component: VerifyEmail
     }
   ]
 })

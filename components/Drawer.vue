@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-toolbar flat>
+    <v-toolbar class="drawerHeader" flat>
       <v-toolbar-title class="schdusPurple menuHeader">Menu</v-toolbar-title>
     </v-toolbar>
     <v-list dense>
@@ -23,6 +23,27 @@
   </div>
 </template>
 
+<style scoped>
+.menuHeader {
+   font-family: 'Dream Orphans';
+   font-size:25px;
+}
+.menuSize,.iconSize {
+   color:#777;
+}
+.primary--text .menuSize {
+   color:rgb(25, 118, 210)!important
+}
+.menuSize {
+   font-family: 'Aileron';
+   font-size:16px!important;
+}
+.iconSize {
+   font-size:28px!important;
+}
+
+</style>
+
 <script>
 import { EventBus } from '../bus';
 
@@ -30,9 +51,9 @@ export default {
   name: "drawer",
   data: function() {
     return {
-      items: [       
-        { icon: 'event', text: "Create Event", action: '/', display: false },
-        { icon: 'event_seat', text: "My Events", action: '/myevents', display:false },
+      items: [     
+        { icon: 'event_seat', text: "Dashboard", action: '/dashboard', display:false },  
+        { icon: 'event', text: "Schedule It!", action: '/', display: false },   
         { icon: 'https', text: "Log In", action: '/auth', display:false },
         { icon: 'person_add', text: "Sign Up", action: '/signup', display:false },
         { icon: 'all_inclusive', text: "Premium", action: '/premium', display:false },
@@ -59,8 +80,8 @@ export default {
         return true;
      },
      updateMenu: function() {
-        this.items[0].display=true;
-        this.items[1].display=(this.isLoggedIn()===true);
+        this.items[0].display=(this.isLoggedIn()===true);
+        this.items[1].display=true;
         this.items[2].display=(this.isLoggedIn()===false);
         this.items[3].display=(this.isLoggedIn()===false);
         this.items[4].display=true;

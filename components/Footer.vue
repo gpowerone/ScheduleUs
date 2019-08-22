@@ -15,6 +15,7 @@
 <style scoped>
 .footer {
     width:100%;
+    background-color:#FFF;
 }
 .adWell {
    height:60px;

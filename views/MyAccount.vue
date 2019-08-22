@@ -5,8 +5,8 @@
         {{ errorMessage }}
     </div>
 
-    <div class='okBox' v-show='isOK===1'>
-        Changes saved successfully
+    <div class='okBox' v-show='isOK!==null'>
+        {{isOK}}
     </div>
 
     <modal name="deleteModal" width=300 height=200>
@@ -50,7 +50,7 @@
             </div>
             <div class="acccontent" v-collapse-content>
                 <div>
-                    If you enter your name here then you will not need to enter it when creating a new event
+                    If you enter your name here then you will not need to enter it when creating a new event/activity
                 </div>
                 <div class="layout row mt-2">
                     <div class="flex xs4 mt-1">
@@ -82,7 +82,7 @@
             </div>
             <div class="acccontent" v-collapse-content>
                 <div>
-                    Populate event address fields with your home address easily
+                    Populate event/activity address fields with your home address easily
                 </div>
                 <div class="layout row mt-2">
                     <div class="flex xs4 mt-1">
@@ -182,7 +182,7 @@
             </div>
             <div class="acccontent" v-collapse-content>
                 <div>
-                    Add an email address to login and optionally receive event notices via email
+                    Add an email address to login and optionally receive event/activity notices via email
                 </div>
                 <div class="layout row mt-3">
                     <div class="flex xs12 fieldwell">
@@ -202,7 +202,7 @@
             </div>
             <div class="acccontent" v-collapse-content>
                 <div>
-                    Integrate your calendars to help Schedule Us schedule events for you and your guests better
+                    Integrate your calendars to help Schedule Us schedule events/activities for you and your guests better
                 </div>
             </div>
         </v-collapse-wrapper>
@@ -304,7 +304,7 @@ export default {
             errorMessage: "",
             firstName: "",
             isError: false,
-            isOK: false,
+            isOK: null,
             lastName: "",
             phone: "",
             email: "",
@@ -414,7 +414,7 @@ export default {
                 this.cpassold="";
                 this.cpassnew="";
                 this.cpassrnew="";
-                this.handleHTTPResult(r);                
+                this.handleHTTPResult(r, "Password changed successfully");                
             })   
         },
         doPasswordCallback: function() {
@@ -435,7 +435,7 @@ export default {
                     PostalCode: this.postalcode
                 }
             }).then(r=> {
-                this.handleHTTPResult(r);                
+                this.handleHTTPResult(r, "Address information saved");                
             })
         },
         doSaveEmail: function() {
@@ -449,7 +449,7 @@ export default {
                     EmailAddress: this.email
                 }
             }).then(r=> {
-                this.handleHTTPResult(r);  
+                this.handleHTTPResult(r, "Email address saved, you will need to verify the new email address by clicking the link in the email we sent");  
             })
         },
         doSaveName: function() {
@@ -464,7 +464,7 @@ export default {
                     LastName: this.lastName
                 }
             }).then(r=> {
-                this.handleHTTPResult(r);  
+                this.handleHTTPResult(r, "Name information changed successfully");  
                 if (r.data.status===200) {
                     localStorage.setItem("_n",this.firstName+" "+this.lastName);
                 }
@@ -487,9 +487,9 @@ export default {
                         PhoneNumber: self.phone
                     }
                 }).then(r=> {
-                    this.vpass="";
-                    self.handleHTTPResult(r);
+                    this.vpass="";                   
                     if (r.data.message==="OK") {
+                        self.handleHTTPResult(r,"Phone number changed. You will need to verify the new number by clicking the link in the text message we sent");
                         this.$router.push("logout");
                     }
                 })
@@ -502,10 +502,10 @@ export default {
             ed=ed.splice(4, 0, "-");
             return ed.splice(1, 0, "-");
         },
-        handleHTTPResult: function(r) {
+        handleHTTPResult: function(r,okmsg) {
             if (r.status===200) {
                 if (r.data.status===200) {
-                    this.isOK=1;
+                    this.isOK=okmsg;
                     this.undoError();
                     this.$forceUpdate();
                     var that=this;
@@ -541,6 +541,16 @@ export default {
             this.errorMessage="";
             this.$forceUpdate();
         },
+    },
+    beforeRouteEnter (to, from, next) {
+
+        var c = localStorage.getItem("_c");
+        if (typeof(c)==="undefined" || c===null || c==="null") {         
+            from();
+        }
+        else {
+            next()
+        }
     },
     mounted() {
         this.$refs.acc1.open();
