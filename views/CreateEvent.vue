@@ -29,14 +29,18 @@
                 <div class='fieldwell xs-12 mtp-10'>
                     <label>Location</label>
                     <div class="layout row">
-                        <div class="flex xs6 spfield textleft">
+                        <div class="flex xs6 spfield textleft" @click="goLocationFinder()">
                             <v-icon>location_on</v-icon>&nbsp;<span>Find a Location</span>
                         </div>
-                        <div class="flex xs6 spfield textright" v-show="loggedin===true">                           
-                            <v-icon>home</v-icon> <span>Use Saved Address</span>
+                        <div class="flex xs6 spfield textright" v-show="loggedin===true" @click="useHomeAddress()">                           
+                            <v-icon>home</v-icon> <span>Use Home Address</span>
                         </div>
                     </div>
-                    <div class='mt-1'> 
+                    <div class='mt-1'>
+                        <input type='text' class='textfield' v-model="evlocation" />
+                    </div>
+                    <div class='mt-1 fieldwell'>
+                        <label>Address</label><br /> 
                         <input type='text' class='textfield' v-model="evstreet" />
                     </div>
                 </div>
@@ -48,7 +52,7 @@
                     <div class='fieldwell flex xs3 ml-2'>
                         <label>State:</label><br />
                         <select class="textfield" v-model="evstate">
-                            <option value="--">-Choose-</option>
+                            <option value="--" selected>-Choose-</option>
                             <option value="AL">Alabama</option>
                             <option value="AK">Alaska</option>
                             <option value="AZ">Arizona</option>
@@ -174,7 +178,7 @@
            
           
             <div class="fieldwell mt-3">
-               <label>How Long is this Event:</label><br />
+               <label>How Long is this Event/Activity:</label><br />
                 <select class="textfield" v-model="evlength">
                     <option value="">---Pick a Length---</option>
                     <option value="15">15 minutes</option>
@@ -190,13 +194,6 @@
                     <option value="360">6 hours</option>
                     <option value="420">7 hours</option>
                     <option value="480">8 hours</option>
-                    <option value="1440">1 day</option>
-                    <option value="2880">2 days</option>
-                    <option value="4320">3 days</option>
-                    <option value="5760">4 days</option>
-                    <option value="7200">5 days</option>
-                    <option value="8640">6 days</option>
-                    <option value="10080">7 days</option>
                 </select>
            </div>
 
@@ -209,11 +206,11 @@
 
            <div class="fieldwell mt-3">
                <label>Date:</label>
-               <datetime format="MM-DD-YYYY" v-model="evday" ></datetime>
+               <datetime format="MM-DD-YYYY" v-model="evday"></datetime>
            </div>
            <div class="fieldwell mt-3">
                <label>Time:</label>
-               <datetime format="h:i:s" v-model="evtime" ></datetime>
+               <datetime format="h:i" v-model="evtime" ></datetime>
            </div>
                   
 
@@ -222,19 +219,18 @@
                 <select class="textfield" v-model="remindertime">
                     <option value="24">1 day before</option>
                     <option value="">No reminder</option>
-                    <option value="Custom">Custom reminder time</option>
                 </select>
            </div>
 
            <div class="fieldwell mt-3">
                <label>How Long Do Attendees Have to Reply?</label><br />
-                <select class="textfield" v-model="schedulecutofftime">
-                    <option value="72">3 days to reply</option>
+                <select class="textfield" v-model="schedulecutofftime">     
                     <option value="24">1 day to reply</option>
+                    <option value="72">3 days to reply</option>
+                    <option value="168">7 days to reply</option>
                     <option value="8">8 hours to reply</option>
                     <option value="3">3 hours to reply</option>
                     <option value="1">1 hour to reply</option>
-                    <option value="Custom">Custom reply time</option>
                     <option value="">Attendees do not have to reply</option>
                 </select>
            </div>
@@ -272,7 +268,7 @@
                         <toggle-button width="35" height="16" v-model="guestscandiscuss"/> Attendees Can Discuss Event
                    </div>
                     <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="guestsseervsp"/> Attendees Can See Who is Coming
+                        <toggle-button width="35" height="16" v-model="guestsseersvp"/> Attendees Can See Who is Coming
                    </div>
                </div>
                <div class='mt-2'>
@@ -280,22 +276,19 @@
                </div>
                 <div v-show="guestsbringothers===true" class="indented1">
                    <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="guestsmustregister"/> New Attendees Must Register
-                   </div>
-                   <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="guestslimitperperson"/> Limit New Attendees Per Person
+                        <toggle-button width="35" height="16" v-model="guestsmustregister"/> New Attendees Must RSVP
                    </div>
                    <div class="mt-2">
                         <toggle-button width="35" height="16" v-model="guestsbringchildren"/> Attendees May Bring Children
                    </div>
-                   <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="guestsbringpets"/> Attendees May Bring Pets
-                   </div>
-                     <div class="mt-2">
+                    <div class="mt-2">
                         <toggle-button width="35" height="16" v-model="guestsprovidesharing"/> Provide Social Share Options
                    </div>
                    <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="guestslimittotal"/> Set Max Attendee Limit
+                        <toggle-button width="35" height="16" v-model="guestslimittotalhas"/> Set Max Attendee Limit
+                   </div>
+                   <div class="mt-2 indented1" v-show="guestslimittotalhas===true">
+                       Limit: <input class="textfield" type="text" v-model="guestslimittotal" />
                    </div>
 
                </div>
@@ -348,7 +341,7 @@
                     </div>
 
                     <div class='flex xs6 textright'>
-                        <button @click='scheduleIt' class='schdusButton'><span>Schedule It! </span><v-icon color="#FFF">event</v-icon></button>
+                        <button @click='scheduleIt' v-show="sschit===true" class='schdusButton'><span>Schedule It! </span><v-icon color="#FFF">event</v-icon></button>
                     </div>
                 </div>
  
@@ -439,88 +432,11 @@
         
 
         <div class='pickforus' v-show="formStep === 6">
-            <h1>Pick for Us</h1>
-            <div class="mt-2">
-                If attendees have integrated their calendars with Schedule Us then 
-                Pick for Us will use that information in addition to these settings and our AI to find the best time.  
-            </div>
-            <div class="mt-2">
-                <toggle-button width="35" height="16" v-model="pfusrequiretoday"/> Schedule Today
-            </div>
-            <div class="mt-2 btop boldchoice">
-                Allow Days of the Week
-            </div>
-            <div class="mt-2 layout row">
-                <div class="flex xs6">
-                    <div>
-                        <toggle-button width="35" height="16" v-model="pfussunday"/> Sunday
-                    </div>
-                    <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="pfusmonday"/> Monday
-                    </div>
-                    <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="pfustuesday"/> Tuesday
-                    </div>
-                    <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="pfuswednesday"/> Wednesday
-                    </div>
-                </div>
-                <div class="flex xs6">
-                    <div>
-                        <toggle-button width="35" height="16" v-model="pfusthursday"/> Thursday
-                    </div>
-                    <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="pfusfriday"/> Friday
-                    </div>
-                    <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="pfussaturday"/> Saturday
-                    </div>
-                </div>
-            </div>
-            <div class="mt-2 btop boldchoice">
-                Allow Times of Day
-            </div>
-            <div class="mt-2 layout row">
-                <div class="flex xs6">
-                    <div >
-                        <toggle-button width="35" height="16" v-model="pfusmorning"/> Morning
-                    </div>
-                    <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="pfusafternoon"/> Afternoon
-                    </div>
-                </div>
-                <div class="flex xs6">
-                    <div>
-                        <toggle-button width="35" height="16" v-model="pfusevening"/> Evening
-                    </div>
-                </div>
-            </div>
-             <div class="mt-2 btop">
-                  <toggle-button width="35" height="16" v-model="pfusmeal" class="mt-2" /> This Event/Activity Includes a Meal
-             </div>
-             <div class="mt-2 btop boldchoice">
-                 Consider Dates
-            </div>
-            <div class="mt-2">
-                  <toggle-button width="35" height="16" v-model="pfussoon"/> Soon (1-3 days)
-             </div>
-             <div class="mt-2">
-                  <toggle-button width="35" height="16" v-model="pfusweek"/> Within a Week (3-7 days)
-             </div>
-              <div class="mt-2">
-                  <toggle-button width="35" height="16" v-model="pfusmonth"/> Within a Month (1-4 weeks)
-             </div>
-              <div class="mt-2">
-                  <toggle-button width="35" height="16" v-model="pfusmonthmore"/> More Than a Month (1 month+)
-             </div>
-              <div class="mt-3 layout row">
-                  <div class="flex xs6 textleft">
-                      <button @click="pickForUsClose">Cancel</button>
-                  </div>
-                  <div class="flex xs6 textright">
-                      <button class="schdusButton" @click="pickForUsDo">Pick for Us!</button>
-                  </div>
-             </div>
+             <pickforus></pickforus>
+        </div>
+
+        <div v-show="formStep === 7">
+             <locationfinder></locationfinder>
         </div>
 
     </div>
@@ -538,23 +454,26 @@
 <script>
 import Avatar from 'vue-avatar'
 import datetime from 'vuejs-datetimepicker'
+import pickforus from "@/components/PickForUs"
+import locationfinder from "@/components/LocationFinder"
 
 export default {
-    components: {datetime,Avatar},
+    components: {datetime,Avatar,pickforus,locationfinder},
     data: function() {
         return {
             formStep: 0,
             cliname: "",
+            clidetails: null,
             contacts: [],
             evdescription:"",
             evname: "",
             cliphone: "",
             csearch: "",
             errorMessage: null,
-            evdate:null,
             evstreet: "",
             evcity: "",
             evlength:"",
+            evlocation:"",
             evstate: "",
             evzip: "",   
             evday:null,
@@ -568,11 +487,10 @@ export default {
             guestschangelocationperm:false,
             guestscandiscuss:true,
             guestsmustregister:true,
-            guestsprovidesharing:true,
-            guestslimitperperson:false,
+            guestsprovidesharing:false,
             guestsbringchildren:false,
-            guestsbringpets:false,
-            guestslimittotal:false,
+            guestslimittotalhas:false,
+            guestslimittotal: 50,
             guestlistvisible: true,
             guestisrequired:false,
             guestsbringothers: false,
@@ -590,24 +508,8 @@ export default {
             notifynewmessages:false,
             notifyguestaccept:false,
             notifyeventrescheduled:true,
-            notifyeventlocationchanges:true,
-            pfusrequiretoday:false,
-            pfussunday:true,
-            pfusmonday:true,
-            pfustuesday:true,
-            pfuswednesday:true,
-            pfusthursday:true,
-            pfusfriday:true,
-            pfussaturday:true,
-            pfusmorning:true,
-            pfusafternoon:true,
-            pfusevening:true,
-            pfuslatenight:false,
-            pfusmeal:false,
-            pfussoon:true,
-            pfusweek:true,
-            pfusmonth:false,
-            pfusmonthmore:false,
+            notifyeventlocationchanges:true,          
+            sschit:true,
             remindertime: "24",
             schedulecutofftime: "72",
             visiblehidecontacts:[],
@@ -669,8 +571,16 @@ export default {
             this.formStep=1;
             this.$forceUpdate();
         },
+        closeLocationFinder: function() {
+            this.formStep=0;
+            this.$forceUpdate();
+        },
         closeManualAddGuest: function() {
             this.formStep=1;
+            this.$forceUpdate();
+        },
+        closePickForUs: function() {
+            this.formStep=2;
             this.$forceUpdate();
         },
         compareContacts: function( a, b ) {
@@ -746,6 +656,42 @@ export default {
             this.formStep=4;
             this.$forceUpdate();
         },
+        dateChanged: function() {
+            var dao = new Date(this.makeDate());
+            var diff = dao.getTime()-new Date().getTime();
+            var hours = Math.round(diff/(1000*60*60))
+
+            if (hours>48) {
+                this.remindertime="24";
+            }
+            else {
+                this.remindertime=""; 
+            }
+
+            if (hours<=1) {
+                this.schedulecutofftime="";
+            }
+            else if (hours>=2 && hours<=5) {
+                this.schedulecutofftime="1";
+            }
+            else if (hours>=6 && hours<=16) {
+                this.schedulecutofftime="3";
+            }
+            else if (hours>=17 && hours<=36) {
+                this.schedulecutofftime="8";
+            }
+            else if (hours>=37 && hours<=96) {
+                this.schedulecutofftime="24";
+            }
+            else if (hours>=97 && hours<=216) {
+                this.schedulecutofftime="72";
+            }
+            else {
+                this.schedulecutofftime="168";
+            }
+
+            this.$forceUpdate();
+        },
         editGuest: function(item) {
             this.guesteditmode=item;
             this.guestname=item.gname;
@@ -753,23 +699,48 @@ export default {
             this.guestemail=item.gemail==="Not Specified"?"":item.gemail;
             this.formStep=3;
             this.$forceUpdate();
-        },
+        },   
         formatPhone: function(ed) {
             ed=ed.splice(7, 0, "-");
             ed=ed.splice(4, 0, "-");
             return ed.splice(1, 0, "-");
         },
+        goLocationFinder: function() {
+            this.formStep=7;
+        },
         goStepOne: function() {
             this.formStep=0;
         },
         goStepTwo: function() {
-            this.formStep=1;
+            if (this.verifyStepOne()) {
+                this.formStep=1;
+            }
         },
         goStepThree: function() {
-            this.formStep=2;
+            this.errorMessage=null; 
+
+            if (this.guests.length>0) {
+                if (this.loggedin===true) {
+                    if (this.guests.length>50) {
+                        this.errorMessage="There is a maximum of 50 attendees";
+                        return;
+                    }
+                }
+                else {
+                    if (this.guests.length>8) {
+                        this.errorMessage="There is a maximum of 8 attendees. Please register to get a maximum of 50 attendees";
+                    }
+                }
+                this.formStep=2;
+            }
+            else {
+                this.errorMessage="You must invite at least one person";
+            }
         },
         goStepFour: function() {
-            this.formStep=5;
+            if (this.verifyStepThree()) {
+                this.formStep=5;
+            }
         },
         goToLogIn: function() {
             this.$router.push('auth');
@@ -791,46 +762,51 @@ export default {
         loadPastEvents: function() {
 
         },
-        pickForUs: function() {
-            this.formStep=6;
-        },
-        pickForUsClose: function() {
-            this.formStep=2;  
-        },
-        pickForUsDo: function() {
+        makeDate: function() {
+            var ds=this.evday.split('-');
 
-            this.$http({
-                method:'post',
-                url:this.$hostname+'/pickforus',
-                data: {
-                    ClientID: localStorage.getItem("_c"),
-                    SessionID: localStorage.getItem("_s"),
-                    SessionLong: localStorage.getItem("_r"),   
-                    Users: this.guests,   
-                    Offset:  new Date().getTimezoneOffset(),
-                    Mondays: this.pfusmonday,
-                    Tuesdays: this.pfustuesday,
-                    Wednesdays: this.pfuswednesday,
-                    Thursdays: this.pfusthursday,
-                    Fridays: this.pfusfriday,
-                    Saturdays: this.pfussaturday,
-                    Sundays: this.pfussunday,   
-                    RequireToday: this.pfusrequiretoday,
-                    Mornings: this.pfusmorning,
-                    Afternoons: this.pfusafternoon,
-                    Evenings: this.pfusevening,
-                    LateNight: this.pfuslatenight,
-                    Meal: this.pfusmeal,
-                    LSoon: this.pfussoon,
-                    LWeek: this.pfusweek,
-                    LMonth: this.pfusmonth,
-                    LMonthPlus: this.pfusmonthmore,
-                    Length: this.evlength 
+            var dt = ds[2]+"-"+ds[0]+"-"+ds[1]+"T";
+            
+            if (this.evtime!==null && this.evtime!=="") {
+                var pt=this.makeTime(this.evtime).split(":");
+                if (pt[0].length===1) {
+                    pt[0]="0"+pt[0];
                 }
-            }).then(r=> {
-                if (r.status===200 && r.data.status===200) {
+                if (pt[1].length===1) {
+                    pt[1]="0"+pt[1];
                 }
-            })
+                return dt+pt[0]+":"+pt[1]+":"+pt[2];
+            }
+            else {
+                return dt+"00:00:00";
+            }
+        },
+        makeTime: function() {
+            var e=this.evtime;
+            if (e.indexOf(" AM")>-1) {
+               return e.replace(" AM","")+":00";
+            }
+            else {
+                return e.replace(" PM","")+":00";
+            }
+        },
+        parseTime: function(ti) {
+            var tip = ti.split(":");
+            var ap="AM";
+            if (tip[0]>12) {
+                ap="PM";
+                tip[0]-=12;
+            }
+            return tip[0]+":"+tip[1]+" "+ap;
+        },
+        pickForUs: function() {
+            if (this.evlength==="") {
+                this.errorMessage="Please choose a length for your event/activity before using Pick for Us";
+            }
+            else {
+                this.errorMessage=null;
+                this.formStep=6;
+            }
         },
         removeGuest: function() {
             for(var x=0; x<this.guests.length; x++) {
@@ -871,6 +847,9 @@ export default {
             this.$forceUpdate();
         },
         scheduleIt: function() {
+
+             this.sschit=false;
+
              this.$http({
                 method:'post',
                 url:this.$hostname+'/createevent',
@@ -881,7 +860,8 @@ export default {
                     EventName: this.evname,
                     ClientName: this.cliname,
                     ClientPhone: this.cliphone,
-                    EventDate: this.evdate,
+                    EventDate: this.makeDate(),
+                    EventLength: this.evlength,
                     EventDescription: this.evdescription,
                     EventStreet: this.evstreet,
                     EventCity: this.evcity,
@@ -889,8 +869,7 @@ export default {
                     EventZip: this.evzip,
                     GuestsCanDiscuss: this.guestscandiscuss,
                     GuestsMustRegister: this.guestsmustregister,
-                    GuestLimitPerPerson: 0,
-                    GuestLimitTotal: 0,
+                    GuestLimitTotal: this.guestslimittotal,
                     GuestsProvideSharing: this.guestsprovidesharing,
                     GuestListVisible: this.guestlistvisible,
                     GuestsBringChildren: this.guestsbringchildren,
@@ -900,6 +879,7 @@ export default {
                     GuestsChangeLocation: this.guestschangelocation,
                     EventIsRecurring: this.eventrecurring,
                     Guests: this.guests,
+                    Location: this.evlocation,
                     NotifyScheduleComplete: this.notifyschedulecomplete,
                     NotifyNewMessages: this.notifynewmessages,
                     NotifyGuestAccept: this.notifyguestaccept,
@@ -916,8 +896,16 @@ export default {
             }).then(r=> {
                 if (r.status===200) {
                     if (r.data.status===200) {
-                        this.$router.push({path: 'dashboard', params: { newEvent:"Y"}});
+                        this.$router.push("/dashboard?newEvent=Y");
                     }
+                    else {
+                        this.errorMessage=r.data.message;
+                        this.sschit=true;
+                    }
+                }
+                else {
+                    this.errorMessage="A network error occurred. Please check your internet connection";
+                    this.sschit=true;
                 }
             });
         },
@@ -925,8 +913,31 @@ export default {
             item.isselected=!item.isselected;
             this.$forceUpdate();
         },
+        setPickForUs: function(t) {
+             this.evday=t.date;
+             this.evtime=this.parseTime(t.time);
+             this.formStep=2;
+            this.$forceUpdate();
+        },
         turnOnManualAddGuest: function() {
             this.formStep=3;
+        },
+        useHomeAddress: function() {
+            if (this.clidetails!==null) {
+                try {
+                    var firstName=this.cliname.split(' ')[0];
+                    this.evlocation=firstName+"'s Home";
+                }
+                catch(e) {
+                    this.evlocation="Home";
+                }
+
+                this.evstreet=this.clidetails.Address;
+                this.evcity=this.clidetails.City;
+                this.evstate=this.clidetails.State;
+                this.evzip=this.clidetails.PostalCode;
+                this.$forceUpdate();
+            }
         },
         verifyEmail: function(email) {
             var emailVerification = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/;
@@ -941,6 +952,86 @@ export default {
                 return "Phone number is invalid";
             }
             return "OK";
+        },
+        verifyStepOne: function() {
+            this.errorMessage=null;
+       
+            if (this.evname.length<1 || this.evname.length>128) {
+                this.errorMessage="Event name is invalid";
+                return false;
+            }
+
+            if (this.cliname.length<1 || this.cliname.length>128) {
+                this.errorMessage="Your name is invalid";
+                return false;
+            }
+
+            if (this.evlocation.length<1 || this.evlocation.length>128) {
+                this.errorMessage="Location is invalid";
+                return false;
+            }
+
+            if (this.evstreet.length<1 || this.evlocation.length>255) {
+                this.errorMessage="Street address is invalid";
+                return false;
+            }
+
+            if (this.evcity.length<1 || this.evcity.length>64) {
+                this.errorMessage="City is invalid";
+                return false;
+            }
+
+            if (this.evstate==="--" || this.evstate==="") {
+                this.errorMessage="State is invalid";
+                return false;
+            }
+
+            if (this.evzip.length<5) {
+                this.errorMessage="Zip code is invalid";
+                return false;
+            }
+
+            if (this.cliphone.length>2) {
+                if (this.cliphone[0]==="1" && !Number.isInteger(this.cliphone[1])) {
+                    this.cliphone=this.cliphone.substring(2);
+                }
+            }
+          
+            var vp = this.verifyPhone(this.cliphone); 
+            if (vp!=="OK") {
+                this.errorMessage=vp;
+                return false;
+            }
+
+            return true;
+        },
+        verifyStepThree: function() {
+            if (this.evlength==="") {
+                this.errorMessage="Event/Activity Length is Required";
+                return false;
+            }
+
+            // Correct users who do dumb stuff with dates
+            var dao = new Date(this.makeDate());
+            var diff = dao.getTime()-new Date().getTime();
+            var hours = Math.round(diff/(1000*60*60))
+            var length = parseInt(this.evlength)/60;
+            if (hours<length) {
+                this.errorMessage="Cannot schedule dates in the past";
+                return false;
+            }
+
+            if (this.remindertime>hours) {
+                this.errorMessage="Cannot set a reminder time past the date of the event"
+                return false;
+            }
+
+            if (this.schedulecutofftime>hours) {
+                this.errorMessage="Cannot set a cutoff time past the date of the event";
+                return false;
+            }
+
+            return true;
         }
     },
     beforeRouteLeave(to, from, next) {
@@ -961,16 +1052,21 @@ export default {
                 }
             }).then(r=> {
                 if (r.status===200 && r.data.status===200) {
-                    var clidetails = JSON.parse(r.data.message);
-                    this.cliname=clidetails.FirstName+" "+clidetails.LastName;
-                    this.cliphone=this.formatPhone(clidetails.PhoneNumber);
+                    this.clidetails = JSON.parse(r.data.message);
+                    this.cliname=this.clidetails.FirstName+" "+this.clidetails.LastName;
+                    this.cliphone=this.formatPhone(this.clidetails.PhoneNumber);
                     this.loggedin=true;
-                    this.isPremium=clidetails.isPremium;
+                    this.isPremium=this.clidetails.isPremium;
                 }
             })
         }
     },
     watch: {
+        evday(value) {
+            if (value!==null && value!=="") {
+                this.dateChanged();
+            }
+        },
         csearch: function(val) {
             this.contacts=[]; 
             if (val===null || val.length===0) {     

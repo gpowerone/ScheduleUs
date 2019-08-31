@@ -11,6 +11,7 @@ import MyAccount from '@/views/MyAccount'
 import Verify from '@/views/Verify'
 import Recover from '@/views/Recover'
 import VerifyEmail from '@/views/VerifyEmail'
+import Event from '@/views/Event'
 
 Vue.use(Router);
 
@@ -20,6 +21,11 @@ const router =  new Router({
        path: '/',
        name: 'Create Event',
        component: CreateEvent
+    },
+    {
+       path: '/event',
+       name: 'Event',
+       component: Event
     },
     {
       path: '/auth',

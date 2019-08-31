@@ -12,14 +12,54 @@
             <div class="mt-2">
                 <template v-for="(item, i) in isOrganizing">
                     <v-list-item :key="i" >
-                       <div class="layout row">
-                           <div class="flex xs9">
-                                <div>
-                                    {{item.EventName}}
+                        <div v-if="item.ActionReq===1||item.ActionReq===2" class="myevscheduling" @click="goEvent(item.Hash)">
+                            <div class="layout row">
+                                <div class="flex xs10">
+                                    <div class="myevl">
+                                        SCHEDULING
+                                    </div>
+                                    <div>
+                                        {{item.EventName}}
+                                    </div>
+                                    
                                 </div>
-                           </div>
-                           <div class="flex xs3">
+                                <div class="flex xs2">
+                                    <v-icon size="50px">access_time</v-icon>
+                                </div>
+                            </div>
+                       </div>
+                        <div v-if="item.ActionReq===3" class="myevscheduled" @click="goEvent(item.Hash)">
+                            <div class="layout row">
+                                <div class="flex xs10">
+                                    <div class="myevl">
+                                        SCHEDULED
+                                    </div>
 
+                                    <div>
+                                        {{item.EventName}}
+                                    </div>
+                                    
+                                </div>
+                                <div class="flex xs2">
+                                    <v-icon size="50px">check</v-icon>
+                                </div>
+                            </div>
+                       </div>
+                        <div v-if="item.ActionReq<1||item.ActionReq>3" class="myevactionreq" @click="goEvent(item.Hash)">
+                            <div class="layout row">
+                                <div class="flex xs11">
+                                    <div class="myevl">
+                                        NEEDS ATTENTION
+                                    </div>
+
+                                    <div>
+                                        {{item.EventName}}
+                                    </div>
+                                    
+                                </div>
+                                <div class="flex xs2">
+                                    <v-icon size="50px">flag</v-icon>
+                                </div>
                             </div>
                        </div>
                     </v-list-item>
@@ -55,6 +95,9 @@ export default {
     methods: {
         goToCreateEvent: function() {
             this.$router.push("/");
+        },
+        goEvent: function(evHash) {
+            this.$router.push("/event?e="+evHash)
         }
     },
     beforeRouteEnter (to, from, next) {

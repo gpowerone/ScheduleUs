@@ -281,10 +281,37 @@
       position:relative;
   }
   
-   .vertical-center {
+ .vertical-center {
     margin: 0;
     position: absolute;
     top: 50%;
     -ms-transform: translateY(-50%);
     transform: translateY(-50%);
   }
+
+.myevscheduling {
+    background-color:gold;
+    color:#444;
+    padding:5px;
+    border-top:1px solid #444;
+}
+
+.myevscheduled {
+    background-color:lightgreen;
+    padding:5px;
+    color:#444;
+    border-top:1px solid #444;
+}
+
+.myevactionreq {
+    background-color:pink;
+    color:#444;
+    padding:5px;
+    border-top:1px solid #444;
+}
+
+.myevl {
+    color:#FFF;
+    font-size:1.3em;
+    letter-spacing:0.2em;
+}

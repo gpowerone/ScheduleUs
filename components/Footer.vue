@@ -7,7 +7,7 @@
           Want to remove ads? Sign up for premium!
       </div>
       <div class="infoLine">
-          <span class="schdusPurple">Schedule Us</span> v1.0 (ALPHA), &copy;2019 Michael McDermott
+          <span class="schdusPurple">Schedule Us</span> v1.0 (ALPHA), &copy;2019 Conjurus Technologies
       </div>
   </div>
 </template>
