@@ -13,17 +13,17 @@
 
                 <div class='fieldwell xs-12 topEvent'>
                     <label>Name of Event or Activity</label><br />
-                    <input type='text' v-model="evname" class='textfield' />
+                    <input type='text' v-model="evname" class='textfield' :class='evnamefe' />
                 </div>
 
                 <div class='fieldwell xs-12 mtp-10'>
                     <label>Your Name</label><br />
-                    <input type='text' v-model="cliname" class='textfield' />
+                    <input type='text' v-model="cliname" class='textfield' :class='clinamefe' />
                 </div>
 
                 <div class='fieldwell xs-12 mtp-10' >
                     <label>Your Phone Number</label><br />
-                    <input type='text' v-model="cliphone" class='textfield' />
+                    <input type='text' v-model="cliphone" class='textfield' :class='cliphonefe' />
                 </div>
                 
                 <div class='fieldwell xs-12 mtp-10'>
@@ -37,21 +37,22 @@
                         </div>
                     </div>
                     <div class='mt-1'>
-                        <input type='text' class='textfield' v-model="evlocation" />
+                        <label>Name of Location (e.g., Jenn's Home)</label><br />
+                        <input type='text' class='textfield' v-model="evlocation" :class='evlocationfe' />
                     </div>
                     <div class='mt-1 fieldwell'>
                         <label>Address</label><br /> 
-                        <input type='text' class='textfield' v-model="evstreet" />
+                        <input type='text' class='textfield' v-model="evstreet" :class='evstreetfe' />
                     </div>
                 </div>
                 <div class="layout row mt-2">
                     <div class='fieldwell flex xs6'>
                         <label>City:</label><br />
-                        <input type='text' class='textfield' v-model="evcity"  />
+                        <input type='text' class='textfield' v-model="evcity" :class='evcityfe' />
                     </div>
                     <div class='fieldwell flex xs3 ml-2'>
                         <label>State:</label><br />
-                        <select class="textfield" v-model="evstate">
+                        <select class="textfield" v-model="evstate" :class='evstatefe'>
                             <option value="--" selected>-Choose-</option>
                             <option value="AL">Alabama</option>
                             <option value="AK">Alaska</option>
@@ -108,7 +109,7 @@
                     </div>
                     <div class='fieldwell flex xs3 ml-2'>
                         <label>Zip:</label><br />
-                        <input type='text' class='textfield' id='eventZip' v-model='evzip' />
+                        <input type='text' class='textfield' id='eventZip' v-model='evzip' :class='evzipfe' />
                     </div>
                 </div>
             </div>
@@ -130,7 +131,9 @@
                             <button class='transButton' @click='turnOnManualAddGuest'><v-icon>person_add</v-icon>&nbsp;<span>Add</span></button> 
                         </div>
                         <div class='flex xs9 textright spfield'>
-                            Add From:<button v-show="isCordova === true" @click='loadContacts' class='transButton'><v-icon>contacts</v-icon></button>&nbsp;<button v-show="loggedin === true" @click='loadPastEvents' class='transButton'><v-icon>event_note</v-icon></button>
+                            <div v-show="isCordova === true" >
+                                Add From:<button @click='loadContacts' class='transButton'><v-icon>contacts</v-icon></button>
+                            </div>
                         </div>
                     </div>
                     <div class='guestlistcontents textcenter'>
@@ -223,15 +226,16 @@
            </div>
 
            <div class="fieldwell mt-3">
-               <label>How Long Do Attendees Have to Reply?</label><br />
-                <select class="textfield" v-model="schedulecutofftime">     
-                    <option value="24">1 day to reply</option>
-                    <option value="72">3 days to reply</option>
-                    <option value="168">7 days to reply</option>
-                    <option value="8">8 hours to reply</option>
-                    <option value="3">3 hours to reply</option>
-                    <option value="1">1 hour to reply</option>
-                    <option value="">Attendees do not have to reply</option>
+               <label>Cutoff RSVP Prior to Event/Activity?</label><br />
+                <select class="textfield" v-model="schedulecutofftime">    
+                    <option value="">No Cutoff</option> 
+                    <option value="24">Cutoff 1 day from now</option>
+                    <option value="72">Cutoff 3 days from now</option>
+                    <option value="168">Cutoff 7 days from now</option>
+                    <option value="8">Cutoff 8 hours from now</option>
+                    <option value="3">Cutoff 3 hours from now</option>
+                    <option value="1">Cutoff 1 hour from now</option>
+                  
                 </select>
            </div>
 
@@ -251,13 +255,13 @@
            <h1>Additional Options</h1>
            <div class='fieldwell'>
                <div class="fieldwell mt-2">
-                   <label>Send a message to attendees:</label><br />
+                   <label>Description of your event/activity:</label><br />
                    <textarea rows="1" cols="1" v-model="evdescription"></textarea>
                </div>
                <div class="mt-3">
                    <label>Event Options:</label>
                </div>
-               <div class="mt-2">
+               <div class="mt-2" v-show="loggedin===true">
                    <toggle-button width="35" height="16" v-model="willattend"/> I Will Attend
                </div>
                <div class="mt-2">
@@ -268,7 +272,7 @@
                         <toggle-button width="35" height="16" v-model="guestscandiscuss"/> Attendees Can Discuss Event
                    </div>
                     <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="guestsseersvp"/> Attendees Can See Who is Coming
+                        <toggle-button width="35" height="16" v-model="guestsseersvps"/> Attendees Can See Who is Coming
                    </div>
                </div>
                <div class='mt-2'>
@@ -319,19 +323,19 @@
                </div>
                <div v-show="notificationoptions===true" class="indented1">
                     <div class="mt-1">
-                        <toggle-button width="35" height="16" v-model="notifyschedulecomplete"/> When Scheduling is Complete
+                        <toggle-button width="35" height="16" v-model="notifyschedulecomplete"/> When All Attendees Respond
                    </div>
                    <div class="mt-1">
-                        <toggle-button width="35" height="16" v-model="notifynewmessages"/> When There Are New Messages
+                        <toggle-button width="35" height="16" v-model="notifynewmessages"/> When Attendees Comment
                    </div>
                    <div class="mt-1">
-                        <toggle-button width="35" height="16" v-model="notifyguestaccept"/> When Guests RSVP
+                        <toggle-button width="35" height="16" v-model="notifyguestaccept"/> When Attendees RSVP Yes or No
                    </div>
                     <div class="mt-1">
-                        <toggle-button width="35" height="16" v-model="notifyeventrescheduled"/> When Event is Rescheduled
+                        <toggle-button width="35" height="16" v-model="notifyeventrescheduled"/> When Event/Activity is Rescheduled
                    </div>
                      <div class="mt-1">
-                        <toggle-button width="35" height="16" v-model="notifyeventlocationchanges"/> When Event Location Changes
+                        <toggle-button width="35" height="16" v-model="notifyeventlocationchanges"/> When Event/Activity Location Changes
                    </div>
                </div>
 
@@ -341,7 +345,7 @@
                     </div>
 
                     <div class='flex xs6 textright'>
-                        <button @click='scheduleIt' v-show="sschit===true" class='schdusButton'><span>Schedule It! </span><v-icon color="#FFF">event</v-icon></button>
+                        <button @click='scheduleIt' :disabled="sschit" class='schdusButton'><span>Schedule It! </span><v-icon color="#FFF">event</v-icon></button>
                     </div>
                 </div>
  
@@ -367,9 +371,6 @@
             <div class='fieldwell mt-2'>
                     <label>Email</label><br />
                     <input type='text' class='textfield' v-model='guestemail' />
-            </div>
-            <div class='fieldwell mt-2'>
-                    <toggle-button width="35" height="16" v-model="guestisrequired"/> Is Required
             </div>
             <div class='layout row mt-2'>
                 <div class='flex xs4 textleft'>
@@ -436,7 +437,11 @@
         </div>
 
         <div v-show="formStep === 7">
-             <locationfinder></locationfinder>
+             <locationfinder ref="lf"></locationfinder>
+        </div>
+
+        <div v-show="formStep === 8">
+              Your event/activity has been created You should receive a confirmation text shortly. 
         </div>
 
     </div>
@@ -463,19 +468,26 @@ export default {
         return {
             formStep: 0,
             cliname: "",
+            clinamefe: "",
             clidetails: null,
             contacts: [],
             evdescription:"",
             evname: "",
+            evnamefe: "",
             cliphone: "",
+            cliphonefe: "",
             csearch: "",
             errorMessage: null,
             evstreet: "",
             evcity: "",
+            evcityfe: "",
             evlength:"",
             evlocation:"",
+            evlocationfe:"",
             evstate: "",
+            evstatefe: "",
             evzip: "",   
+            evzipfe: "",
             evday:null,
             evtime:null,
             guesteditmode:null,
@@ -490,11 +502,10 @@ export default {
             guestsprovidesharing:false,
             guestsbringchildren:false,
             guestslimittotalhas:false,
-            guestslimittotal: 50,
+            guestslimittotal: 8,
             guestlistvisible: true,
-            guestisrequired:false,
             guestsbringothers: false,
-            guestsseersvp: true,
+            guestsseersvps: true,
             guestsreschedule:false,
             guestschangelocation:false,
             eventrecurring:false,
@@ -509,9 +520,9 @@ export default {
             notifyguestaccept:false,
             notifyeventrescheduled:true,
             notifyeventlocationchanges:true,          
-            sschit:true,
+            sschit:false,
             remindertime: "24",
-            schedulecutofftime: "72",
+            schedulecutofftime: "",
             visiblehidecontacts:[],
             willattend:true
         }
@@ -549,7 +560,7 @@ export default {
                     gname: this.guestname,
                     gphone: this.guestphone,
                     gemail: this.guestemail,
-                    greq: this.guestisrequired,
+                    greq: false,
                     photo: null
                 });
             }
@@ -668,26 +679,28 @@ export default {
                 this.remindertime=""; 
             }
 
-            if (hours<=1) {
-                this.schedulecutofftime="";
-            }
-            else if (hours>=2 && hours<=5) {
-                this.schedulecutofftime="1";
-            }
-            else if (hours>=6 && hours<=16) {
-                this.schedulecutofftime="3";
-            }
-            else if (hours>=17 && hours<=36) {
-                this.schedulecutofftime="8";
-            }
-            else if (hours>=37 && hours<=96) {
-                this.schedulecutofftime="24";
-            }
-            else if (hours>=97 && hours<=216) {
-                this.schedulecutofftime="72";
-            }
-            else {
-                this.schedulecutofftime="168";
+            if (this.schedulecutofftime!=="") {
+                if (hours<=1) {
+                    this.schedulecutofftime="";
+                }
+                else if (hours>=2 && hours<=5) {
+                    this.schedulecutofftime="1";
+                }
+                else if (hours>=6 && hours<=16) {
+                    this.schedulecutofftime="3";
+                }
+                else if (hours>=17 && hours<=36) {
+                    this.schedulecutofftime="8";
+                }
+                else if (hours>=37 && hours<=96) {
+                    this.schedulecutofftime="24";
+                }
+                else if (hours>=97 && hours<=216) {
+                    this.schedulecutofftime="72";
+                }
+                else {
+                    this.schedulecutofftime="168";
+                }
             }
 
             this.$forceUpdate();
@@ -706,6 +719,7 @@ export default {
             return ed.splice(1, 0, "-");
         },
         goLocationFinder: function() {
+            this.$refs.lf.doRender();
             this.formStep=7;
         },
         goStepOne: function() {
@@ -759,9 +773,6 @@ export default {
             var fields  = [navigator.contacts.fieldType.displayName];
             navigator.contacts.find(fields, this.contactSuccess, this.contactFailure, options);
         },
-        loadPastEvents: function() {
-
-        },
         makeDate: function() {
             var ds=this.evday.split('-');
 
@@ -769,6 +780,12 @@ export default {
             
             if (this.evtime!==null && this.evtime!=="") {
                 var pt=this.makeTime(this.evtime).split(":");
+                
+                var ah=0;
+                if (this.evtime.indexOf(" PM")>-1) {
+                    pt[0] = String(parseInt(pt[0])+12);
+                }
+
                 if (pt[0].length===1) {
                     pt[0]="0"+pt[0];
                 }
@@ -848,7 +865,7 @@ export default {
         },
         scheduleIt: function() {
 
-             this.sschit=false;
+             this.sschit=true;
 
              this.$http({
                 method:'post',
@@ -872,6 +889,7 @@ export default {
                     GuestLimitTotal: this.guestslimittotal,
                     GuestsProvideSharing: this.guestsprovidesharing,
                     GuestListVisible: this.guestlistvisible,
+                    GuestsBringOthers: this.guestsbringothers,
                     GuestsBringChildren: this.guestsbringchildren,
                     GuestsBringPets: this.guestsbringpets,
                     GuestsSeeRSVPs: this.guestsseersvps,
@@ -896,16 +914,28 @@ export default {
             }).then(r=> {
                 if (r.status===200) {
                     if (r.data.status===200) {
-                        this.$router.push("/dashboard?newEvent=Y");
+                        this.errorMessage=null;
+                        if (this.loggedin===true) {
+                            if (r.data.message==="OK") {
+                                this.$router.push("/dashboard");
+                            }
+                            else {
+                                this.$router.push("/events"+r.data.message);
+                            }
+                        }
+                        else {
+                            this.sschit=false;
+                            this.formStep=8;
+                        }
                     }
                     else {
                         this.errorMessage=r.data.message;
-                        this.sschit=true;
+                        this.sschit=false;
                     }
                 }
                 else {
                     this.errorMessage="A network error occurred. Please check your internet connection";
-                    this.sschit=true;
+                    this.sschit=false;
                 }
             });
         },
@@ -956,38 +986,54 @@ export default {
         verifyStepOne: function() {
             this.errorMessage=null;
        
+            this.evnamefe=""; 
+            this.clinamefe="";
+            this.cliphonefe=""; 
+            this.evlocationfe="";
+            this.evstreetfe="";
+            this.evcityfe="";
+            this.evstatefe="";
+            this.evzipfe="";
+
             if (this.evname.length<1 || this.evname.length>128) {
                 this.errorMessage="Event name is invalid";
+                this.evnamefe="errorHighlight";
                 return false;
             }
 
             if (this.cliname.length<1 || this.cliname.length>128) {
                 this.errorMessage="Your name is invalid";
+                this.clinamefe="errorHighlight";
                 return false;
             }
 
             if (this.evlocation.length<1 || this.evlocation.length>128) {
                 this.errorMessage="Location is invalid";
+                this.evlocationfe="errorHighlight";
                 return false;
             }
 
             if (this.evstreet.length<1 || this.evlocation.length>255) {
                 this.errorMessage="Street address is invalid";
+                this.evstreetfe="errorHighlight";
                 return false;
             }
 
             if (this.evcity.length<1 || this.evcity.length>64) {
                 this.errorMessage="City is invalid";
+                this.evcityfe="errorHighlight";
                 return false;
             }
 
             if (this.evstate==="--" || this.evstate==="") {
                 this.errorMessage="State is invalid";
+                this.evstatefe="errorHighlight";
                 return false;
             }
 
             if (this.evzip.length<5) {
                 this.errorMessage="Zip code is invalid";
+                this.evzipfe="errorHighlight";
                 return false;
             }
 
@@ -1000,6 +1046,7 @@ export default {
             var vp = this.verifyPhone(this.cliphone); 
             if (vp!=="OK") {
                 this.errorMessage=vp;
+                this.cliphonefe="errorHighlight";
                 return false;
             }
 
@@ -1041,6 +1088,8 @@ export default {
     mounted() {
         var c = localStorage.getItem("_c");
         if (!(typeof(c)==="undefined" || c===null || c==="null")) {    
+
+            this.guestslimittotal=50;
 
             this.$http({
                 method:'post',

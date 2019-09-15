@@ -6,7 +6,7 @@
             <ul>
                 <li>Remove ads</li>
                 <li>Create recurring events/activities</li>
-                <li>Save and organize events/activities for groups of guests</li>
+                <li>Save and organize events/activities for groups of attendees</li>
                 <li>Assign other attendees organizer privileges</li>
                 <li>Save addresses/locations for future use</li>                
                 <li>Past events/activities are saved for up to 3 months</li>

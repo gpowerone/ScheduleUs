@@ -1,287 +1,293 @@
 <template>
   <div class="moduleWrapper">
 
-    <div class='errorBox' v-show='isError===1'>
-        {{ errorMessage }}
+    <div v-show="loading===true">
+         Loading...
     </div>
+    <div v-show="loading===false">
 
-    <div class='okBox' v-show='isOK!==null'>
-        {{isOK}}
-    </div>
-
-    <modal name="deleteModal" width=300 height=200>
-        <div class='paddedField'>
-            <div>
-                Are you ABSOLUTELY SURE you want to delete your account? 
-            </div>
-            <div class='mt-2'>
-                <button class='mr-2' @click="closeDeleteModal()">No</button>
-                <button class='redButton' @click="proceedDeleteAccount()">Delete Account</button>
-            </div>
+        <div class='errorBox' v-show='errorMessage!==null'>
+            {{ errorMessage }}
         </div>
-    </modal>
 
-    <modal name="verifyPassword" width="300" height="200">
-        <div class='paddedField'>
-            <div class="layout row mt-2">
-                <div class="flex xs12 mt-1">
-                    Enter your password to verify this change
-                </div>            
+        <div class='okBox' v-show='isOK!==null'>
+            {{isOK}}
+        </div>
+
+        <modal name="deleteModal" width=300 height=200>
+            <div class='paddedField'>
+                <div>
+                    Are you ABSOLUTELY SURE you want to delete your account? 
+                </div>
+                <div class='mt-2'>
+                    <button class='mr-2' @click="closeDeleteModal()">No</button>
+                    <button class='redButton' :disabled="btndelete" @click="proceedDeleteAccount()">Delete Account</button>
+                </div>
+            </div>
+        </modal>
+
+        <modal name="verifyPassword" width="300" height="200">
+            <div class='paddedField'>
+                <div class="layout row mt-2">
+                    <div class="flex xs12 mt-1">
+                        Enter your password to verify this change
+                    </div>            
+                    
+                </div>
+                <div class="layout row mt-2">
+                    <div class="flex xs8">
+                        <input type="password" v-model="vpass" class="textfield" />
+                    </div>
+                </div>
+                <div class="layout row mt-3">
+                    <div class="flex xs12">
+                        <button :disabled="btnverifypass" @click="doPasswordCallback()">Continue</button>
+                    </div>
+                </div>
+            </div>
+        </modal>
+
+        <h1>My Account</h1>
+        <v-collapse-group :onlyOneActive="true">
+            <v-collapse-wrapper @onStatusChange="acc1s" ref="acc1">
+                <div class="accheader" v-collapse-toggle>
+                    <v-icon>{{ acc1i }}</v-icon> <span>Your Name</span>
+                </div>
+                <div class="acccontent" v-collapse-content>
+                    <div>
+                        If you enter your name here then you will not need to enter it when creating a new event/activity
+                    </div>
+                    <div class="layout row mt-2">
+                        <div class="flex xs4 mt-1">
+                            First
+                        </div>          
+                        <div class="flex xs8 fieldwell">
+                            <input type="text" v-model="firstName" class="textfield" />
+                        </div>
+                    </div>
                 
-            </div>
-            <div class="layout row mt-2">
-                <div class="flex xs8">
-                    <input type="password" v-model="vpass" class="textfield" />
-                </div>
-            </div>
-            <div class="layout row mt-3">
-                <div class="flex xs12">
-                    <button @click="doPasswordCallback()">Continue</button>
-                </div>
-            </div>
-        </div>
-    </modal>
-
-    <h1>My Account</h1>
-    <v-collapse-group :onlyOneActive="true">
-        <v-collapse-wrapper @onStatusChange="acc1s" ref="acc1">
-            <div class="accheader" v-collapse-toggle>
-                <v-icon>{{ acc1i }}</v-icon> <span>Your Name</span>
-            </div>
-            <div class="acccontent" v-collapse-content>
-                <div>
-                    If you enter your name here then you will not need to enter it when creating a new event/activity
-                </div>
-                <div class="layout row mt-2">
-                    <div class="flex xs4 mt-1">
-                        First
-                    </div>          
-                    <div class="flex xs8 fieldwell">
-                        <input type="text" v-model="firstName" class="textfield" />
+                    <div class="layout row mt-2">
+                        <div class="flex xs4 mt-1">
+                            Last
+                        </div>            
+                        <div class="flex xs8 fieldwell">
+                            <input type="text" v-model="lastName" class="textfield" />
+                        </div>
+                    </div>
+                    <div class="layout row mt-3">
+                        <div class="flex xs12">
+                            <button @click="doSaveName()" :disabled="btnsavename">Save</button>
+                        </div>
                     </div>
                 </div>
-              
-                <div class="layout row mt-2">
-                    <div class="flex xs4 mt-1">
-                        Last
-                    </div>            
-                    <div class="flex xs8 fieldwell">
-                        <input type="text" v-model="lastName" class="textfield" />
+            </v-collapse-wrapper>
+            <v-collapse-wrapper @onStatusChange="acc2s" ref="acc2">
+                <div class="accheader" v-collapse-toggle>
+                    <v-icon>{{ acc2i }}</v-icon> <span>Address</span>
+                </div>
+                <div class="acccontent" v-collapse-content>
+                    <div>
+                        Populate event/activity address fields with your home address easily
+                    </div>
+                    <div class="layout row mt-2">
+                        <div class="flex xs4 mt-1">
+                            Street
+                        </div>          
+                        <div class="flex xs8 fieldwell">
+                            <input type="text" v-model="address" class="textfield" />
+                        </div>
+                    </div>              
+                    <div class="layout row mt-2">
+                        <div class="flex xs4 mt-1">
+                            City
+                        </div>            
+                        <div class="flex xs8 fieldwell">
+                            <input type="text" v-model="city" class="textfield" />
+                        </div>
+                    </div>
+                    <div class="layout row mt-2">
+                        <div class="flex xs4 mt-1">
+                            State
+                        </div>            
+                        <div class="flex xs8 fieldwell">
+                            <select v-model="state" class="textfield">
+                                    <option value="--">-Choose-</option>
+                                    <option value="AL">Alabama</option>
+                                    <option value="AK">Alaska</option>
+                                    <option value="AZ">Arizona</option>
+                                    <option value="AR">Arkansas</option>
+                                    <option value="CA">California</option>
+                                    <option value="CO">Colorado</option>
+                                    <option value="CT">Connecticut</option>
+                                    <option value="DE">Delaware</option>
+                                    <option value="DC">District Of Columbia</option>
+                                    <option value="FL">Florida</option>
+                                    <option value="GA">Georgia</option>
+                                    <option value="HI">Hawaii</option>
+                                    <option value="ID">Idaho</option>
+                                    <option value="IL">Illinois</option>
+                                    <option value="IN">Indiana</option>
+                                    <option value="IA">Iowa</option>
+                                    <option value="KS">Kansas</option>
+                                    <option value="KY">Kentucky</option>
+                                    <option value="LA">Louisiana</option>
+                                    <option value="ME">Maine</option>
+                                    <option value="MD">Maryland</option>
+                                    <option value="MA">Massachusetts</option>
+                                    <option value="MI">Michigan</option>
+                                    <option value="MN">Minnesota</option>
+                                    <option value="MS">Mississippi</option>
+                                    <option value="MO">Missouri</option>
+                                    <option value="MT">Montana</option>
+                                    <option value="NE">Nebraska</option>
+                                    <option value="NV">Nevada</option>
+                                    <option value="NH">New Hampshire</option>
+                                    <option value="NJ">New Jersey</option>
+                                    <option value="NM">New Mexico</option>
+                                    <option value="NY">New York</option>
+                                    <option value="NC">North Carolina</option>
+                                    <option value="ND">North Dakota</option>
+                                    <option value="OH">Ohio</option>
+                                    <option value="OK">Oklahoma</option>
+                                    <option value="OR">Oregon</option>
+                                    <option value="PA">Pennsylvania</option>
+                                    <option value="RI">Rhode Island</option>
+                                    <option value="SC">South Carolina</option>
+                                    <option value="SD">South Dakota</option>
+                                    <option value="TN">Tennessee</option>
+                                    <option value="TX">Texas</option>
+                                    <option value="UT">Utah</option>
+                                    <option value="VT">Vermont</option>
+                                    <option value="VA">Virginia</option>
+                                    <option value="WA">Washington</option>
+                                    <option value="WV">West Virginia</option>
+                                    <option value="WI">Wisconsin</option>
+                                    <option value="WY">Wyoming</option>
+                                </select>				
+                        </div>
+                    </div>
+                    <div class="layout row mt-2">
+                        <div class="flex xs4 mt-1">
+                            Postal Code
+                        </div>            
+                        <div class="flex xs8 fieldwell">
+                            <input type="text" v-model="postalcode" class="textfield" />
+                        </div>
+                    </div>
+                    <div class="layout row mt-3">
+                        <div class="flex xs12">
+                            <button @click="doSaveAddress()" :disabled="btnsaveaddress">Save</button>
+                        </div>
                     </div>
                 </div>
-                <div class="layout row mt-3">
-                    <div class="flex xs12">
-                        <button @click="doSaveName()">Save</button>
+            </v-collapse-wrapper>
+            <v-collapse-wrapper @onStatusChange="acc6s"  ref="acc6">
+                <div class="accheader" v-collapse-toggle>
+                    <v-icon>{{ acc6i }}</v-icon> <span>Email Address</span>
+                </div>
+                <div class="acccontent" v-collapse-content>
+                    <div>
+                        Add an email address to login and optionally receive event/activity notices via email
+                    </div>
+                    <div class="layout row mt-3">
+                        <div class="flex xs12 fieldwell">
+                            <input type="text" v-model="email" class="textfield" />
+                        </div>
+                    </div>
+                    <div class="layout row mt-3">
+                        <div class="flex xs12">
+                            <button @click="doSaveEmail()" :disabled="btnemail">Save</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </v-collapse-wrapper>
-        <v-collapse-wrapper @onStatusChange="acc2s" ref="acc2">
-            <div class="accheader" v-collapse-toggle>
-                <v-icon>{{ acc2i }}</v-icon> <span>Address</span>
-            </div>
-            <div class="acccontent" v-collapse-content>
-                <div>
-                    Populate event/activity address fields with your home address easily
+            </v-collapse-wrapper>
+            <v-collapse-wrapper @onStatusChange="acc3s"  ref="acc3">
+                <div class="accheader" v-collapse-toggle>
+                    <v-icon>{{ acc3i }}</v-icon> <span>Integrate Calendars</span>
                 </div>
-                <div class="layout row mt-2">
-                    <div class="flex xs4 mt-1">
-                        Street
-                    </div>          
-                    <div class="flex xs8 fieldwell">
-                        <input type="text" v-model="address" class="textfield" />
-                    </div>
-                </div>              
-                <div class="layout row mt-2">
-                    <div class="flex xs4 mt-1">
-                        City
-                    </div>            
-                    <div class="flex xs8 fieldwell">
-                        <input type="text" v-model="city" class="textfield" />
+                <div class="acccontent" v-collapse-content>
+                    <div>
+                        Integrate your calendars to help Schedule Us schedule events/activities for you and your guests better
                     </div>
                 </div>
-                <div class="layout row mt-2">
-                    <div class="flex xs4 mt-1">
-                        State
-                    </div>            
-                    <div class="flex xs8 fieldwell">
-                        <select v-model="state" class="textfield">
-                                <option value="--">-Choose-</option>
-                                <option value="AL">Alabama</option>
-                                <option value="AK">Alaska</option>
-                                <option value="AZ">Arizona</option>
-                                <option value="AR">Arkansas</option>
-                                <option value="CA">California</option>
-                                <option value="CO">Colorado</option>
-                                <option value="CT">Connecticut</option>
-                                <option value="DE">Delaware</option>
-                                <option value="DC">District Of Columbia</option>
-                                <option value="FL">Florida</option>
-                                <option value="GA">Georgia</option>
-                                <option value="HI">Hawaii</option>
-                                <option value="ID">Idaho</option>
-                                <option value="IL">Illinois</option>
-                                <option value="IN">Indiana</option>
-                                <option value="IA">Iowa</option>
-                                <option value="KS">Kansas</option>
-                                <option value="KY">Kentucky</option>
-                                <option value="LA">Louisiana</option>
-                                <option value="ME">Maine</option>
-                                <option value="MD">Maryland</option>
-                                <option value="MA">Massachusetts</option>
-                                <option value="MI">Michigan</option>
-                                <option value="MN">Minnesota</option>
-                                <option value="MS">Mississippi</option>
-                                <option value="MO">Missouri</option>
-                                <option value="MT">Montana</option>
-                                <option value="NE">Nebraska</option>
-                                <option value="NV">Nevada</option>
-                                <option value="NH">New Hampshire</option>
-                                <option value="NJ">New Jersey</option>
-                                <option value="NM">New Mexico</option>
-                                <option value="NY">New York</option>
-                                <option value="NC">North Carolina</option>
-                                <option value="ND">North Dakota</option>
-                                <option value="OH">Ohio</option>
-                                <option value="OK">Oklahoma</option>
-                                <option value="OR">Oregon</option>
-                                <option value="PA">Pennsylvania</option>
-                                <option value="RI">Rhode Island</option>
-                                <option value="SC">South Carolina</option>
-                                <option value="SD">South Dakota</option>
-                                <option value="TN">Tennessee</option>
-                                <option value="TX">Texas</option>
-                                <option value="UT">Utah</option>
-                                <option value="VT">Vermont</option>
-                                <option value="VA">Virginia</option>
-                                <option value="WA">Washington</option>
-                                <option value="WV">West Virginia</option>
-                                <option value="WI">Wisconsin</option>
-                                <option value="WY">Wyoming</option>
-                            </select>				
+            </v-collapse-wrapper>
+            <v-collapse-wrapper @onStatusChange="acc4s"  ref="acc4">
+                <div class="accheader" v-collapse-toggle>
+                    <v-icon>{{ acc4i }}</v-icon> <span>Change Password</span>
+                </div>
+                <div class="acccontent" v-collapse-content>
+                    <div class="layout row mt-2">
+                        <div class="flex xs4 mt-1">
+                            Old Password
+                        </div>          
+                        <div class="flex xs8 fieldwell">
+                            <input type="password" v-model="cpassold" class="textfield" />
+                        </div>
+                    </div>
+                    <div class="layout row mt-2">
+                        <div class="flex xs4 mt-1">
+                            New Password
+                        </div>           
+                        <div class="flex xs8 fieldwell">
+                            <input type="password" v-model="cpassnew" class="textfield" />
+                        </div>
+                    </div>
+                    <div class="layout row mt-2">
+                        <div class="flex xs4 mt-1">
+                            Retype
+                        </div>            
+                        <div class="flex xs8 fieldwell">
+                            <input type="password" v-model="cpassrnew" class="textfield" />
+                        </div>
+                    </div>
+                    <div class="layout row mt-3">
+                        <div class="flex xs12">
+                            <button @click="doChangePassword()" :disabled="btnchangepassword">Save</button>
+                        </div>
                     </div>
                 </div>
-                <div class="layout row mt-2">
-                    <div class="flex xs4 mt-1">
-                        Postal Code
-                    </div>            
-                    <div class="flex xs8 fieldwell">
-                        <input type="text" v-model="postalcode" class="textfield" />
+            </v-collapse-wrapper>
+            <v-collapse-wrapper @onStatusChange="acc7s"  ref="acc7">
+                <div class="accheader" v-collapse-toggle>
+                    <v-icon>{{ acc7i }}</v-icon> <span>Change Phone Number</span>
+                </div>
+                <div class="acccontent" v-collapse-content>
+                    <div>
+                        Change the phone number on your account (you will need to verify the new number)
+                    </div>
+                    <div class="layout row mt-3">
+                        <div class="flex xs12 fieldwell">
+                            <input type="text" v-model="phone" class="textfield" />
+                        </div>
+                    </div>
+                    <div class="layout row mt-3">
+                        <div class="flex xs12">
+                            <button @click="doSavePhone()" :disabled="btnchangephone">Save</button>
+                        </div>
                     </div>
                 </div>
-                <div class="layout row mt-3">
-                    <div class="flex xs12">
-                        <button @click="doSaveAddress()">Save</button>
+            </v-collapse-wrapper>
+            <v-collapse-wrapper  @onStatusChange="acc5s" ref="acc5">
+                <div class="accheader" v-collapse-toggle>
+                    <v-icon>{{ acc5i }}</v-icon> <span>Delete Account</span>
+                </div>
+                <div class="acccontent" v-collapse-content>
+                    <div>
+                        Are you sure you wish to delete your account?
+                    </div>
+                    <div class='mt-2'> 
+                        WARNING: this will automatically cancel any scheduled events that were created with this account. Your guests will be notified
+                        of the cancellation. You will not be removed from other events which you are currently participating in. 
+                    </div>
+                    <div class="layout row mt-3">
+                        <div class="flex xs12">
+                            <button class="redButton" @click="doDeleteAccount()">Delete My Account</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </v-collapse-wrapper>
-        <v-collapse-wrapper @onStatusChange="acc6s"  ref="acc6">
-            <div class="accheader" v-collapse-toggle>
-                <v-icon>{{ acc6i }}</v-icon> <span>Email Address</span>
-            </div>
-            <div class="acccontent" v-collapse-content>
-                <div>
-                    Add an email address to login and optionally receive event/activity notices via email
-                </div>
-                <div class="layout row mt-3">
-                    <div class="flex xs12 fieldwell">
-                        <input type="text" v-model="email" class="textfield" />
-                    </div>
-                </div>
-                <div class="layout row mt-3">
-                    <div class="flex xs12">
-                        <button @click="doSaveEmail()">Save</button>
-                    </div>
-                </div>
-            </div>
-        </v-collapse-wrapper>
-        <v-collapse-wrapper @onStatusChange="acc3s"  ref="acc3">
-            <div class="accheader" v-collapse-toggle>
-                <v-icon>{{ acc3i }}</v-icon> <span>Integrate Calendars</span>
-            </div>
-            <div class="acccontent" v-collapse-content>
-                <div>
-                    Integrate your calendars to help Schedule Us schedule events/activities for you and your guests better
-                </div>
-            </div>
-        </v-collapse-wrapper>
-        <v-collapse-wrapper @onStatusChange="acc4s"  ref="acc4">
-            <div class="accheader" v-collapse-toggle>
-                <v-icon>{{ acc4i }}</v-icon> <span>Change Password</span>
-            </div>
-            <div class="acccontent" v-collapse-content>
-                <div class="layout row mt-2">
-                    <div class="flex xs4 mt-1">
-                        Old Password
-                    </div>          
-                    <div class="flex xs8 fieldwell">
-                        <input type="password" v-model="cpassold" class="textfield" />
-                    </div>
-                </div>
-                <div class="layout row mt-2">
-                    <div class="flex xs4 mt-1">
-                        New Password
-                    </div>           
-                    <div class="flex xs8 fieldwell">
-                        <input type="password" v-model="cpassnew" class="textfield" />
-                    </div>
-                </div>
-                <div class="layout row mt-2">
-                    <div class="flex xs4 mt-1">
-                        Retype
-                    </div>            
-                    <div class="flex xs8 fieldwell">
-                        <input type="password" v-model="cpassrnew" class="textfield" />
-                    </div>
-                </div>
-                <div class="layout row mt-3">
-                    <div class="flex xs12">
-                        <button @click="doChangePassword()">Save</button>
-                    </div>
-                </div>
-            </div>
-        </v-collapse-wrapper>
-        <v-collapse-wrapper @onStatusChange="acc7s"  ref="acc7">
-            <div class="accheader" v-collapse-toggle>
-                <v-icon>{{ acc7i }}</v-icon> <span>Change Phone Number</span>
-            </div>
-            <div class="acccontent" v-collapse-content>
-                <div>
-                    Change the phone number on your account (you will need to verify the new number)
-                </div>
-                <div class="layout row mt-3">
-                    <div class="flex xs12 fieldwell">
-                        <input type="text" v-model="phone" class="textfield" />
-                    </div>
-                </div>
-                <div class="layout row mt-3">
-                    <div class="flex xs12">
-                        <button @click="doSavePhone()">Save</button>
-                    </div>
-                </div>
-            </div>
-        </v-collapse-wrapper>
-        <v-collapse-wrapper  @onStatusChange="acc5s" ref="acc5">
-            <div class="accheader" v-collapse-toggle>
-                <v-icon>{{ acc5i }}</v-icon> <span>Delete Account</span>
-            </div>
-            <div class="acccontent" v-collapse-content>
-                <div>
-                    Are you sure you wish to delete your account?
-                </div>
-                <div class='mt-2'> 
-                    WARNING: this will automatically cancel any scheduled events that were created with this account. Your guests will be notified
-                    of the cancellation. You will not be removed from other events which you are currently participating in. 
-                </div>
-                <div class="layout row mt-3">
-                    <div class="flex xs12">
-                        <button class="redButton" @click="doDeleteAccount()">Delete My Account</button>
-                    </div>
-                </div>
-            </div>
-        </v-collapse-wrapper>
-    </v-collapse-group>
+            </v-collapse-wrapper>
+        </v-collapse-group>
+     </div>
   </div>
 </template>
 
@@ -297,15 +303,22 @@ export default {
             acc5i: "expand_less",
             acc6i: "expand_less",
             acc7i: "expand_less",
+            btnchangepassword:false,
+            btnchangephone:false,
+            btndelete:false,
+            btnemail:false,
+            btnsaveaddress:false,
+            btnsavename:false,
+            btnverifypass:false,
             address: "",
             city: "",
             state: "",
             postalcode:"",
-            errorMessage: "",
+            errorMessage: null,
             firstName: "",
-            isError: false,
             isOK: null,
             lastName: "",
+            loading: true,
             phone: "",
             email: "",
             pcallback: null,
@@ -386,8 +399,7 @@ export default {
             this.$modal.show("deleteModal");
         },
         doError: function(msg) {   
-            this.errorMessage=msg;
-            this.isError=1;  
+            this.errorMessage=msg; 
             this.$forceUpdate();         
         },
         doChangePassword: function() {
@@ -400,6 +412,8 @@ export default {
                  return "Password must be at least 8 characters and contain an uppercase character, a lowercase character, and a number";
             }
 
+            this.btnchangepassword=true;
+
             this.$http({
                 method:'post',
                 url:this.$hostname+'/changepassword',
@@ -411,6 +425,7 @@ export default {
                     npasswd: this.cpassnew
                 }
             }).then(r=> {
+                this.btnchangepassword=false;
                 this.cpassold="";
                 this.cpassnew="";
                 this.cpassrnew="";
@@ -422,6 +437,8 @@ export default {
             this.pcallback();
         },
         doSaveAddress: function() {
+
+            this.btnsaveaddress=true;
             this.$http({
                 method:'post',
                 url:this.$hostname+'/filladdress',
@@ -435,10 +452,12 @@ export default {
                     PostalCode: this.postalcode
                 }
             }).then(r=> {
+                this.btnsaveaddress=false;
                 this.handleHTTPResult(r, "Address information saved");                
             })
         },
         doSaveEmail: function() {
+            this.btnemail=true;
             this.$http({
                 method:'post',
                 url:this.$hostname+'/setemail',
@@ -449,10 +468,12 @@ export default {
                     EmailAddress: this.email
                 }
             }).then(r=> {
+                this.btnemail=false;
                 this.handleHTTPResult(r, "Email address saved, you will need to verify the new email address by clicking the link in the email we sent");  
             })
         },
         doSaveName: function() {
+            this.btnsavename=true;
             this.$http({
                 method:'post',
                 url:this.$hostname+'/fillname',
@@ -464,6 +485,7 @@ export default {
                     LastName: this.lastName
                 }
             }).then(r=> {
+                this.btnsavename=false;
                 this.handleHTTPResult(r, "Name information changed successfully");  
                 if (r.data.status===200) {
                     localStorage.setItem("_n",this.firstName+" "+this.lastName);
@@ -473,6 +495,7 @@ export default {
         doSavePhone: function() {
 
             var self=this;
+            this.btnchangephone=true;
 
             this.pcallback=function() {
 
@@ -487,6 +510,7 @@ export default {
                         PhoneNumber: self.phone
                     }
                 }).then(r=> {
+                    this.btnchangephone=false;
                     this.vpass="";                   
                     if (r.data.message==="OK") {
                         self.handleHTTPResult(r,"Phone number changed. You will need to verify the new number by clicking the link in the text message we sent");
@@ -510,20 +534,21 @@ export default {
                     this.$forceUpdate();
                     var that=this;
                     setTimeout(function() {
-                        that.isOK = 0;
+                        that.isOK = null;
                     }, 3000);
                 }
                 else {
-                    this.isOK=0;
+                    this.isOK=null;
                     this.doError(r.data.message);
                 }
             }
             else {
-                this.isOK=0;
+                this.isOK=null;
                 this.doError("Error contacting the backend service, check your Internet connection");
             }
         },
         proceedDeleteModal: function() {
+            this.btndelete=true;
             this.$http({
                 method:'post',
                 url:this.$hostname+'/deleteaccount',
@@ -533,12 +558,12 @@ export default {
                     SessionLong: localStorage.getItem("_r"),                    
                 }
             }).then(r=> {
+                 this.btndelete=false;
                  this.$router.push("logout")
             })
         },
         undoError: function() {
-            this.isError=0;
-            this.errorMessage="";
+            this.errorMessage=null;
             this.$forceUpdate();
         },
     },
@@ -575,6 +600,7 @@ export default {
                     this.phone=this.formatPhone(clidetails.PhoneNumber);
                     this.email=clidetails.EmailAddress;
                 }
+                this.loading=false;
             })
     }
 }

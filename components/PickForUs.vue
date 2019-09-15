@@ -180,7 +180,7 @@ export default {
                     LWeek: this.pfusweek,
                     LMonth: this.pfusmonth,
                     LMonthPlus: this.pfusmonthmore,
-                    Length: this.evlength,
+                    Length: this.$parent.evlength,
                     ForWork: this.pfuswork,
                     AgeRange: this.pfusage
                 }

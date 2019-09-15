@@ -9,7 +9,7 @@
             <h1>Login</h1>
 
             <div class="textright mt-3">
-                <button @click="goToCreateAccount()" class="schdusButton">Register</button>
+                <button @click="goToCreateAccount()" class="schdusButton" >Register</button>
             </div>
             <div class="layout row mt-2">
                 <div class="fieldwell flex xs12">
@@ -25,12 +25,12 @@
             </div>
             <div class="layout row mt-2">
                 <div class="fieldwell flex xs12">
-                    <button class="fullWidth" @click="doLogin()" :disabled="status==='submitting'" >Login</button>
+                    <button class="fullWidth p2" @click="doLogin()" :disabled="status==='submitting'" >Login</button>
                 </div>
             </div>
               <div class="layout row mt-2">
                 <div class="fieldwell flex xs12">
-                    <button @click="goToAccountRecovery()" class="fullWidth textcenter tanButton">Forgot your password?</button>
+                    <button @click="goToAccountRecovery()" class="fullWidth textcenter tanButton p2">Forgot your password?</button>
                 </div>
             </div>
         </div>    
@@ -146,7 +146,7 @@ export default {
                         localStorage.setItem("_n",r.data.message.UserName);
                         EventBus.$emit("MenuUpdateEvent");
                         EventBus.$emit("AvatarUpdateEvent");
-                        this.$router.push('myaccount');
+                        this.$router.push('dashboard');
                     }
                     else {
                         if (r.data.message.length===36) {

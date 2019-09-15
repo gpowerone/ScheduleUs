@@ -6,93 +6,311 @@
         <div v-show="errorMessage!==null" class="errorBox">
             {{errorMessage}}
         </div>
+        <div v-show="okMessage!==null" class="okBox">
+            {{okMessage}}
+        </div>
 
-         <modal name="addressModal" width=300 height=200>
-            <div class='paddedField'>
+         <modal name="addressModal" width=300 height=150>
+            <div class='paddedField textcenter'>
                 <div>
                     {{EventLocation}}<br />
                     {{EventAddress}}<br />
                     {{EventCity}}, {{EventState}} {{EventZip}} 
                 </div>
-                <div class='mt-2'>
+                <div class='mt-2 textcenter'>
                     <button class='mr-2' @click="closeAddress()">Close</button>
                 </div>
             </div>
         </modal>
-   
-        <div v-show="tev!==null&&errorMessage===null" class="mt-2">
+
+        <modal name="commentModal" width="300" height="200">
+            <div class="p2">
+                <div class="layout row">
+                    <div class="xs9 flex textleft fieldwell mt-2">
+                        <label>Comment</label>
+                    </div>
+                    <div class="xs3 flex textright">                             
+                        <img src="@/assets/smileyEmoji.png" width="30" height="30" @click="emojiModal" />                                                        
+                    </div>
+                </div>
+                <div class="mt-2 layout row fieldwell">
+                    <textarea v-model="newComment" rows="1" cols="1"></textarea>
+                </div>       
+                <div class="layout row mt-2">
+                    <div class="flex xs6">
+                        <button @click="closeComment" class="redButton">Cancel</button>
+                    </div>
+                    <div class="flex xs6 textright">
+                        <button @click="submitComment" :disabled="btncomment">Submit</button>
+                    </div>
+                </div> 
+            </div>
+        </modal>
+
+        <modal name="emojiModal" width="300" height="400">
+            <div class="scrollbox">
+                 <emojipicker></emojipicker>
+            </div>
+        </modal>
+
+        <modal name="rsvpModal" width="300" height="100">
+            <div class="p2">
+                <div v-show="Acceptance===true">
+                    <div class="textcenter">
+                        You are currently attending
+                    </div>
+                    <div class="mt-2 textcenter">
+                        <button @click="doNoRSVP()">I can't attend</button>
+                    </div>
+                </div>
+                <div v-show="Acceptance===false">
+                    <div class="textcenter">
+                        You are currently not going to attend
+                    </div>
+                    <div class="mt-2 textcenter" v-show="CanRSVP===true">
+                        <button @click="doYesRSVP()">I will attend</button>
+                    </div>
+                    <div class="mt-2 textcenter" v-show="CanRSVP===false">
+                        It is too late to RSVP
+                    </div>
+                </div>
+            </div>
+        </modal>
+
+        <div v-show="tev!==null&&errorMessage===null&&showFinder===false&&showPick===false" class="mt-2 fieldwell">
             <h1>{{EventName}}</h1>
+            <div>{{EventDescription}}</div>
             <div>{{EventDate}}</div>
+            <div>{{EventTime}}</div>
             <div class="layout row">
                 <div class="flex xs10">{{EventLocation}}</div>
-                <div class="flex xs1"><a @click="showAddress()"><v-icon>home</v-icon></a></div>
-                <div class="flex xs1"><a v-bind:href="EventMap" target="_blank" rel="nopener noreferrer"><v-icon>map</v-icon></a></div>
+                <div class="flex xs1"><a @click="showAddress()"><v-icon>map</v-icon></a></div>
+                <div class="flex xs1"><a v-bind:href="EventMap" target="_blank" rel="nopener noreferrer"><v-icon>navigation</v-icon></a></div>
             </div>
-            <div v-show="needAcceptance===true">
-                Acceptance
+            <div v-show="needAcceptance===true&&EGID!==null" class="fullborder p2">
+                <div class="fieldwell">
+                    <label>Will you Attend?</label>
+                </div>
+                <div class="mt-2 boldchoice">           
+                    <span class="spfield greenicon" @click="doYesRSVP()"><v-icon>check</v-icon> Yes</span>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <span class="spfield redicon" @click="doNoRSVP()"><v-icon>close</v-icon> No</span>
+                </div> 
+            </div>
+            
+            <div class="mt-2" v-show="needAcceptance===false&&EGID!==null">
+                <div v-show="Acceptance===true" class="layout row">
+                    <div class="flex xs12 attendingBox textcenter" @click="doRSVPModal()">
+                        You are attending (tap to edit)
+                    </div>       
+                </div>
+
+                 <div v-show="Acceptance===false" class="layout row" @click="doRSVPModal()">
+                    <div class="flex xs12 notAttendingBox textcenter">
+                        You are not attending (tap to edit)
+                    </div>
+                              
+                </div>
             </div>
 
              <v-collapse-group>
 
-
-                 <v-collapse-wrapper @onStatusChange="acc4s" v-show="RSVP===true" ref="acc4">
+                 <v-collapse-wrapper @onStatusChange="acc4s" v-show="RSVP===true&&needAcceptance===null&&CanRSVP===true" ref="acc4">
                      <div class="accheader" v-collapse-toggle>
-                        <v-icon>{{ acc4i }}</v-icon> <span>RSVP</span>
+                        <v-icon>{{ acc4i }}</v-icon> <span>Bring Others</span>
                     </div>
-                    <div class="acccontent" v-collapse-content>
-                         RSVP content here
-                    </div>
-                </v-collapse-wrapper>
-
-                <v-collapse-wrapper @onStatusChange="acc2s" v-show="CanRelocate===true" ref="acc2">
-                     <div class="accheader" v-collapse-toggle>
-                        <v-icon>{{ acc2i }}</v-icon> <span>Suggest New Location</span>
-                    </div>
-                    <div class="acccontent" v-collapse-content>
-                         Relocation content here
-                    </div>
-                </v-collapse-wrapper>
-
-                 <v-collapse-wrapper @onStatusChange="acc3s" v-show="CanReschedule===true" ref="acc3">
-                     <div class="accheader" v-collapse-toggle>
-                        <v-icon>{{ acc3i }}</v-icon> <span>Suggest New Time</span>
-                    </div>
-                    <div class="acccontent" v-collapse-content>
-                         Time change content here
-                    </div>
-                </v-collapse-wrapper>
-
-                 <v-collapse-wrapper @onStatusChange="acc5s" v-show="CanShare===true" ref="acc5">
-                     <div class="accheader" v-collapse-toggle>
-                        <v-icon>{{ acc5i }}</v-icon> <span>Share This Event/Activity</span>
-                    </div>
-                    <div class="acccontent" v-collapse-content>
-                         <div class="layout row">
-                             <div class="flex xs1">
-                                 <a class="twitter-timeline" v-bind:href="thisURL"><img src="@/assets/TwitterIcon.png" height="18" width="18" alt="Twitter" /></a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>   
-                             </div>
-                             <div class="flex xs3">
-                                <iframe src="https://www.facebook.com/plugins/share_button.php?href=https%3A%2F%2Fdevelopers.facebook.com%2Fdocs%2Fplugins%2F&layout=button_count&size=small&width=88&height=20&appId" width="88" height="20" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowTransparency="true" allow="encrypted-media"></iframe>
-                             </div>
-                             
+                    <div class="acccontent fieldwell" v-collapse-content>
+                         <div v-show="MoreAllowed===true">
+                            <div>
+                                The host is allowing you to bring others
+                            </div>
+                            <div class="layout row mt-2">
+                                <div class="flex xs6 textleft">
+                                    Max Attendees:
+                                </div>
+                                <div class="flex xs6 textright">
+                                    {{MaxAttendees}}
+                                </div>
+                            </div>
+                            <ul class="mt-2"> 
+                                <li v-show="AllowChildren===false">Children are not allowed</li>
+                                <li v-show="AllowChildren===true">Children are allowed</li>
+                                <li v-show="NewAttendeesRSVP===true">New attendees must RSVP below</li>
+                                <li v-show="NewAttendeesRSVP===false">New attendees may optionally RSVP below</li>
+                            </ul>
+                            <div class="mt-2">
+                                 <div class='fieldwell mt-2'>
+                                    <label>Your Name</label><br />
+                                    <input type='text' class='textfield' v-model='guestname' />
+                                </div>
+                                <div class='fieldwell mt-2'>
+                                        <label>Your Phone</label><br />
+                                        <input type='text' class='textfield' v-model='guestphone' />
+                                </div>
+                                <div class='fieldwell mt-2'>
+                                        <label>Your Email</label><br />
+                                        <input type='text' class='textfield' v-model='guestemail' />
+                                </div>
+                               
+                                <div class='textright mt-2'>           
+                                    <button @click="addGuest">RSVP</button>                                  
+                                </div>
+                            </div>
+                         </div>
+                         <div v-show="MoreAllowed===false">
+                              This event/activity is at maximum capacity. No additional attendees are allowed.
                          </div>
                     </div>
                 </v-collapse-wrapper>
 
+                <v-collapse-wrapper @onStatusChange="acc2s" v-show="CanRelocate===true&&CanRSVP===true" ref="acc2">
+                     <div class="accheader" v-collapse-toggle>
+                        <v-icon>{{ acc2i }}</v-icon> <span>Suggest New Location</span>
+                    </div>
+                    <div class="acccontent fieldwell" v-collapse-content>
+                         <div>
+                            The host has allowed you to suggest a new location for the event/activity. If this location is chosen then
+                            a new invitation will be sent out to all attendees. 
+                         </div>
+                         <div class='fieldwell xs-12 mt-2'>
+                            <label>Location</label>
+                            <div class="layout row">
+                                <div class="flex xs6 spfield textleft" @click="goLocationFinder()">
+                                    <v-icon>location_on</v-icon>&nbsp;<span>Find a Location</span>
+                                </div>                            
+                            </div>
+                            <div class='mt-1'>
+                                <input type='text' class='textfield' v-model="evlocation" />
+                            </div>
+                            <div class='mt-1 fieldwell'>
+                                <label>Address</label><br /> 
+                                <input type='text' class='textfield' v-model="evstreet" />
+                            </div>
+                        </div>
+                        <div class="layout row mt-2">
+                            <div class='fieldwell flex xs6'>
+                                <label>City:</label><br />
+                                <input type='text' class='textfield' v-model="evcity"  />
+                            </div>
+                            <div class='fieldwell flex xs3 ml-2'>
+                                <label>State:</label><br />
+                                <select class="textfield" v-model="evstate">
+                                    <option value="--" selected>-Choose-</option>
+                                    <option value="AL">Alabama</option>
+                                    <option value="AK">Alaska</option>
+                                    <option value="AZ">Arizona</option>
+                                    <option value="AR">Arkansas</option>
+                                    <option value="CA">California</option>
+                                    <option value="CO">Colorado</option>
+                                    <option value="CT">Connecticut</option>
+                                    <option value="DE">Delaware</option>
+                                    <option value="DC">District Of Columbia</option>
+                                    <option value="FL">Florida</option>
+                                    <option value="GA">Georgia</option>
+                                    <option value="HI">Hawaii</option>
+                                    <option value="ID">Idaho</option>
+                                    <option value="IL">Illinois</option>
+                                    <option value="IN">Indiana</option>
+                                    <option value="IA">Iowa</option>
+                                    <option value="KS">Kansas</option>
+                                    <option value="KY">Kentucky</option>
+                                    <option value="LA">Louisiana</option>
+                                    <option value="ME">Maine</option>
+                                    <option value="MD">Maryland</option>
+                                    <option value="MA">Massachusetts</option>
+                                    <option value="MI">Michigan</option>
+                                    <option value="MN">Minnesota</option>
+                                    <option value="MS">Mississippi</option>
+                                    <option value="MO">Missouri</option>
+                                    <option value="MT">Montana</option>
+                                    <option value="NE">Nebraska</option>
+                                    <option value="NV">Nevada</option>
+                                    <option value="NH">New Hampshire</option>
+                                    <option value="NJ">New Jersey</option>
+                                    <option value="NM">New Mexico</option>
+                                    <option value="NY">New York</option>
+                                    <option value="NC">North Carolina</option>
+                                    <option value="ND">North Dakota</option>
+                                    <option value="OH">Ohio</option>
+                                    <option value="OK">Oklahoma</option>
+                                    <option value="OR">Oregon</option>
+                                    <option value="PA">Pennsylvania</option>
+                                    <option value="RI">Rhode Island</option>
+                                    <option value="SC">South Carolina</option>
+                                    <option value="SD">South Dakota</option>
+                                    <option value="TN">Tennessee</option>
+                                    <option value="TX">Texas</option>
+                                    <option value="UT">Utah</option>
+                                    <option value="VT">Vermont</option>
+                                    <option value="VA">Virginia</option>
+                                    <option value="WA">Washington</option>
+                                    <option value="WV">West Virginia</option>
+                                    <option value="WI">Wisconsin</option>
+                                    <option value="WY">Wyoming</option>
+                                </select>				
+                            </div>
+                            <div class='fieldwell flex xs3 ml-2'>
+                                <label>Zip:</label><br />
+                                <input type='text' class='textfield' id='eventZip' v-model='evzip' />
+                            </div>
+                        </div>
+                        <div class="mt-2 fieldwell textright">
+                             <button @click="doLocationChange" :disabled="btnlocationchange">Submit</button> 
+                        </div>
+                    </div>
+                </v-collapse-wrapper>
 
-                <v-collapse-wrapper @onStatusChange="acc1s" v-show="Guests.length>0" ref="acc1">
+                 <v-collapse-wrapper @onStatusChange="acc3s" v-show="CanReschedule===true&&CanRSVP===true" ref="acc3">
+                     <div class="accheader" v-collapse-toggle>
+                        <v-icon>{{ acc3i }}</v-icon> <span>Suggest New Time</span>
+                    </div>
+                    <div class="acccontent fieldwell" v-collapse-content>
+                         <div>
+                            The host has allowed you to suggest a new time for the event/activity. If this time is chosen then
+                            a new invitation will be sent out to all attendees. Use Pick for Us to suggest a good time based upon who is going.
+                         </div>
+                         <div class="fieldwell mt-1 textright">
+                            <button class='schdusButton' @click='pickForUs'>Pick for Us!</button>
+                         </div>
+
+                         <div class="fieldwell mt-3">
+                            <label>Date:</label>
+                            <datetime format="MM-DD-YYYY" v-model="evday"></datetime>
+                         </div>
+                         <div class="fieldwell mt-3">
+                            <label>Time:</label>
+                            <datetime format="h:i" v-model="evtime" ></datetime>
+                         </div>
+                         <div class="mt-2 fieldwell textright">
+                             <button @click="doTimeChange" :disabled="btntimechange">Submit</button> 
+                        </div>
+                    </div>
+                </v-collapse-wrapper>
+
+                <v-collapse-wrapper @onStatusChange="acc1s" ref="acc1">
                     <div class="accheader" v-collapse-toggle>
                         <v-icon>{{ acc1i }}</v-icon> <span>Attendees</span>
                     </div>
                     <div class="acccontent" v-collapse-content>
-                        <v-list >
+                         <div v-show="Guests.length===0">
+                            The attendee list is hidden
+                        </div>
+                        <v-list v-show="Guests.length>0" >
                             <template v-for="(item, i) in Guests">
                                 <v-list-item :key="i">
                                     <div class='layout row p4'>
+                                        <div class='flex xs2 pl2 relative' v-show='SeeRSVPs===true'>
+                                             <div class='greenicon' v-show="item.Acceptance===true">
+                                                <v-icon>check</v-icon>
+                                             </div>
+                                             <div class='redicon' v-show="item.Acceptance===false">
+                                                <v-icon>close</v-icon>      
+                                             </div>                                         
+                                        </div>
                                         <div class='flex xs2 pl2 relative'>                              
                                             <avatar class="vertical-center" size="30" :username="item.GuestName"></avatar>                           
                                         </div>
-                                        <div class='flex xs10 textleft fieldwell indented1 spfield'>
+                                        <div class='flex xs8 textleft fieldwell indented1 spfield'>
                                             {{item.GuestName}}
                                         </div>
                                     </div>
@@ -102,66 +320,103 @@
                     </div>
                  </v-collapse-wrapper>
 
+               
 
                 <v-collapse-wrapper @onStatusChange="acc6s" v-show="CanChat===true" ref="acc6">
                      <div class="accheader" v-collapse-toggle>
                         <v-icon>{{ acc6i }}</v-icon> <span>Conversation</span>
                     </div>
                     <div class="acccontent" v-collapse-content>
-                         <emoji-picker @emoji="insert" :search="search">
-                            <div slot="emoji-invoker" slot-scope="{ events: { click: clickEvent } }" @click.stop="clickEvent">
-                                <button type="button">open</button>
+
+                        <div v-show="EventComments.length===0">
+                            <div>
+                                There are no comments
                             </div>
-                            <div slot="emoji-picker" slot-scope="{ emojis, insert, display }">
-                                <div>
-                                <div>
-                                    <input type="text" v-model="search">
-                                </div>
-                                <div>
-                                    <div v-for="(emojiGroup, category) in emojis" :key="category">
-                                    <h5>{{ category }}</h5>
-                                    <div>
-                                        <span
-                                        v-for="(emoji, emojiName) in emojiGroup"
-                                        :key="emojiName"
-                                        @click="insert(emoji)"
-                                        :title="emojiName"
-                                        >{{ emoji }}</span>
-                                    </div>
-                                    </div>
-                                </div>
-                                </div>
+                            <div class="mt-2">
+                                <button @click="addComment">Add Comment</button>
                             </div>
-                        </emoji-picker>
+                        </div>
+                        <div v-show="EventComments.length>0">
+                           
+                            
+                         
+                        </div>
+                                              
                     </div>
                 </v-collapse-wrapper>
 
              </v-collapse-group> 
+
+              <div class="mt-2" v-show="CanShare===true&&CanRSVP===true" >
+                                     
+              </div>
         </div>
         
+        <div v-show="showFinder===true">
+              <locationfinder ref="lf"></locationfinder>
+        </div>
+
+        <div v-show="showPick===true">
+              <pickforus></pickforus>
+        </div>
     </div>
 </template>
 
+<style scoped>
+ .notAttendingBox {
+     border:2px solid #800000;
+     background-color: #ff3333;
+     color:white;
+     padding:2%;
+  }
+  .attendingBox {
+     border:2px solid darkgreen;
+     background-color: forestgreen;
+     color:white;
+     padding:2%;
+  }
+</style>
+
 <script>
 import Avatar from 'vue-avatar'
-import EmojiPicker from 'vue-emoji-picker'
+import emojipicker from '@/components/EmojiPicker'
+import locationfinder from "@/components/LocationFinder"
+import datetime from 'vuejs-datetimepicker'
+import pickforus from "@/components/PickForUs"
 
 export default {
     name: "Event",
-    components: {Avatar, EmojiPicker},
+    components: {Avatar, emojipicker, locationfinder, datetime, pickforus},
     data() {
         return {
             acc1i: "expand_less",
             acc2i: "expand_less",
             acc3i: "expand_less",
             acc4i: "expand_less",
-            acc5i: "expand_less",
             acc6i: "expand_less",
+            btncomment: false,
+            btntimechange: false,
+            btnlocationchange:false,
+            commentParent: '00000000-0000-0000-0000-000000000000',
             errorMessage: null,
+            evlength:"",
+            evlocation:"",
+            evstreet:"",
+            evcity:"",
+            evstate:"",
+            evzip:"",
+            guestemail: "",
+            guestname: "",
+            guestphone: "", 
+            imic: null,
             input: '',
             loading: null,
-            needAcepptance: false,
+            needAcceptance: false,
+            newComment: '',
+            okMessage: null,
             search: '',
+            showFinder: false,
+            showPick: false,
             tev: null, 
             thisURL: null
         }
@@ -203,15 +458,6 @@ export default {
                 this.acc4i="expand_more";
             }
         },
-        acc5s: function() {
-
-            if (this.acc5i==="expand_more") {
-                this.acc5i="expand_less";
-            }
-            else {
-                this.acc5i="expand_more";
-            }
-        },
         acc6s: function() {
 
             if (this.acc6i==="expand_more") {
@@ -221,21 +467,229 @@ export default {
                 this.acc6i="expand_more";
             }
         },
+        addComment: function() {
+            this.$modal.show("commentModal");
+        },
+        addGuest: function() {
+            this.errorMessage=null;
+
+            if (this.guestname.length<1 || this.guestname.length>128) {
+                this.errorMessage="Guest name is required and should not be longer than 128 characters";
+                return;
+            }
+            if (this.guestphone.length<1 && this.guestemail.length<1) {
+                this.errorMessage="Either guest phone number or email address are required";
+                return;
+            }
+            if (this.guestphone.length>1 && this.verifyPhone(this.guestphone)!=="OK") {
+                this.errorMessage="Please enter valid phone number with area code in format NNN-NNN-NNNN";
+                return;
+            } 
+            if (this.guestemail.length>1 && this.verifyEmail(this.guestemail)!=="OK") {
+                this.errorMessage="Please enter valid email address";
+                return;
+            }
+
+            if (this.guestphone.length<1) {
+                this.guestphone="Not Specified";
+            }
+            if (this.guestemail.length<1) {
+                this.guestemail="Not Specified";
+            }
+
+              this.$http({
+                method:'post',
+                url:this.$hostname+'/addguest',
+                data: {
+                    EventID: this.tev.EventID,
+                    gname: this.guestname,
+                    gemail: this.guestemail,
+                    gphone:  this.guestphone,
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),                
+                }
+            }).then(r=> {
+                if (r.status===200) {
+                    if (r.data.status===200) {    
+                         this.okMessage="RSVP Successful";
+                         this.tev.Guests.push({
+                             GuestName: this.guestname,
+                             Acceptance: true
+                         })
+                         this.guestname=null;
+                         this.guestemail=null;
+                         this.guestphone=null;
+                         var self=this;
+                         this.$forceUpdate();
+                         window.setTimeout(function() {
+                            self.okMessage=null;
+                        },3000) 
+                    }
+                    else {
+                        this.errorMessage=r.data.message;
+                    }
+                }
+                else {
+                    this.errorMessage="Error connecting to the backend service. Please check your internet connection";
+                }
+            });
+
+        },
         closeAddress: function() {
             this.$modal.hide("addressModal");
         },
-        insert(emoji) {
+        closeComment: function() {
+            this.$modal.hide("commentModal");
+        },
+        closeLocationFinder: function() {
+            this.showFinder=false;
+        },
+        closePickForUs: function() {
+            this.showPick=false;
+        },
+        doLocationChange: function() {
 
+        },
+        doTimeChange: function() {
+
+        },
+        doNoRSVP: function() {
+            this.doRSVP(false);
+        },
+        doRSVP: function(rsvp) {
+            this.errorMessage=null;
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/dorsvp',
+                data: {
+                    EventID: this.tev.EventID,
+                    EventScheduleID: this.tev.Schedules[0].EventScheduleID,
+                    rsvp: rsvp,
+                    me: this.EGID              
+                }
+            }).then(r=> {
+                if (r.status===200) {
+                    if (r.data.status===200) {    
+                        this.okMessage="RSVP status changed";
+                        this.tev.Acceptance=rsvp;
+                        this.tev.NeedsAcceptance=false;
+                        this.needAcceptance=false;
+                        for (var x=0; x<this.tev.Guests.length; x++) {
+                            if (this.tev.Guests[x].EventGuestID===this.EGID) {
+                                this.tev.Guests[x].Acceptance=rsvp;
+                            }
+                        }
+
+                        this.$forceUpdate();
+                        var self=this;
+                        window.setTimeout(function() {
+                            self.okMessage=null;
+                        },3000) 
+                    }
+                    else {
+                        this.errorMessage=r.data.message;
+                    }
+                }
+                else {
+                    this.errorMessage="A network error has occurred";
+                }
+                this.$modal.hide("rsvpModal");
+            });
+        },
+        doYesRSVP: function() {
+            this.doRSVP(true);
+        },
+        doRSVPModal: function() {
+            this.$modal.show("rsvpModal");
+        },
+        emojiModal: function() {
+            this.$modal.show("emojiModal");
+        },
+        goLocationFinder: function() {
+            this.$refs.lf.doRender();
+            this.showFinder=true;
+        },
+        insertEmoji: function(emoji) {
+            this.newComment+=emoji;
+            this.$modal.hide("emojiModal");
+        },
+        parseTime: function(ti) {
+            var tip = ti.split(":");
+            var ap="AM";
+            if (tip[0]>12) {
+                ap="PM";
+                tip[0]-=12;
+            }
+            return tip[0]+":"+tip[1]+" "+ap;
+        },
+        pickForUs: function() {
+            this.showPick=true;
+        },
+        setPickForUs: function(t) {
+             this.evday=t.date;
+             this.evtime=this.parseTime(t.time);
+             this.showPick=false;
+             this.$forceUpdate();
         },
         showAddress: function() {
             this.$modal.show("addressModal");
-        }
+        },
+
+        submitComment: function() {
+            this.btncomment=true;
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/addcomment',
+                data: {
+                    EventID: this.EventID,
+                    EventGuestID: this.EGID,
+                    ParentID: this.commentParent,
+                    Comment: this.newComment
+                }
+            }).then(r=> {
+                this.btncomment=false;
+                this.$modal.hide("commentModal");
+
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        this.okMessage="Comment Added";
+                         window.setTimeout(function() {
+                            self.okMessage=null;
+                        },3000) 
+                    }
+                    else {
+                        this.errorMessage=r.data.message;
+                    }
+                }
+                else {
+                    this.errorMessage="An error occurred while connecting to the service. Please check your internet connection";
+                }
+                
+            })
+        },
+        verifyEmail: function(email) {
+            var emailVerification = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/;
+            if (!emailVerification.test(email)) {
+                return "Email address is invalid";
+            }
+            return "OK";
+        },
+        verifyPhone: function(phone) {
+            var phoneVerification = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im;
+            if (!phoneVerification.test(phone)) {
+                return "Phone number is invalid";
+            }
+            return "OK";
+        },
     },
     mounted() {
 
          var ev=null;
          var gu=null;
-         var imic=false;
+         this.imic=false;
 
          try {
              ev=this.$route.query.e;
@@ -251,22 +705,22 @@ export default {
        
          }
 
-         this.thisURL="https://schd.us/#/app/event?e="+ev;
+         this.thisURL="https://schd.us/app/index.html#/event?e="+ev;
 
          var c = localStorage.getItem("_c");
-         if (typeof(c)!=="undefined" && c!==null || c!=="null") {      
+         if (typeof(c)!=="undefined" && c!==null && c!=="null") {      
             gu = c;
-            imic=true;
+            this.imic=true;
          }
 
-         if (typeof(ev)!=="undefined" && ev!==null && gu!==null) {
+         if (typeof(ev)!=="undefined" && ev!==null) {
                this.$http({
-                    method:'post',
+                    method:'post',                  
                     url:this.$hostname+'/geteventbyhash',
                     data: {
                         hsh: ev,
                         me: gu,
-                        mic: imic                    
+                        mic: this.imic                    
                     }
                 }).then(r=> {
                     this.loading=false;
@@ -274,7 +728,16 @@ export default {
                     if (r.status===200) {
                         if (r.data.status===200) {                         
                             this.tev = JSON.parse(r.data.message);
-                            this.$refs.acc1.open();
+                            this.evlength = this.tev.Schedules[0].EventLength;
+                            this.needAcceptance = this.tev.NeedsAcceptance;
+
+                            if (this.tev.NeedsAcceptance===null) {
+                                this.$refs.acc4.open();
+                            }
+                            else {
+                                this.$refs.acc1.open();
+                            }
+
                         }
                         else {
                             this.errorMessage="There was a problem getting the event";
@@ -287,6 +750,18 @@ export default {
          }
     },
     computed: {
+          Acceptance: function() {
+              if (this.tev!==null) {
+                  return this.tev.Acceptance;
+              }
+              return false;
+          },
+          AllowChildren: function() {
+             if (this.tev!==null) {
+                  return this.tev.AllowChildren;
+              }
+              return false;
+          },
           CanChat: function() {
               if (this.tev!==null) {
                   return this.tev.GuestsCanChat;
@@ -305,11 +780,29 @@ export default {
               }
               return false;
           },
+          CanRSVP: function() {
+              if (this.tev!==null) {
+                  return this.tev.ActionReq===1||this.tev.ActionReq===2;
+              }
+              return false;
+          },
           CanShare: function() {
               if (this.tev!==null) {
                   return this.tev.ProvideSharing;
               }
               return false;
+          },
+          CommentTree: function() {
+              if (this.tev!==null && this.tev.Comments.length>0) {
+                  return this.tev.Comments;
+              }
+              return null;
+          },
+          EGID: function() {
+              if (this.tev!==null) {
+                  return this.tev.EGID
+              }
+              return null;
           },
           EventAddress: function() {
               if (this.tev!==null) {
@@ -322,6 +815,24 @@ export default {
                   return this.tev.Schedules[0].City;
               }
               return ""; 
+          },
+          EventComments: function() {
+              if (this.tev!==null) {
+                  return this.tev.Comments;
+              }
+              return [];
+          },
+          EventDescription: function() {
+              if (this.tev!==null) {
+                  return this.tev.EventDescription;
+              }
+              return "";
+          },
+          EventID: function() {
+              if (this.tev!==null) {
+                  return this.tev.EventID;
+              }
+              return "";
           },
           EventState: function () {
               if (this.tev!==null) {
@@ -344,19 +855,24 @@ export default {
           EventDate: function() {
               if (this.tev!==null) {
                   var d = new Date(parseInt(this.tev.Schedules[0].StartDate));
-                  var h = d.getHours();
-                  var ap="AM";
-                  if (h>12) {
-                      ap="PM";
-                      h-=12;
-                  }
-                  var mins = d.getMinutes();
-                  var dmin = String(mins);
-                  if (mins<10) {
-                      dmin="0"+dmin;
+                
+                  var mth="";
+                  switch(d.getMonth()) {
+                      case 0: mth="January"; break;
+                      case 1: mth="February"; break;
+                      case 2: mth="March"; break;
+                      case 3: mth="April"; break;
+                      case 4: mth="May"; break;
+                      case 5: mth="June"; break;
+                      case 6: mth="July"; break;
+                      case 7: mth="August"; break;
+                      case 8: mth="September"; break;
+                      case 9: mth="October"; break;
+                      case 10: mth="November"; break;
+                      case 11: mth="December"; break;
                   }
 
-                  return (d.getMonth()+1)+"-"+d.getDate()+"-"+d.getFullYear()+" | "+h+":"+dmin+" "+ap;
+                  return mth +" "+d.getDate()+", "+d.getFullYear(); 
               }
               return null;
           },
@@ -373,16 +889,72 @@ export default {
               }
               return "#"
           },
+          EventTime: function() {
+                if (this.tev!==null) {
+                    var d = new Date(parseInt(this.tev.Schedules[0].StartDate));
+                    var h = d.getHours();
+                    var ap="AM";
+                    if (h>12) {
+                        ap="PM";
+                        h-=12;
+                    }
+                    var mins = d.getMinutes();
+                    var dmin = String(mins);
+                    if (mins<10) {
+                        dmin="0"+dmin;
+                    }
+                    var da = new Date(d.getTime()+parseInt(this.tev.Schedules[0].EventLength)*60000);
+                    var ha = da.getHours();
+                    var apa="AM";
+                    if (ha>12) {
+                        apa="PM";
+                        ha-=12;
+                    }
+                    var minsa = da.getMinutes();
+                    var dmina = String(minsa);
+                    if (minsa<10) {
+                        dmina="0"+dmina;
+                    }
+
+                    return h+":"+dmin+" "+ap+" - "+ha+":"+dmina+" "+apa;
+                }
+                return "";
+          },
           Guests: function() {
               if (this.tev!==null) {
                   return this.tev.Guests;
               }
               return [];
           },
+          MaxAttendees: function() {
+              if (this.tev!==null) {
+                  return this.tev.EventMaxCapacity;
+              }
+              return "Unknown";
+          },
+          MoreAllowed: function() {
+              if (this.tev!==null) {
+                  return this.tev.MoreAllowed;
+              }
+              return false;
+          },
+          NewAttendeesRSVP: function() {
+              if (this.tev!==null) {
+                  return this.tev.GuestsMustRegister;
+              }
+              return false;
+          },
           RSVP: function() {
               if (this.tev!==null) {
                   return this.tev.GuestsCanBringOthers;
               }
+              return false;
+          },
+          SeeRSVPs: function() {
+              if (this.tev!==null) {
+                  return this.tev.SeeRSVPed;
+              }
+
               return false;
           }
     }

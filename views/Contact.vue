@@ -37,7 +37,7 @@
                 <textarea rows="1" cols="1" class="textfield" v-model="contactdetails" />
             </div>
             <div class="fieldwell mt-2">
-                <button @click="doContact">Contact Us</button>
+                <button @click="doContact" :disabled="btncontact">Contact Us</button>
             </div>
         </div>
     </div>
@@ -49,6 +49,7 @@ export default {
     data() {
         return {
             yourname:"",
+            btncontact:false,
             contactemail:"",
             contactphone:"",
             contactreason:"General Inquiry",
@@ -71,6 +72,8 @@ export default {
                 this.$forceUpdate();
                 return;
             }
+
+            this.btncontact=true;
 
             this.$http({
                 method:'post',
@@ -96,6 +99,7 @@ export default {
                 else {
                     this.isError="An internet connection error occurred. Please check your connection";
                 }
+                this.btncontact=false;
             })
 
         }
