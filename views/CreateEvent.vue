@@ -52,7 +52,7 @@
                     </div>
                     <div class='fieldwell flex xs3 ml-2'>
                         <label>State:</label><br />
-                        <select class="textfield" v-model="evstate" :class='evstatefe'>
+                        <select class="textfield" v-model="evstate">
                             <option value="--" selected>-Choose-</option>
                             <option value="AL">Alabama</option>
                             <option value="AK">Alaska</option>
@@ -109,7 +109,7 @@
                     </div>
                     <div class='fieldwell flex xs3 ml-2'>
                         <label>Zip:</label><br />
-                        <input type='text' class='textfield' id='eventZip' v-model='evzip' :class='evzipfe' />
+                        <input type='text' class='textfield' id='eventZip' v-model='evzip' />
                     </div>
                 </div>
             </div>
@@ -485,9 +485,7 @@ export default {
             evlocation:"",
             evlocationfe:"",
             evstate: "",
-            evstatefe: "",
             evzip: "",   
-            evzipfe: "",
             evday:null,
             evtime:null,
             guesteditmode:null,
@@ -713,6 +711,13 @@ export default {
             this.formStep=3;
             this.$forceUpdate();
         },   
+        fillLocation: function(location, address, city) {
+            this.evlocation=location;
+            this.evstreet=address;
+            this.evcity=city;
+            this.formStep=0;
+            this.$forceUpdate();
+        },
         formatPhone: function(ed) {
             ed=ed.splice(7, 0, "-");
             ed=ed.splice(4, 0, "-");
@@ -865,6 +870,13 @@ export default {
         },
         scheduleIt: function() {
 
+             this.errorMessage=null; 
+             
+             if (this.evdescription.length>1024) {
+                 this.errorMessage="The event description cannot be longer than 1024 characters"
+                 return;
+             }
+
              this.sschit=true;
 
              this.$http({
@@ -992,8 +1004,7 @@ export default {
             this.evlocationfe="";
             this.evstreetfe="";
             this.evcityfe="";
-            this.evstatefe="";
-            this.evzipfe="";
+      
 
             if (this.evname.length<1 || this.evname.length>128) {
                 this.errorMessage="Event name is invalid";
@@ -1025,17 +1036,6 @@ export default {
                 return false;
             }
 
-            if (this.evstate==="--" || this.evstate==="") {
-                this.errorMessage="State is invalid";
-                this.evstatefe="errorHighlight";
-                return false;
-            }
-
-            if (this.evzip.length<5) {
-                this.errorMessage="Zip code is invalid";
-                this.evzipfe="errorHighlight";
-                return false;
-            }
 
             if (this.cliphone.length>2) {
                 if (this.cliphone[0]==="1" && !Number.isInteger(this.cliphone[1])) {

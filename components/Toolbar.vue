@@ -7,7 +7,7 @@
 
         <v-toolbar clipped-left flat app>
           <v-toolbar-side-icon  @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-          <avatar :size="36" :username="uname" v-show="loggedIn===true"></avatar>
+          <div @click="doImageUpload()"><avatar :size="36" :username="uname" v-show="loggedIn===true"></avatar></div>
           <v-spacer></v-spacer>
           <v-toolbar-title class="mt-2" @click="goHome"><img src="@/assets/ScheduleUsWeb.png" width="150" alt="Schedule Us Logo" /></v-toolbar-title>
         </v-toolbar>
@@ -25,12 +25,72 @@
         </div>
     </div>
 
-    <modal name="picture-uploader" width=300 height=400>
-        test
+    <modal name="htmlUploader" width=90% height=80%>
+        <div class="modalWrapper">
+          <h1>Image Upload</h1>
+        
+          <div class="imageUploader">
+            <div v-show="image!==null">
+              <img v-bind:src="image" />
+            </div>
+            <image-uploader
+              :preview="false"
+              :className="['fileinput', { 'fileinput--loaded': hasImage }]"
+              capture="environment"
+              :maxHeight=100
+              :maxWidth=100
+              :autoRotate="true"
+              outputFormat="verbose"
+              @input="setImage"
+            >
+            <label for="fileInput" slot="upload-label">
+              <figure>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="32"
+                  height="32"
+                  viewBox="0 0 32 32"
+                >
+                  <path
+                    class="path1"
+                    d="M9.5 19c0 3.59 2.91 6.5 6.5 6.5s6.5-2.91 6.5-6.5-2.91-6.5-6.5-6.5-6.5 2.91-6.5 6.5zM30 8h-7c-0.5-2-1-4-3-4h-8c-2 0-2.5 2-3 4h-7c-1.1 0-2 0.9-2 2v18c0 1.1 0.9 2 2 2h28c1.1 0 2-0.9 2-2v-18c0-1.1-0.9-2-2-2zM16 27.875c-4.902 0-8.875-3.973-8.875-8.875s3.973-8.875 8.875-8.875c4.902 0 8.875 3.973 8.875 8.875s-3.973 8.875-8.875 8.875zM30 14h-4v-2h4v2z"
+                  ></path>
+                </svg>
+              </figure>
+              <span class="upload-caption">{{
+                hasImage ? "Replace" : "Click to upload"
+              }}</span>
+            </label>
+            </image-uploader>
+          </div>
+
+          <div class="imageUploaderBottom textright" v-show="image!==null">
+              <button>Accept</button>
+          </div>
+        </div>
     </modal>
 
   </div>
 </template>
+
+<style scoped>
+#fileInput {
+  display: none;
+}
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+.my-8 {
+  margin-top: 4rem;
+  margin-bottom: 4rem;
+}
+</style>
+
 
 <script>
 import Avatar from 'vue-avatar'
@@ -42,6 +102,8 @@ export default {
   components: {myContentDrawer, Avatar},
   data: function() {
     return {
+      image: null,
+      hasImage: false,
       loggedIn: false,
       drawer: false,
       uname: ""
@@ -59,14 +121,23 @@ export default {
     document.removeEventListener("toggleDrawer", this.toggleDrawer);
   },
   methods: {
+    doImageUpload() {
+        if (typeof window.cordova !== "undefined") {
+
+        }
+        else {
+           this.$modal.show("htmlUploader");
+        }
+    },
     toggleDrawer (){
       this.drawer = !this.drawer;
     },
     goHome (){
       window.location.hash = "/";
     },
-    pictureUploader() {
-       this.$modal.show('picture-uploader');
+    setImage (file) {
+        this.hasImage = true
+        this.image = file.dataUrl;
     },
     updateAvatar() {
 

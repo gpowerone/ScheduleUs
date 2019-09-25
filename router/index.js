@@ -13,7 +13,6 @@ import Recover from '@/views/Recover'
 import VerifyEmail from '@/views/VerifyEmail'
 import Event from '@/views/Event'
 import VerifyPhone from '@/views/VerifyPhone'
-import PostTest from '@/views/PostTest'
 
 Vue.use(Router);
 
@@ -83,11 +82,6 @@ const router =  new Router({
        path: '/verifyphone',
        name: 'Verify Phone',
        component: VerifyPhone
-    },
-    {
-       path: '/posttest',
-       name: 'Test Receiver',
-       component: PostTest
     }
   ]
 })

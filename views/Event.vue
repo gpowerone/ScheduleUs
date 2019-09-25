@@ -53,6 +53,12 @@
             </div>
         </modal>
 
+        <modal name="reportModal" width="300" height="400">
+            <div class="p2">
+                If this content is in violation of community guidelines (link needed) then it will be removed by a moderator. Are you sure you wish to make this report?
+            </div>
+        </modal>
+
         <modal name="rsvpModal" width="300" height="100">
             <div class="p2">
                 <div v-show="Acceptance===true">
@@ -77,16 +83,23 @@
             </div>
         </modal>
 
-        <div v-show="tev!==null&&errorMessage===null&&showFinder===false&&showPick===false" class="mt-2 fieldwell">
+        <div v-show="tev!==null&&showFinder===false&&showPick===false" class="mt-2 fieldwell">
             <h1>{{EventName}}</h1>
+            <div v-show="Rescheduled===true">*** Event/Activity Has Been Rescheduled ***</div>
             <div>{{EventDescription}}</div>
-            <div>{{EventDate}}</div>
-            <div>{{EventTime}}</div>
+            <div class="layout row">
+                <div class="xs6 flex textleft">{{EventDate}}</div>
+                <div class="xs6 flex textright">{{EventTime}}</div>
+            </div>
             <div class="layout row">
                 <div class="flex xs10">{{EventLocation}}</div>
-                <div class="flex xs1"><a @click="showAddress()"><v-icon>map</v-icon></a></div>
-                <div class="flex xs1"><a v-bind:href="EventMap" target="_blank" rel="nopener noreferrer"><v-icon>navigation</v-icon></a></div>
+                <div class="flex xs1"><a @click="showAddress()" class="eventicons"><v-icon>map</v-icon></a></div>
+                <div class="flex xs1"><a v-bind:href="EventMap" target="_blank" class="eventicons" rel="nopener noreferrer"><v-icon>navigation</v-icon></a></div>
             </div>
+            <div v-show="IsOwner&&(ActionReq===5||ActionReq===6)">
+                You need to accept the rescheduled changes
+            </div>
+
             <div v-show="needAcceptance===true&&EGID!==null" class="fullborder p2">
                 <div class="fieldwell">
                     <label>Will you Attend?</label>
@@ -101,13 +114,13 @@
             <div class="mt-2" v-show="needAcceptance===false&&EGID!==null">
                 <div v-show="Acceptance===true" class="layout row">
                     <div class="flex xs12 attendingBox textcenter" @click="doRSVPModal()">
-                        You are attending (tap to edit)
+                        You are attending (tap to change)
                     </div>       
                 </div>
 
                  <div v-show="Acceptance===false" class="layout row" @click="doRSVPModal()">
                     <div class="flex xs12 notAttendingBox textcenter">
-                        You are not attending (tap to edit)
+                        You are not attending (tap to change)
                     </div>
                               
                 </div>
@@ -168,9 +181,11 @@
                         <v-icon>{{ acc2i }}</v-icon> <span>Suggest New Location</span>
                     </div>
                     <div class="acccontent fieldwell" v-collapse-content>
-                         <div>
-                            The host has allowed you to suggest a new location for the event/activity. If this location is chosen then
-                            a new invitation will be sent out to all attendees. 
+                         <div class='boldchoice'>
+                             {{SuggestLocationStatus}}
+                         </div>
+                         <div class='mt-2'>
+                            The host has allowed you to suggest a new location for the event/activity.
                          </div>
                          <div class='fieldwell xs-12 mt-2'>
                             <label>Location</label>
@@ -180,21 +195,21 @@
                                 </div>                            
                             </div>
                             <div class='mt-1'>
-                                <input type='text' class='textfield' v-model="evlocation" />
+                                <input type='text' class='textfield' v-model="evlocation" :class='evlocationfe'  />
                             </div>
                             <div class='mt-1 fieldwell'>
                                 <label>Address</label><br /> 
-                                <input type='text' class='textfield' v-model="evstreet" />
+                                <input type='text' class='textfield' v-model="evstreet" :class='evstreetfe'  />
                             </div>
                         </div>
                         <div class="layout row mt-2">
                             <div class='fieldwell flex xs6'>
                                 <label>City:</label><br />
-                                <input type='text' class='textfield' v-model="evcity"  />
+                                <input type='text' class='textfield' v-model="evcity" :class='evcityfe'   />
                             </div>
                             <div class='fieldwell flex xs3 ml-2'>
                                 <label>State:</label><br />
-                                <select class="textfield" v-model="evstate">
+                                <select class="textfield" v-model="evstate"  >
                                     <option value="--" selected>-Choose-</option>
                                     <option value="AL">Alabama</option>
                                     <option value="AK">Alaska</option>
@@ -251,7 +266,7 @@
                             </div>
                             <div class='fieldwell flex xs3 ml-2'>
                                 <label>Zip:</label><br />
-                                <input type='text' class='textfield' id='eventZip' v-model='evzip' />
+                                <input type='text' class='textfield' id='eventZip'   v-model='evzip' />
                             </div>
                         </div>
                         <div class="mt-2 fieldwell textright">
@@ -265,9 +280,11 @@
                         <v-icon>{{ acc3i }}</v-icon> <span>Suggest New Time</span>
                     </div>
                     <div class="acccontent fieldwell" v-collapse-content>
-                         <div>
-                            The host has allowed you to suggest a new time for the event/activity. If this time is chosen then
-                            a new invitation will be sent out to all attendees. Use Pick for Us to suggest a good time based upon who is going.
+                         <div class='boldchoice'>
+                             {{SuggestTimeStatus}}
+                         </div>
+                         <div class='mt-2'>
+                            The host has allowed you to suggest a new time for the event/activity. Use Pick for Us to suggest a good time based upon who is going.
                          </div>
                          <div class="fieldwell mt-1 textright">
                             <button class='schdusButton' @click='pickForUs'>Pick for Us!</button>
@@ -333,13 +350,14 @@
                                 There are no comments
                             </div>
                             <div class="mt-2">
-                                <button @click="addComment">Add Comment</button>
+                                <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
                             </div>
                         </div>
                         <div v-show="EventComments.length>0">
-                           
-                            
-                         
+                            <div class="mt-2 mb-2 textright">
+                                <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
+                            </div>
+                           <comments v-for="(node,n) in EventComments" v-bind:key="n" :comment="node.item" :children="node.children"></comments> 
                         </div>
                                               
                     </div>
@@ -347,8 +365,9 @@
 
              </v-collapse-group> 
 
-              <div class="mt-2" v-show="CanShare===true&&CanRSVP===true" >
-                                     
+              <div v-show="CanShare===true" class="mt-2 accheader p2 textcenter" >
+                    <a v-bind:href="TwitterURL" class="twitter-share-button" data-show-count="false"><img src="@/assets/TwitterIcon.png" alt="Tweet" width="30" height="30" /></a>  
+                    &nbsp;&nbsp;<a v-bind:href="LinkedInURL"><img src="@/assets/LIIcon.png" width="30" height="30" alt="Share on Linked In" /></a>           
               </div>
         </div>
         
@@ -363,17 +382,22 @@
 </template>
 
 <style scoped>
+ .eventicons i {
+     font-size:2rem;
+ }
  .notAttendingBox {
-     border:2px solid #800000;
-     background-color: #ff3333;
+     border-radius:3px;
+     background-color:indianred;
      color:white;
      padding:2%;
+     font-weight:bold;
   }
   .attendingBox {
-     border:2px solid darkgreen;
-     background-color: forestgreen;
-     color:white;
+     border-radius:5px;
+     background-color: lightgreen;
+     color:#777;
      padding:2%;
+     font-weight:bold;
   }
 </style>
 
@@ -383,10 +407,12 @@ import emojipicker from '@/components/EmojiPicker'
 import locationfinder from "@/components/LocationFinder"
 import datetime from 'vuejs-datetimepicker'
 import pickforus from "@/components/PickForUs"
+import comments from '@/components/Comments'
+import { EventBus } from '../bus';
 
 export default {
     name: "Event",
-    components: {Avatar, emojipicker, locationfinder, datetime, pickforus},
+    components: {Avatar, emojipicker, locationfinder, datetime, pickforus, comments},
     data() {
         return {
             acc1i: "expand_less",
@@ -397,14 +423,19 @@ export default {
             btncomment: false,
             btntimechange: false,
             btnlocationchange:false,
-            commentParent: '00000000-0000-0000-0000-000000000000',
+            commentParent: null,
             errorMessage: null,
+            evday: null,
+            evtime: null,
             evlength:"",
             evlocation:"",
             evstreet:"",
             evcity:"",
             evstate:"",
             evzip:"",
+            evlocationfe: "",
+            evstreetfe: "",
+            evcityfe: "",
             guestemail: "",
             guestname: "",
             guestphone: "", 
@@ -418,7 +449,7 @@ export default {
             showFinder: false,
             showPick: false,
             tev: null, 
-            thisURL: null
+            URL: null
         }
     },
     methods: {
@@ -467,7 +498,13 @@ export default {
                 this.acc6i="expand_more";
             }
         },
-        addComment: function() {
+        addComment: function(ec) {
+            if (typeof(ec)==="undefined" || ec===null) {
+                this.commentParent= "00000000-0000-0000-0000-000000000000";
+            }
+            else {
+                this.commentParent = ec;
+            }
             this.$modal.show("commentModal");
         },
         addGuest: function() {
@@ -549,10 +586,116 @@ export default {
             this.showPick=false;
         },
         doLocationChange: function() {
+            this.errorMessage=null;
 
+            this.evlocationfe="";
+            this.evstreetfe="";
+            this.evcityfe="";
+
+
+            if (this.evlocation.length<1 || this.evlocation.length>128) {
+                this.errorMessage="Location is invalid";
+                this.evlocationfe="errorHighlight";
+                return false;
+            }
+
+            if (this.evstreet.length<1 || this.evlocation.length>255) {
+                this.errorMessage="Street address is invalid";
+                this.evstreetfe="errorHighlight";
+                return false;
+            }
+
+            if (this.evcity.length<1 || this.evcity.length>64) {
+                this.errorMessage="City is invalid";
+                this.evcityfe="errorHighlight";
+                return false;
+            }
+
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/suggestnewlocation',
+                data: {
+                    EventID: this.tev.EventID,
+                    EventGuestID: this.EGID,
+                    Location: this.evlocation,
+                    Address: this.evstreet,
+                    City: this.evcity,
+                    State: this.evstate,
+                    PostalCode: this.evzip
+                }
+            }).then(r=> {
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        this.okMessage="Your location suggestion has been submitted";
+                        this.evlocation=null;
+                        this.evstreet=null;
+                        this.evcity=null;
+                        this.evstate=null;
+                        this.evzip=null;
+     
+                        var self=this;
+                        window.setTimeout(function() {
+                            self.okMessage=null;
+                            window.location.reload();
+                        },3000) 
+                    }
+                    else {
+                        if (r.data.message==="AlreadyPresent") {
+                            this.errorMessage="You have already suggested a new location. You may suggest another new location if/when the event/activity is rescheduled."   
+                        }
+                        else {
+                            this.errorMessage=r.data.message;
+                        }
+                    }
+                }
+                else {
+                    this.errorMessage="There was an error connecting to the backend service. Check your internet connection.";
+                }    
+            });
+        },
+        doReport: function(ec) {
+            this.$modal.show("reportModal");
         },
         doTimeChange: function() {
 
+            this.errorMessage=null;
+
+            if (this.evday===null || this.evtime===null) {
+                this.errorMessage="Date and time are required";
+            }
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/suggestnewtime',
+                data: {
+                    EventID: this.tev.EventID,
+                    EventGuestID: this.EGID,
+                    EvTime: this.makeDate()         
+                }
+            }).then(r=> {
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                         this.okMessage="Your time suggestion has been submitted";
+                         var self=this;
+                         window.setTimeout(function() {
+                            self.okMessage=null;
+                            window.location.reload();
+                         },3000) 
+                    }
+                    else {
+                        if (r.data.message==="AlreadyPresent") {
+                             this.errorMessage="You have already suggested a new time. You may suggest another new time if/when the event/activity is rescheduled."  
+                        }
+                        else {
+                            this.errorMessage=r.data.message;
+                        }
+                    }
+                }
+                else {
+                    this.errorMessage="There was an error connecting to the backend service. Check your internet connection.";
+                }    
+            });
         },
         doNoRSVP: function() {
             this.doRSVP(false);
@@ -585,7 +728,7 @@ export default {
                         this.$forceUpdate();
                         var self=this;
                         window.setTimeout(function() {
-                            self.okMessage=null;
+                            self.okMessage=null;                        
                         },3000) 
                     }
                     else {
@@ -607,6 +750,12 @@ export default {
         emojiModal: function() {
             this.$modal.show("emojiModal");
         },
+        fillLocation: function(location, address, city) {
+            this.evlocation=location;
+            this.evstreet=address;
+            this.evcity=city;
+            this.showFinder=false;
+        },
         goLocationFinder: function() {
             this.$refs.lf.doRender();
             this.showFinder=true;
@@ -614,6 +763,44 @@ export default {
         insertEmoji: function(emoji) {
             this.newComment+=emoji;
             this.$modal.hide("emojiModal");
+        },
+        makeDate: function() {
+          
+            var fdate;
+            var ds=this.evday.split('-');
+            var dt = ds[2]+"-"+ds[0]+"-"+ds[1]+"T";
+            
+            if (this.evtime!==null && this.evtime!=="") {
+                var pt=this.makeTime(this.evtime).split(":");
+                
+                var ah=0;
+                if (this.evtime.indexOf(" PM")>-1) {
+                    pt[0] = String(parseInt(pt[0])+12);
+                }
+
+                if (pt[0].length===1) {
+                    pt[0]="0"+pt[0];
+                }
+                if (pt[1].length===1) {
+                    pt[1]="0"+pt[1];
+                }
+                fdate= dt+pt[0]+":"+pt[1]+":"+pt[2];
+            }
+            else {
+                fdate= dt+"00:00:00";
+            }
+
+            return new Date(fdate).getTime()+new Date(fdate).getTimezoneOffset();
+    
+        },
+        makeTime: function() {
+            var e=this.evtime;
+            if (e.indexOf(" AM")>-1) {
+               return e.replace(" AM","")+":00";
+            }
+            else {
+                return e.replace(" PM","")+":00";
+            }
         },
         parseTime: function(ti) {
             var tip = ti.split(":");
@@ -655,8 +842,29 @@ export default {
 
                 if (r.status===200) {
                     if (r.data.status===200) {
+
+                        var item =JSON.parse(r.data.message);
+
+                        if (this.commentParent==="00000000-0000-0000-0000-000000000000") {
+                            this.tev.Comments.push({
+                                children: [],
+                                item: item
+                            })
+                        }
+                        else {
+                            for(var x=0; x<this.tev.Comments.length; x++) {
+                                if (this.tev.Comments[x].item.EventCommentID===item.ParentID) {
+                                    this.tev.Comments[x].children.push({
+                                        children: [],
+                                item: item
+                                    })                                    
+                                }
+                            }
+                        }          
+
                         this.okMessage="Comment Added";
-                         window.setTimeout(function() {
+                        var self=this;
+                        window.setTimeout(function() {
                             self.okMessage=null;
                         },3000) 
                     }
@@ -687,6 +895,14 @@ export default {
     },
     mounted() {
 
+        EventBus.$on("CommentReplyEvent", (ec) => {
+            this.addComment(ec);
+        })
+
+        EventBus.$on("CommentReportEvent", (ec) => {
+            this.doReport(ec);
+        })
+
          var ev=null;
          var gu=null;
          this.imic=false;
@@ -705,7 +921,8 @@ export default {
        
          }
 
-         this.thisURL="https://schd.us/app/index.html#/event?e="+ev;
+
+         this.URL=encodeURI("https://schd.us/app/index.html#/event?e="+ev);
 
          var c = localStorage.getItem("_c");
          if (typeof(c)!=="undefined" && c!==null && c!=="null") {      
@@ -731,6 +948,10 @@ export default {
                             this.evlength = this.tev.Schedules[0].EventLength;
                             this.needAcceptance = this.tev.NeedsAcceptance;
 
+                            console.log(this.tev);
+    
+                         
+
                             if (this.tev.NeedsAcceptance===null) {
                                 this.$refs.acc4.open();
                             }
@@ -755,6 +976,12 @@ export default {
                   return this.tev.Acceptance;
               }
               return false;
+          },
+          ActionReq: function() {
+              if (this.tev!==null) {
+                  return this.tev.ActionReq;
+              }
+              return 0;
           },
           AllowChildren: function() {
              if (this.tev!==null) {
@@ -791,12 +1018,6 @@ export default {
                   return this.tev.ProvideSharing;
               }
               return false;
-          },
-          CommentTree: function() {
-              if (this.tev!==null && this.tev.Comments.length>0) {
-                  return this.tev.Comments;
-              }
-              return null;
           },
           EGID: function() {
               if (this.tev!==null) {
@@ -926,6 +1147,15 @@ export default {
               }
               return [];
           },
+          IsOwner: function() {
+              if (this.tev!==null) {
+                  return this.tev.IsOwner;          
+              }
+              return false;
+          },
+          LinkedInURL: function() {
+               return "https://www.linkedin.com/shareArticle?mini=true&source=LinkedIn&title="+encodeURIComponent(this.EventName)+"&url="+encodeURIComponent(this.URL);
+          },
           MaxAttendees: function() {
               if (this.tev!==null) {
                   return this.tev.EventMaxCapacity;
@@ -944,6 +1174,12 @@ export default {
               }
               return false;
           },
+          Rescheduled: function() {
+              if (this.tev!==null) {
+                  return this.tev.Rescheduled;
+              }
+              return false;
+          },
           RSVP: function() {
               if (this.tev!==null) {
                   return this.tev.GuestsCanBringOthers;
@@ -956,6 +1192,21 @@ export default {
               }
 
               return false;
+          },
+          SuggestLocationStatus: function() {
+              if (this.tev!==null) {
+                  return "To reschedule: "+this.tev.SuggestedLocationsCount+" of "+Math.ceil(this.tev.Guests.length/2)+" required locations have been submitted"
+              }
+              return ""; 
+          },
+          SuggestTimeStatus: function() {
+              if (this.tev!==null) {
+                  return "To reschedule: "+this.tev.SuggestedTimesCount+" of "+Math.ceil(this.tev.Guests.length/2)+" required times have been submitted"
+              }
+              return ""; 
+          },
+          TwitterURL: function() {
+              return "https://twitter.com/share?ref_src="+encodeURIComponent(this.URL);
           }
     }
 }

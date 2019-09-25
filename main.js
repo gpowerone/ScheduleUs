@@ -10,6 +10,7 @@ import VueAxios from 'vue-axios'
 import VModal from 'vue-js-modal'
 import VueCollapse from 'vue2-collapse'
 import ToggleButton from 'vue-js-toggle-button'
+import ImageUploader from 'vue-image-upload-resize'
 import UUID from 'vue-uuid';
 
 
@@ -19,6 +20,7 @@ Vue.use(VModal)
 Vue.use(VueCollapse)
 Vue.use(ToggleButton)
 Vue.use(UUID);
+Vue.use(ImageUploader)
 
 const init = () => {
   new Vue({

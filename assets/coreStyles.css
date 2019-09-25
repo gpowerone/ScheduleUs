@@ -65,6 +65,10 @@
     padding:2px 4px;
   }
   
+  a.spfield img, a.spfield span {
+    vertical-align:middle;
+  }
+
   button span, button i {
     vertical-align: middle!important;
   }
@@ -111,13 +115,12 @@
   }
   .accheader span, .accheader i {
       vertical-align:middle;
-      font-weight: bold;
   }
   .accheader i {
       color: #777;
   }
   .accheader span {
-      color: #777;
+      color: #a80cba;
   }
   .acccontent {
       border-left: 1px solid #666699;
@@ -229,6 +232,27 @@
   .topEvent {
       margin-top:10%;
   }
+
+  .modalWrapper {
+      padding:5%;
+      position:relative;
+  }
+
+  .imageUploader {
+      text-align:center;
+      margin-top:30%;
+      margin-bottom:30%;
+  }
+
+  .imageUploader #fileInput {
+      display:none;
+  }
+
+  .imageUploaderBottom {
+      position:absolute;
+      bottom:5px;
+      width:90%;
+  }
   
   .nounderline {
       text-decoration:none!important;
@@ -236,6 +260,10 @@
   .buttonwell {
       margin-top:4%;
   }
+  .comment-tree {
+      margin-bottom:10px;
+  }
+ 
   .errorBox {
      border:2px solid #800000;
      background-color: #ff3333;
@@ -256,6 +284,12 @@
   .pl2 {
      padding-left:2%;
   }
+  .p2top {
+      padding-top:2%;
+  }
+  .p5top {
+    padding-top:5%;
+  }
   .p2 {
      padding:2%;
   }
@@ -264,6 +298,13 @@
   }
   .p4 {
      padding:4%;
+  }
+  .pbot20 {
+      padding-bottom:20px;
+  }
+  .poweredByGoogle {
+      text-align:right;
+      
   }
   .m5bot {
       margin-bottom:5px;
@@ -346,4 +387,22 @@
 .scrollbox {
     height:400px;
     overflow-y:auto;
+}
+
+.foundLocation {
+    border-bottom:1px solid #444;
+    padding:5px;
+}
+
+.locationTop {
+    border-bottom:1px solid #444;
+    padding-bottom:5px;
+}
+
+.locationIcon {
+    max-height:50px;
+}
+
+.mb-2 {
+    margin-bottom:2%;
 }
