@@ -1,8 +1,8 @@
 <template>
     <div class="moduleWrapper">
         <h1>Account Verification</h1>
-        <div v-show="loading===null">
-              Loading...
+        <div  class='loadingImg'  v-show="loading===null">
+                <img src="@/assets/loading.gif" />
         </div>
         <div v-show="loading!==null" class="mt-2">
             {{loading}}

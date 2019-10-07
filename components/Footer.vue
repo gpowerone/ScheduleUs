@@ -1,13 +1,8 @@
 <template>
   <div class="footer">
-      <div class="adWell">
-          <div class="sampleAd">Ad Goes Here</div>
-      </div>
-      <div class="authLine">
-          Want to remove ads? Sign up for premium!
-      </div>
+      
       <div class="infoLine">
-          <span class="schdusPurple">Schedule Us</span> v1.0 (ALPHA), &copy;2019 Conjurus Technologies
+          <span class="schdusPurple">Schedule Us</span> v2.0 (BETA 1), &copy;2019 Conjurus Technologies
       </div>
   </div>
 </template>

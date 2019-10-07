@@ -5,6 +5,20 @@
             {{ errorMessage }}
         </div>
 
+        <div id='loading' class='loadingImg' v-show='formStep === -2'>
+            <img src="@/assets/loading.gif" />
+        </div>
+        
+        <div id='cannotcreate' v-show='formStep === -1'>
+            <h1>Schedule It!</h1>
+            <p>You must log in to create events</p>
+            <p>
+                <button @click="goToLogin()">Log In</button>&nbsp;&nbsp;
+                <button @click="goToCreateAccount()" class="schdusButton" >Register</button>
+            </p>
+        </div>
+
+
         <div id='eventStepOne' v-show='formStep === 0'>
             
             <h1>Schedule It!</h1>
@@ -127,10 +141,12 @@
             
                 <div class='guestlist mt-2'>
                     <div class='layout row p2'>
-                        <div class='flex xs3 textleft spfield'>
+                        <div class='flex xs6 textleft spfield'>
                             <button class='transButton' @click='turnOnManualAddGuest'><v-icon>person_add</v-icon>&nbsp;<span>Add</span></button> 
+                            &nbsp;&nbsp;
+                            <button class='transButton' @click='turnOnGroupAddGuest'><v-icon>group_add</v-icon>&nbsp;<span>Add</span></button> 
                         </div>
-                        <div class='flex xs9 textright spfield'>
+                        <div class='flex xs6 textright spfield'>
                             <div v-show="isCordova === true" >
                                 Add From:<button @click='loadContacts' class='transButton'><v-icon>contacts</v-icon></button>
                             </div>
@@ -181,7 +197,7 @@
            
           
             <div class="fieldwell mt-3">
-               <label>How Long is this Event/Activity:</label><br />
+               <label>How Long is this event:</label><br />
                 <select class="textfield" v-model="evlength">
                     <option value="">---Pick a Length---</option>
                     <option value="15">15 minutes</option>
@@ -226,7 +242,7 @@
            </div>
 
            <div class="fieldwell mt-3">
-               <label>Cutoff RSVP Prior to Event/Activity?</label><br />
+               <label>Cutoff RSVP Prior to event?</label><br />
                 <select class="textfield" v-model="schedulecutofftime">    
                     <option value="">No Cutoff</option> 
                     <option value="24">Cutoff 1 day from now</option>
@@ -255,7 +271,7 @@
            <h1>Additional Options</h1>
            <div class='fieldwell'>
                <div class="fieldwell mt-2">
-                   <label>Description of your event/activity:</label><br />
+                   <label>Description of your event:</label><br />
                    <textarea rows="1" cols="1" v-model="evdescription"></textarea>
                </div>
                <div class="mt-3">
@@ -296,7 +312,7 @@
                    </div>
 
                </div>
-               <div class='mt-2'>
+               <div class='mt-2' v-show="isPremium===true||isPro===true">
                    <toggle-button width="35" height="16" v-model="guestsreschedule"/> Attendees Can Suggest a Different Time
                </div>
                <div v-show="guestsreschedule===true" class="indented1">
@@ -304,7 +320,7 @@
                       <toggle-button width="35" height="16" v-model="guestsrescheduleperm"/> I Must Approve Different Time
                     </div>
                </div>
-               <div class='mt-2'>
+               <div class='mt-2' v-show="isPremium===true||isPro===true">
                    <toggle-button width="35" height="16" v-model="guestschangelocation"/> Attendees Can Suggest a Different Location
                </div>
                <div v-show="guestschangelocation===true" class="indented1">
@@ -312,33 +328,13 @@
                        <toggle-button width="35" height="16" v-model="guestschangelocationperm"/> I Must Approve Different Location
                     </div>
                </div>
-               <div class='mt-2' v-show="isPremium===true" >
-                   <toggle-button width="35" height="16" v-model="eventrecurring"/> Event/Activity Will Occur Again
+               <div class='mt-2' v-show="isPremium===true||isPro===true">
+                   <toggle-button width="35" height="16" v-model="eventrecurring"/> event Will Occur Again
                </div>
                <div v-show="eventrecurring===true">
 
                </div>
-               <div class='mt-2'>
-                   <toggle-button width="35" height="16" v-model="notificationoptions"/> Change Notification Options
-               </div>
-               <div v-show="notificationoptions===true" class="indented1">
-                    <div class="mt-1">
-                        <toggle-button width="35" height="16" v-model="notifyschedulecomplete"/> When All Attendees Respond
-                   </div>
-                   <div class="mt-1">
-                        <toggle-button width="35" height="16" v-model="notifynewmessages"/> When Attendees Comment
-                   </div>
-                   <div class="mt-1">
-                        <toggle-button width="35" height="16" v-model="notifyguestaccept"/> When Attendees RSVP Yes or No
-                   </div>
-                    <div class="mt-1">
-                        <toggle-button width="35" height="16" v-model="notifyeventrescheduled"/> When Event/Activity is Rescheduled
-                   </div>
-                     <div class="mt-1">
-                        <toggle-button width="35" height="16" v-model="notifyeventlocationchanges"/> When Event/Activity Location Changes
-                   </div>
-               </div>
-
+              
                 <div class='layout row mt-4'>
                     <div class='flex xs6 textleft'>
                         <button @click='goStepThree'><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
@@ -430,6 +426,12 @@
                 </v-list>
             </div>
         </div>
+
+        <div id='addFromGroup' v-show='formStep === 5'>
+      
+                  
+      
+        </div>
         
 
         <div class='pickforus' v-show="formStep === 6">
@@ -441,7 +443,7 @@
         </div>
 
         <div v-show="formStep === 8">
-              Your event/activity has been created You should receive a confirmation text shortly. 
+              Your event has been created You should receive a confirmation text shortly. 
         </div>
 
     </div>
@@ -461,12 +463,14 @@ import Avatar from 'vue-avatar'
 import datetime from 'vuejs-datetimepicker'
 import pickforus from "@/components/PickForUs"
 import locationfinder from "@/components/LocationFinder"
+import {utilities} from '../mixins/utilities'
 
 export default {
     components: {datetime,Avatar,pickforus,locationfinder},
+    mixins: [utilities],
     data: function() {
         return {
-            formStep: 0,
+            formStep: -2,
             cliname: "",
             clinamefe: "",
             clidetails: null,
@@ -511,13 +515,7 @@ export default {
             isCordova: (typeof window.cordova !== "undefined"),
             isPremium: false,
             isPro: false,
-            loggedin: false,
-            notificationoptions:false,
-            notifyschedulecomplete:true,
-            notifynewmessages:false,
-            notifyguestaccept:false,
-            notifyeventrescheduled:true,
-            notifyeventlocationchanges:true,          
+            loggedin: false,    
             sschit:false,
             remindertime: "24",
             schedulecutofftime: "",
@@ -823,7 +821,7 @@ export default {
         },
         pickForUs: function() {
             if (this.evlength==="") {
-                this.errorMessage="Please choose a length for your event/activity before using Pick for Us";
+                this.errorMessage="Please choose a length for your event before using Pick for Us";
             }
             else {
                 this.errorMessage=null;
@@ -871,7 +869,7 @@ export default {
         scheduleIt: function() {
 
              this.errorMessage=null; 
-             
+
              if (this.evdescription.length>1024) {
                  this.errorMessage="The event description cannot be longer than 1024 characters"
                  return;
@@ -910,11 +908,6 @@ export default {
                     EventIsRecurring: this.eventrecurring,
                     Guests: this.guests,
                     Location: this.evlocation,
-                    NotifyScheduleComplete: this.notifyschedulecomplete,
-                    NotifyNewMessages: this.notifynewmessages,
-                    NotifyGuestAccept: this.notifyguestaccept,
-                    NotifyEventRescheduled: this.notifyeventrescheduled,
-                    NotifyEventLocationChanges: this.notifyeventlocationchanges,
                     ReminderTime: this.remindertime,
                     ScheduleCutoffTime: this.schedulecutofftime,
                     MustApproveDiffTime: this.guestsrescheduleperm,
@@ -959,10 +952,13 @@ export default {
              this.evday=t.date;
              this.evtime=this.parseTime(t.time);
              this.formStep=2;
-            this.$forceUpdate();
+             this.$forceUpdate();
         },
         turnOnManualAddGuest: function() {
-            this.formStep=3;
+             this.formStep=3;
+        },
+        turnOnGroupAddGuest: function() {
+            
         },
         useHomeAddress: function() {
             if (this.clidetails!==null) {
@@ -1054,7 +1050,7 @@ export default {
         },
         verifyStepThree: function() {
             if (this.evlength==="") {
-                this.errorMessage="Event/Activity Length is Required";
+                this.errorMessage="event Length is Required";
                 return false;
             }
 
@@ -1089,7 +1085,7 @@ export default {
         var c = localStorage.getItem("_c");
         if (!(typeof(c)==="undefined" || c===null || c==="null")) {    
 
-            this.guestslimittotal=50;
+            this.guestslimittotal=15;
 
             this.$http({
                 method:'post',
@@ -1106,8 +1102,19 @@ export default {
                     this.cliphone=this.formatPhone(this.clidetails.PhoneNumber);
                     this.loggedin=true;
                     this.isPremium=this.clidetails.isPremium;
+                    this.formStep=0;
                 }
+                else {
+                    this.formStep=-1;
+                    this.doLogoutRoutine();
+                }
+            }).catch(e=> {
+                this.doLogoutRoutine();
             })
+        }
+        else {
+            this.formStep=-1;
+            this.doLogoutRoutine();
         }
     },
     watch: {

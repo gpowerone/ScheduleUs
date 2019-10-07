@@ -13,13 +13,21 @@ import Recover from '@/views/Recover'
 import VerifyEmail from '@/views/VerifyEmail'
 import Event from '@/views/Event'
 import VerifyPhone from '@/views/VerifyPhone'
+import GoogleCalendar from '@/views/GoogleCalendar'
+import Home from '@/views/Home'
 
 Vue.use(Router);
 
 const router =  new Router({
+  mode:'history',
   routes: [
+    {
+      path: '/',
+      name: 'Home',
+      component: Home
+    },
     {     
-       path: '/',
+       path: '/create',
        name: 'Create Event',
        component: CreateEvent
     },
@@ -82,6 +90,11 @@ const router =  new Router({
        path: '/verifyphone',
        name: 'Verify Phone',
        component: VerifyPhone
+    },
+    {
+        path: '/googcalendar',
+        name: 'Google Calendar',
+        component: GoogleCalendar
     }
   ]
 })

@@ -1,7 +1,7 @@
 <template>
     <div class="moduleWrapper">
-        <div v-show="tev===null">
-              Loading...
+         <div id='loading' class='loadingImg' v-show='tev===null'>
+            <img src="@/assets/loading.gif" />
         </div>
         <div v-show="errorMessage!==null" class="errorBox">
             {{errorMessage}}
@@ -85,7 +85,7 @@
 
         <div v-show="tev!==null&&showFinder===false&&showPick===false" class="mt-2 fieldwell">
             <h1>{{EventName}}</h1>
-            <div v-show="Rescheduled===true">*** Event/Activity Has Been Rescheduled ***</div>
+            <div v-show="Rescheduled===true">*** event Has Been Rescheduled ***</div>
             <div>{{EventDescription}}</div>
             <div class="layout row">
                 <div class="xs6 flex textleft">{{EventDate}}</div>
@@ -171,7 +171,7 @@
                             </div>
                          </div>
                          <div v-show="MoreAllowed===false">
-                              This event/activity is at maximum capacity. No additional attendees are allowed.
+                              This event is at maximum capacity. No additional attendees are allowed.
                          </div>
                     </div>
                 </v-collapse-wrapper>
@@ -185,7 +185,7 @@
                              {{SuggestLocationStatus}}
                          </div>
                          <div class='mt-2'>
-                            The host has allowed you to suggest a new location for the event/activity.
+                            The host has allowed you to suggest a new location for the event.
                          </div>
                          <div class='fieldwell xs-12 mt-2'>
                             <label>Location</label>
@@ -284,7 +284,7 @@
                              {{SuggestTimeStatus}}
                          </div>
                          <div class='mt-2'>
-                            The host has allowed you to suggest a new time for the event/activity. Use Pick for Us to suggest a good time based upon who is going.
+                            The host has allowed you to suggest a new time for the event. Use Pick for Us to suggest a good time based upon who is going.
                          </div>
                          <div class="fieldwell mt-1 textright">
                             <button class='schdusButton' @click='pickForUs'>Pick for Us!</button>
@@ -499,6 +499,8 @@ export default {
             }
         },
         addComment: function(ec) {
+            this.newComment=null;
+
             if (typeof(ec)==="undefined" || ec===null) {
                 this.commentParent= "00000000-0000-0000-0000-000000000000";
             }
@@ -642,7 +644,7 @@ export default {
                     }
                     else {
                         if (r.data.message==="AlreadyPresent") {
-                            this.errorMessage="You have already suggested a new location. You may suggest another new location if/when the event/activity is rescheduled."   
+                            this.errorMessage="You have already suggested a new location. You may suggest another new location if/when the event is rescheduled."   
                         }
                         else {
                             this.errorMessage=r.data.message;
@@ -685,7 +687,7 @@ export default {
                     }
                     else {
                         if (r.data.message==="AlreadyPresent") {
-                             this.errorMessage="You have already suggested a new time. You may suggest another new time if/when the event/activity is rescheduled."  
+                             this.errorMessage="You have already suggested a new time. You may suggest another new time if/when the event is rescheduled."  
                         }
                         else {
                             this.errorMessage=r.data.message;
@@ -856,11 +858,12 @@ export default {
                                 if (this.tev.Comments[x].item.EventCommentID===item.ParentID) {
                                     this.tev.Comments[x].children.push({
                                         children: [],
-                                item: item
+                                        item: item
                                     })                                    
                                 }
                             }
                         }          
+                        this.$forceUpdate();
 
                         this.okMessage="Comment Added";
                         var self=this;
@@ -922,7 +925,7 @@ export default {
          }
 
 
-         this.URL=encodeURI("https://schd.us/app/index.html#/event?e="+ev);
+         this.URL=encodeURI("https://schd.us/_"+ev);
 
          var c = localStorage.getItem("_c");
          if (typeof(c)!=="undefined" && c!==null && c!=="null") {      
@@ -949,8 +952,9 @@ export default {
                             this.needAcceptance = this.tev.NeedsAcceptance;
 
                             console.log(this.tev);
-    
-                         
+                            if (this.tev.GuestsCanChat===true) {
+                                this.$refs.acc6.open();
+                            }
 
                             if (this.tev.NeedsAcceptance===null) {
                                 this.$refs.acc4.open();
@@ -1115,6 +1119,12 @@ export default {
                     var d = new Date(parseInt(this.tev.Schedules[0].StartDate));
                     var h = d.getHours();
                     var ap="AM";
+                    if (h===0) {
+                        h=12;
+                    }
+                    else if (h===12) {
+                        ap="PM";
+                    }
                     if (h>12) {
                         ap="PM";
                         h-=12;
@@ -1127,6 +1137,12 @@ export default {
                     var da = new Date(d.getTime()+parseInt(this.tev.Schedules[0].EventLength)*60000);
                     var ha = da.getHours();
                     var apa="AM";
+                    if (ha===0) {
+                        ha=12;
+                    }
+                    else if (ha===12) {
+                        apa="PM";
+                    }
                     if (ha>12) {
                         apa="PM";
                         ha-=12;

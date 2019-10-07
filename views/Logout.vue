@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { EventBus } from '../bus';
+import {utilities} from '../mixins/utilities'
 
 export default {
     data() {
@@ -21,6 +21,7 @@ export default {
             formStep: 0     
         }
     },
+    mixins: [utilities],
     methods: {
         goToLogin: function() {
             this.$router.push("auth");
@@ -36,12 +37,7 @@ export default {
     mounted() {
         if (this.isLoggedIn()) {
             this.formStep=1;
-            localStorage.setItem("_c",null);
-            localStorage.setItem("_s",null);
-            localStorage.setItem("_r",null);
-            localStorage.setItem("_n",null);
-            EventBus.$emit("MenuUpdateEvent");
-            EventBus.$emit("AvatarUpdateEvent");
+            this.doLogoutRoutine();
         }
         else {
             this.$http({
@@ -53,12 +49,7 @@ export default {
                 }
             }).then(()=> {        
                 this.formStep=1;
-                localStorage.setItem("_c",null);
-                localStorage.setItem("_s",null);
-                localStorage.setItem("_r",null);
-                localStorage.setItem("_n",null);
-                EventBus.$emit("MenuUpdateEvent");
-                EventBus.$emit("AvatarUpdateEvent");
+                this.doLogoutRoutine();
             });
         }
     }

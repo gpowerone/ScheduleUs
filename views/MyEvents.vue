@@ -1,7 +1,7 @@
 <template>  
     <div class="moduleWrapper">
         <div v-show="loading===true">
-            Loading...
+             <img src="@/assets/loading.gif" />
         </div>
         <div v-show="loading===false">
 
@@ -12,7 +12,7 @@
             <h1>Dashboard</h1>
             <div v-show="isOrganizing.length>0">
                 <div class="mt-2 fieldwell boldchoice">
-                    Events/Activities I am Organizing
+                    Events I am Organizing
                 </div>
                 <div class="mt-2">
                     <template v-for="(item, i) in isOrganizing">
@@ -73,7 +73,7 @@
             </div>
             <div v-show="isParticipating.length>0">
                 <div class="mt-2 fieldwell boldchoice">
-                    Events/Activities I am Participating In
+                    Events I am Participating In
                 </div>
             </div>
             <div v-show="isParticipating.length===0 && isOrganizing.length===0">
@@ -89,8 +89,11 @@
 </template>
 
 <script>
+import {utilities} from '../mixins/utilities'
+
 export default {
     name: 'myEvents',
+    mixins: [utilities],
     data() {
         return {
             isOrganizing: [],
@@ -155,7 +158,12 @@ export default {
                     }
                     this.isParticipating=rp; 
                 }
+                else {
+                    this.doLogoutRoutine();
+                }
 
+            }).catch(e=> {
+                this.doLogoutRoutine();
             })
 
             this.loading=false;

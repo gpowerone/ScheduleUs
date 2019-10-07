@@ -52,8 +52,9 @@ export default {
   data: function() {
     return {
       items: [     
+        { icon: 'home', text: "Home", action: '/', display:true },  
         { icon: 'event_seat', text: "Dashboard", action: '/dashboard', display:false },  
-        { icon: 'event', text: "Schedule It!", action: '/', display: false },   
+        { icon: 'event', text: "Schedule It!", action: '/create', display: false },   
         { icon: 'https', text: "Log In", action: '/auth', display:false },
         { icon: 'person_add', text: "Sign Up", action: '/signup', display:false },
         { icon: 'all_inclusive', text: "Premium", action: '/premium', display:false },
@@ -80,14 +81,14 @@ export default {
         return true;
      },
      updateMenu: function() {
-        this.items[0].display=(this.isLoggedIn()===true);
-        this.items[1].display=true;
-        this.items[2].display=(this.isLoggedIn()===false);
+        this.items[1].display=(this.isLoggedIn()===true);
+        this.items[2].display=(this.isLoggedIn()===true);
         this.items[3].display=(this.isLoggedIn()===false);
-        this.items[4].display=true;
-        this.items[5].display=(this.isLoggedIn()===true);    
-        this.items[6].display=true;
-        this.items[7].display=(this.isLoggedIn()===true);
+        this.items[4].display=(this.isLoggedIn()===false);
+        this.items[5].display=true;
+        this.items[6].display=(this.isLoggedIn()===true);    
+        this.items[7].display=true;
+        this.items[8].display=(this.isLoggedIn()===true);
      }
   }
 }

@@ -1,8 +1,8 @@
 <template>
     <div class="moduleWrapper">
         <h1>Phone Verification</h1>
-        <div v-show="loading===null">
-              Loading...
+       <div  class='loadingImg'  v-show="loading===null">
+                <img src="@/assets/loading.gif" />
         </div>
         <div v-show="loading!==null" v-html="loading" class="mt-2">
 

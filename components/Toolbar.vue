@@ -29,43 +29,48 @@
         <div class="modalWrapper">
           <h1>Image Upload</h1>
         
-          <div class="imageUploader">
-            <div v-show="image!==null">
-              <img v-bind:src="image" />
+          <div v-show="imageuploaded===false">
+            <div class="imageUploader">
+              <div v-show="image!==null">
+                <img v-bind:src="image" />
+              </div>
+              <image-uploader
+                :preview="false"
+                :className="['fileinput', { 'fileinput--loaded': hasImage }]"
+                capture="environment"
+                :maxHeight=100
+                :maxWidth=100
+                :autoRotate="true"
+                outputFormat="verbose"
+                @input="setImage"
+              >
+              <label for="fileInput" slot="upload-label">
+                <figure>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="32"
+                    height="32"
+                    viewBox="0 0 32 32"
+                  >
+                    <path
+                      class="path1"
+                      d="M9.5 19c0 3.59 2.91 6.5 6.5 6.5s6.5-2.91 6.5-6.5-2.91-6.5-6.5-6.5-6.5 2.91-6.5 6.5zM30 8h-7c-0.5-2-1-4-3-4h-8c-2 0-2.5 2-3 4h-7c-1.1 0-2 0.9-2 2v18c0 1.1 0.9 2 2 2h28c1.1 0 2-0.9 2-2v-18c0-1.1-0.9-2-2-2zM16 27.875c-4.902 0-8.875-3.973-8.875-8.875s3.973-8.875 8.875-8.875c4.902 0 8.875 3.973 8.875 8.875s-3.973 8.875-8.875 8.875zM30 14h-4v-2h4v2z"
+                    ></path>
+                  </svg>
+                </figure>
+                <span class="upload-caption">{{
+                  hasImage ? "Replace" : "Click to upload"
+                }}</span>
+              </label>
+              </image-uploader>
             </div>
-            <image-uploader
-              :preview="false"
-              :className="['fileinput', { 'fileinput--loaded': hasImage }]"
-              capture="environment"
-              :maxHeight=100
-              :maxWidth=100
-              :autoRotate="true"
-              outputFormat="verbose"
-              @input="setImage"
-            >
-            <label for="fileInput" slot="upload-label">
-              <figure>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="32"
-                  height="32"
-                  viewBox="0 0 32 32"
-                >
-                  <path
-                    class="path1"
-                    d="M9.5 19c0 3.59 2.91 6.5 6.5 6.5s6.5-2.91 6.5-6.5-2.91-6.5-6.5-6.5-6.5 2.91-6.5 6.5zM30 8h-7c-0.5-2-1-4-3-4h-8c-2 0-2.5 2-3 4h-7c-1.1 0-2 0.9-2 2v18c0 1.1 0.9 2 2 2h28c1.1 0 2-0.9 2-2v-18c0-1.1-0.9-2-2-2zM16 27.875c-4.902 0-8.875-3.973-8.875-8.875s3.973-8.875 8.875-8.875c4.902 0 8.875 3.973 8.875 8.875s-3.973 8.875-8.875 8.875zM30 14h-4v-2h4v2z"
-                  ></path>
-                </svg>
-              </figure>
-              <span class="upload-caption">{{
-                hasImage ? "Replace" : "Click to upload"
-              }}</span>
-            </label>
-            </image-uploader>
-          </div>
 
-          <div class="imageUploaderBottom textright" v-show="image!==null">
-              <button>Accept</button>
+            <div class="imageUploaderBottom textright" v-show="image!==null">
+                <button @click="uploadImage()">Accept</button>
+            </div>
+          </div>
+          <div v-show="imageuploaded===true">
+              <div class="mt-2">The image was uploaded successfully</div>
           </div>
         </div>
     </modal>
@@ -103,6 +108,7 @@ export default {
   data: function() {
     return {
       image: null,
+      imageuploaded: false,
       hasImage: false,
       loggedIn: false,
       drawer: false,
@@ -140,7 +146,6 @@ export default {
         this.image = file.dataUrl;
     },
     updateAvatar() {
-
         var c = localStorage.getItem("_c");
         if (typeof(c)==="undefined" || c===null || c==="null") {          
             this.loggedIn=false;
@@ -149,6 +154,22 @@ export default {
           this.uname=localStorage.getItem("_n");
           this.loggedIn=true;
         }
+    },
+    uploadImage() {
+        var self=this;
+
+        this.$http({
+            method:'post',
+            url:this.$hostname+'/addavatar',
+            data: {
+               ClientID: localStorage.getItem("_c"),
+               SessionID: localStorage.getItem("_s"),
+               SessionLong: localStorage.getItem("_r"),
+               Image: this.image.replace("data:image/png;base64,","")
+            }
+        }).then(r=>{
+            self.imageuploaded=true;
+        })
     }
   }
 }

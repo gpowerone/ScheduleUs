@@ -1,9 +1,9 @@
 <template>
   <div class="moduleWrapper">
 
-    <div v-show="loading===true">
-         Loading...
-    </div>
+     <div  class='loadingImg'  v-show="loading===true">
+                <img src="@/assets/loading.gif" />
+        </div>
     <div v-show="loading===false">
 
         <div class='errorBox' v-show='errorMessage!==null'>
@@ -55,7 +55,7 @@
                 </div>
                 <div class="acccontent" v-collapse-content>
                     <div>
-                        If you enter your name here then you will not need to enter it when creating a new event/activity
+                        If you enter your name here then you will not need to enter it when creating a new event
                     </div>
                     <div class="layout row mt-2">
                         <div class="flex xs4 mt-1">
@@ -87,7 +87,7 @@
                 </div>
                 <div class="acccontent" v-collapse-content>
                     <div>
-                        Populate event/activity address fields with your home address easily
+                        Populate event address fields with your home address easily
                     </div>
                     <div class="layout row mt-2">
                         <div class="flex xs4 mt-1">
@@ -187,7 +187,7 @@
                 </div>
                 <div class="acccontent" v-collapse-content>
                     <div>
-                        Add an email address to login and optionally receive event/activity notices via email
+                        Add an email address to login and optionally receive event notices via email
                     </div>
                     <div class="layout row mt-3">
                         <div class="flex xs12 fieldwell">
@@ -207,7 +207,10 @@
                 </div>
                 <div class="acccontent" v-collapse-content>
                     <div>
-                        Integrate your calendars to help Schedule Us schedule events/activities for you and your guests better
+                        Integrate your calendars to help Schedule Us avoid conflicts when scheduling you
+                    </div>
+                    <div class="mt-2">
+                        <button @click="doCalendarGoogle()">Google Calendar</button>
                     </div>
                 </div>
             </v-collapse-wrapper>
@@ -292,8 +295,12 @@
 </template>
 
 <script>
+import {utilities} from '../mixins/utilities'
+import { copyFileSync } from 'fs';
+
 export default {
     name: "myaccount",
+    mixins: [utilities],
     data() {
         return {
             acc1i: "expand_less",
@@ -325,7 +332,10 @@ export default {
             vpass: "",
             cpassnew: "",
             cpassrnew: "",
-            cpassold: ""
+            cpassold: "",
+            items: undefined,
+            api: undefined,
+            authorized: false
         }
     },
     methods: {
@@ -401,6 +411,9 @@ export default {
         doError: function(msg) {   
             this.errorMessage=msg; 
             this.$forceUpdate();         
+        },
+        doCalendarGoogle: function() { 
+            window.open("https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id=801199894294-iei4roo6p67hitq9sc2tat5ft24qfakt.apps.googleusercontent.com&scope=https://www.googleapis.com/auth/calendar.readonly&response_type=code&redirect_uri=https://localhost:8000/#/googcalendar");
         },
         doChangePassword: function() {
 
@@ -565,7 +578,7 @@ export default {
         undoError: function() {
             this.errorMessage=null;
             this.$forceUpdate();
-        },
+        }
     },
     beforeRouteEnter (to, from, next) {
 
@@ -600,7 +613,12 @@ export default {
                     this.phone=this.formatPhone(clidetails.PhoneNumber);
                     this.email=clidetails.EmailAddress;
                 }
+                else {
+                    this.doLogoutRoutine();
+                }
                 this.loading=false;
+            }).catch(e=> {
+                this.doLogoutRoutine();
             })
     }
 }

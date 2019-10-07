@@ -406,3 +406,8 @@
 .mb-2 {
     margin-bottom:2%;
 }
+
+.loadingImg {
+    margin-top:50%;
+    text-align:center;
+}

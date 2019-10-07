@@ -13,8 +13,24 @@ import ToggleButton from 'vue-js-toggle-button'
 import ImageUploader from 'vue-image-upload-resize'
 import UUID from 'vue-uuid';
 
+// Determine if we are in a phone app, that changes how we do things a lot
+const isCordovaApp = (typeof window.cordova !== "undefined");
 
-Vue.prototype.$hostname="http://localhost:80";
+if (isCordovaApp) {
+  Vue.prototype.$hostname="https://api.schd.us";
+}
+else if (window.location.origin.indexOf("localhost")>-1) {
+  Vue.prototype.$hostname="http://localhost:80";
+}
+else if (window.location.origin.indexOf("stage.schd.us")>-1)
+{
+  Vue.prototype.$hostname="https://stageapi.schd.us";
+}
+else {
+  Vue.prototype.$hostname="https://api.schd.us";
+}
+
+
 Vue.use(VueAxios, axios)
 Vue.use(VModal)
 Vue.use(VueCollapse)
@@ -44,8 +60,7 @@ document.addEventListener("deviceready", () => {
   });
 });
 
-// If we are not in Cordova, manually trigger the deviceready event
-const isCordovaApp = (typeof window.cordova !== "undefined");
+
 if (!isCordovaApp){
   document.dispatchEvent(new CustomEvent("deviceready", {}));
 }

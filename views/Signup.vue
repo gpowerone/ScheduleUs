@@ -112,12 +112,14 @@
 </template>
 
 <script>
-import VueRecaptcha from 'vue-recaptcha';
+import VueRecaptcha from 'vue-recaptcha'
+import {utilities} from '../mixins/utilities'
 
 export default {
     components: {
         'vue-recaptcha': VueRecaptcha
     },
+    mixins: [utilities],
     data() {
        return {
           formStep: 0,
@@ -133,6 +135,9 @@ export default {
           SecQuestion: '',
           SecAnswer: ''
        }
+    },
+    mounted() {
+        this.doLogoutRoutine();
     },
     methods: {
         doError: function(msg) {   
