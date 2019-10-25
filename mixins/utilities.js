@@ -9,6 +9,62 @@ export const utilities = {
             localStorage.setItem("_n",null);
             EventBus.$emit("MenuUpdateEvent");
             EventBus.$emit("AvatarUpdateEvent");
+        },
+        makeDate: function(day,time) {
+            var ds=day.split('-');
+
+            var dt = ds[2]+"-"+ds[0]+"-"+ds[1]+"T";
+            
+            if (time!==null && time!=="") {
+                var pt=this.makeTime(time).split(":");
+                
+                var ah=0;
+                if (time.indexOf(" PM")>-1) {
+                    pt[0] = String(parseInt(pt[0])+12);
+                }
+
+                if (pt[0].length===1) {
+                    pt[0]="0"+pt[0];
+                }
+                if (pt[1].length===1) {
+                    pt[1]="0"+pt[1];
+                }
+                return dt+pt[0]+":"+pt[1]+":"+pt[2]+"Z";
+            }
+            else {
+                return dt+"00:00:00Z";
+            }
+        },
+        makeTime: function(time) {
+            if (time.indexOf(" AM")>-1) {
+               return time.replace(" AM","")+":00";
+            }
+            else {
+                return time.replace(" PM","")+":00";
+            }
+        },
+        parseTime: function(ti) {
+            var tip = ti.split(":");
+            var ap="AM";
+            if (tip[0]>12) {
+                ap="PM";
+                tip[0]-=12;
+            }
+            return tip[0]+":"+tip[1]+" "+ap;
+        },
+        verifyEmail: function(email) {
+            var emailVerification = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/;
+            if (!emailVerification.test(email)) {
+                return "Email address is invalid";
+            }
+            return "OK";
+        },
+        verifyPhone: function(phone) {
+            var phoneVerification = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im;
+            if (!phoneVerification.test(phone)) {
+                return "Phone number is invalid";
+            }
+            return "OK";
         }
     }
 }

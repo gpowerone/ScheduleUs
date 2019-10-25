@@ -47,15 +47,37 @@
             </div>
         </modal>
 
+        <modal name="confirmCancel" width="300" height="150">
+            <div class="p2">
+                <h1>Confirm Cancel Event</h1>
+                <div class="mt-2">
+                    Are you sure you wish to cancel this event? Attendees will receive a message indicating they have been uninvited.
+                </div>
+                <div class="mt-2 layout row">
+                    <div class="flex xs6 textleft">
+                        <button @click="undoEventCancel()">Do Not Cancel</button>
+                    </div>
+                    <div class="flex xs6 textright">
+                        <button @click="confirmEventCancel()">Cancel Event</button>
+                    </div>
+                </div>
+            </div>
+        </modal>
+
         <modal name="emojiModal" width="300" height="400">
             <div class="scrollbox">
                  <emojipicker></emojipicker>
             </div>
         </modal>
 
-        <modal name="reportModal" width="300" height="400">
+        <modal name="reportModal" width="300" height="200">
             <div class="p2">
-                If this content is in violation of community guidelines (link needed) then it will be removed by a moderator. Are you sure you wish to make this report?
+                <div>
+                If this content is in violation of the Schedule Us Terms of Use (link needed) then it will be removed by a moderator. Are you sure you wish to make this report?
+                </div>
+                <div class="mt-2">
+                    <button @click="closeReportModal()">Close</button>
+                </div>
             </div>
         </modal>
 
@@ -83,13 +105,29 @@
             </div>
         </modal>
 
+
         <div v-show="tev!==null&&showFinder===false&&showPick===false" class="mt-2 fieldwell">
-            <h1>{{EventName}}</h1>
-            <div v-show="Rescheduled===true">*** event Has Been Rescheduled ***</div>
-            <div>{{EventDescription}}</div>
             <div class="layout row">
+                <div class="flex xs10">
+                    <h1>{{EventName}}</h1>
+                </div>
+                <div class="flex xs1 textright">
+                    <v-icon class="editicon" @click="doEventUpdate()" v-show="IsOwner==true">edit</v-icon>
+                </div>
+                <div class="flex xs1 textright">
+                    <v-icon class="editicon" @click="doEventCancel()" v-show="IsOwner==true">remove_circle_outline</v-icon>
+                </div>
+            </div>
+            <div v-show="Rescheduled===true">*** Event Has Been Changed ***</div>
+            <div>{{EventDescription}}</div>
+            <div class="layout row" v-show="IsMultiDay===false">
                 <div class="xs6 flex textleft">{{EventDate}}</div>
                 <div class="xs6 flex textright">{{EventTime}}</div>
+            </div>
+            <div class="layout row" v-show="IsMultiDay===true">
+                <div class="xs12 flex textleft">
+                    {{EventMultiDate}}
+                </div>            
             </div>
             <div class="layout row">
                 <div class="flex xs10">{{EventLocation}}</div>
@@ -306,7 +344,11 @@
 
                 <v-collapse-wrapper @onStatusChange="acc1s" ref="acc1">
                     <div class="accheader" v-collapse-toggle>
-                        <v-icon>{{ acc1i }}</v-icon> <span>Attendees</span>
+                        <div class="layout row">
+                            <div class="flex xs12">
+                                <v-icon>{{ acc1i }}</v-icon> <span>Attendees</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="acccontent" v-collapse-content>
                          <div v-show="Guests.length===0">
@@ -370,7 +412,7 @@
                     &nbsp;&nbsp;<a v-bind:href="LinkedInURL"><img src="@/assets/LIIcon.png" width="30" height="30" alt="Share on Linked In" /></a>           
               </div>
         </div>
-        
+
         <div v-show="showFinder===true">
               <locationfinder ref="lf"></locationfinder>
         </div>
@@ -409,10 +451,12 @@ import datetime from 'vuejs-datetimepicker'
 import pickforus from "@/components/PickForUs"
 import comments from '@/components/Comments'
 import { EventBus } from '../bus';
+import {utilities} from '../mixins/utilities'
 
 export default {
     name: "Event",
     components: {Avatar, emojipicker, locationfinder, datetime, pickforus, comments},
+    mixins: [utilities],
     data() {
         return {
             acc1i: "expand_less",
@@ -587,6 +631,35 @@ export default {
         closePickForUs: function() {
             this.showPick=false;
         },
+        closeReportModal: function() {
+            this.$modal.hide("reportModal");
+        },
+        confirmEventCancel: function() {
+             this.$modal.hide("confirmCancel");
+
+             this.$http({
+                method:'post',
+                url:this.$hostname+'/cancelevent',
+                data: {
+                    EventID: this.tev.EventID,
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r")
+                }
+            }).then(r=> {
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        this.$router.push("dashboard");
+                    }
+                    else {
+                        this.errorMessage=r.data.message;
+                    }
+                }
+                else {
+                    this.errorMessage="Error contacting backend service";       
+                }
+            });
+        },
         doLocationChange: function() {
             this.errorMessage=null;
 
@@ -673,7 +746,7 @@ export default {
                 data: {
                     EventID: this.tev.EventID,
                     EventGuestID: this.EGID,
-                    EvTime: this.makeDate()         
+                    EvTime: this.makeDate(this.evday,this.evtime)         
                 }
             }).then(r=> {
                 if (r.status===200) {
@@ -743,6 +816,12 @@ export default {
                 this.$modal.hide("rsvpModal");
             });
         },
+        doEventCancel: function() {
+            this.$modal.show("confirmCancel");
+        },
+        doEventUpdate: function() {
+            this.$router.push("update?e="+this.tev.Hash);
+        },
         doYesRSVP: function() {
             this.doRSVP(true);
         },
@@ -765,53 +844,6 @@ export default {
         insertEmoji: function(emoji) {
             this.newComment+=emoji;
             this.$modal.hide("emojiModal");
-        },
-        makeDate: function() {
-          
-            var fdate;
-            var ds=this.evday.split('-');
-            var dt = ds[2]+"-"+ds[0]+"-"+ds[1]+"T";
-            
-            if (this.evtime!==null && this.evtime!=="") {
-                var pt=this.makeTime(this.evtime).split(":");
-                
-                var ah=0;
-                if (this.evtime.indexOf(" PM")>-1) {
-                    pt[0] = String(parseInt(pt[0])+12);
-                }
-
-                if (pt[0].length===1) {
-                    pt[0]="0"+pt[0];
-                }
-                if (pt[1].length===1) {
-                    pt[1]="0"+pt[1];
-                }
-                fdate= dt+pt[0]+":"+pt[1]+":"+pt[2];
-            }
-            else {
-                fdate= dt+"00:00:00";
-            }
-
-            return new Date(fdate).getTime()+new Date(fdate).getTimezoneOffset();
-    
-        },
-        makeTime: function() {
-            var e=this.evtime;
-            if (e.indexOf(" AM")>-1) {
-               return e.replace(" AM","")+":00";
-            }
-            else {
-                return e.replace(" PM","")+":00";
-            }
-        },
-        parseTime: function(ti) {
-            var tip = ti.split(":");
-            var ap="AM";
-            if (tip[0]>12) {
-                ap="PM";
-                tip[0]-=12;
-            }
-            return tip[0]+":"+tip[1]+" "+ap;
         },
         pickForUs: function() {
             this.showPick=true;
@@ -1114,8 +1146,84 @@ export default {
               }
               return "#"
           },
+          EventMultiDate: function() {
+                if (!this.IsMultiDay) return "";
+
+                var d = new Date(parseInt(this.tev.Schedules[0].StartDate));
+
+                var mth="";
+                switch(d.getMonth()) {
+                    case 0: mth="Jan"; break;
+                    case 1: mth="Feb"; break;
+                    case 2: mth="Mar"; break;
+                    case 3: mth="Apr"; break;
+                    case 4: mth="May"; break;
+                    case 5: mth="Jun"; break;
+                    case 6: mth="Jul"; break;
+                    case 7: mth="Aug"; break;
+                    case 8: mth="Sep"; break;
+                    case 9: mth="Oct"; break;
+                    case 10: mth="Nov"; break;
+                    case 11: mth="Dec"; break;
+                }
+
+                var h = d.getHours();
+                var ap="AM";
+                if (h===0) {
+                    h=12;
+                }
+                else if (h===12) {
+                    ap="PM";
+                }
+                if (h>12) {
+                    ap="PM";
+                    h-=12;
+                }
+                var mins = d.getMinutes();
+                var dmin = String(mins);
+                if (mins<10) {
+                    dmin="0"+dmin;
+                }
+                var da = new Date(parseInt(this.tev.Schedules[0].EndDate));
+
+                var dmth="";
+                switch(da.getMonth()) {
+                    case 0: dmth="Jan"; break;
+                    case 1: dmth="Feb"; break;
+                    case 2: dmth="Mar"; break;
+                    case 3: dmth="Apr"; break;
+                    case 4: dmth="May"; break;
+                    case 5: dmth="Jun"; break;
+                    case 6: dmth="Jul"; break;
+                    case 7: dmth="Aug"; break;
+                    case 8: dmth="Sep"; break;
+                    case 9: dmth="Oct"; break;
+                    case 10: dmth="Nov"; break;
+                    case 11: dmth="Dec"; break;
+                }
+
+                var ha = da.getHours();
+                var apa="AM";
+                if (ha===0) {
+                    ha=12;
+                }
+                else if (ha===12) {
+                    apa="PM";
+                }
+                if (ha>12) {
+                    apa="PM";
+                    ha-=12;
+                }
+                var minsa = da.getMinutes();
+                var dmina = String(minsa);
+                if (minsa<10) {
+                    dmina="0"+dmina;
+                }
+
+                return mth +" "+d.getDate()+", "+d.getFullYear()+" "+h+":"+dmin+" "+ap+" - "+ dmth +" "+da.getDate()+", "+da.getFullYear()+" "+ha+":"+dmina+" "+apa;
+          },
           EventTime: function() {
-                if (this.tev!==null) {
+                if (this.tev!==null) { 
                     var d = new Date(parseInt(this.tev.Schedules[0].StartDate));
                     var h = d.getHours();
                     var ap="AM";
@@ -1163,6 +1271,12 @@ export default {
               }
               return [];
           },
+          IsMultiDay: function() {
+              if (this.tev!==null) {
+                  return this.tev.Schedules[0].EventLength===-1;
+              }
+              return false;
+          },
           IsOwner: function() {
               if (this.tev!==null) {
                   return this.tev.IsOwner;          
@@ -1192,7 +1306,7 @@ export default {
           },
           Rescheduled: function() {
               if (this.tev!==null) {
-                  return this.tev.Rescheduled;
+                  return this.tev.Reschedule;
               }
               return false;
           },

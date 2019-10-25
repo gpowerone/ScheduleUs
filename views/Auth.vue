@@ -1,17 +1,37 @@
 <template>
     <div class="moduleWrapper">
 
-        <div class='errorBox' v-show='isError===1'>
+        <div class='errorBox' v-show='errorMessage!==null'>
             {{ errorMessage }}
         </div>
+
+        <modal name="getPhone" width="300" height="200" clickToClose="false">
+            <div class="p2">
+                <h1>Phone Number Required</h1>
+                <div class="mt-2">
+                    Enter your phone number to complete sign-up:
+                </div>
+                <div class="mt-2 fieldwell">
+                    <input type="text" class="textfield" v-model="ssoPhone" />
+                </div>
+                <div class="mt-2 textright">
+                    <button @click="doFinishSignup()">Complete Sign-Up</button>
+                </div>
+            </div>
+        </modal>
 
         <div id='loginFlow' v-show="formStep===0">
             <h1>Login</h1>
 
-            <div class="textright mt-3">
-                <button @click="goToCreateAccount()" class="schdusButton" >Register</button>
+            <div class="textcenter">
+                <GoogleLogin class="mt-2 ib" :params="params" :renderParams="renderParams" :onSuccess="onSuccess" :onFailure="onFailure">Login with Google</GoogleLogin>
             </div>
-            <div class="layout row mt-2">
+            <div class="textcenter">
+                <v-facebook-login :login="fbLogin" app-id="3169905106414058"></v-facebook-login>
+            </div>
+
+           
+            <div class="layout row mt-5">
                 <div class="fieldwell flex xs12">
                     Phone Number or Email Address:<br />
                     <input type='text' id='user' v-model="Phone" class='textfield' />
@@ -24,15 +44,21 @@
                 </div>
             </div>
             <div class="layout row mt-2">
-                <div class="fieldwell flex xs12">
-                    <button class="fullWidth p2" @click="doLogin()" :disabled="status==='submitting'" >Login</button>
+                <div class="fieldwell flex xs12 p2">
+                    <button class="fullWidth" @click="doLogin()" :disabled="status==='submitting'" >Login</button>
                 </div>
             </div>
-              <div class="layout row mt-2">
-                <div class="fieldwell flex xs12">
-                    <button @click="goToAccountRecovery()" class="fullWidth textcenter tanButton p2">Forgot your password?</button>
+            <div class="layout row mt-2">
+                 <div class="fieldwell flex xs6 p2">
+                    <button @click="goToCreateAccount()" class="fullWidth tanButton" >Register</button>
+                </div>
+    
+                <div class="fieldwell flex xs6 p2">
+                    <button @click="goToAccountRecovery()" class="fullWidth tanButton">Forgot Password?</button>
                 </div>
             </div>
+           
+           
         </div>    
         <div id='accountRecoveryFlow' v-show="formStep===1">
              <h1>Recover Your Account</h1>
@@ -71,27 +97,41 @@
 
 <script>
 import { EventBus } from '../bus';
+import GoogleLogin from 'vue-google-login';
+import VFacebookLogin from 'vue-facebook-login-component'
 
 export default {
     name: "Auth",
+    components:{GoogleLogin,VFacebookLogin},
     data() {
         return {
             ARPhone: "",
             Phone:"",
             Passwd:"",
             formStep: 0,
-            errorMessage: '',
-            isError: 0,
+            errorMessage: null,
             status:"",
             clientID: null,
-            textResent: 0
+            ssoPhone: null,
+            textResent: 0,
+            gU: null,
+            params: {
+                    client_id: "801199894294-ph8llsbfnu6lovla7ed46mq0rvk9rbnm.apps.googleusercontent.com"
+            },
+            renderParams: {
+                    width: 210,
+                    height: 40,
+                    longtitle: true
+            }
         }
     },
     methods: {
         doAR: function() {
 
+            this.errorMessage=null;
+
             if (this.ARPhone.length===0) {
-                this.doError("Phone number is required");
+                this.errorMessage="Phone number is required";
                 return;
             }
 
@@ -104,27 +144,53 @@ export default {
             }).then(r=> {
                 if (r.status===200) {
                     if (r.data.status===200) {
-                        this.isError=0;
                         this.formStep=3;
                         this.$forceUpdate();
                     }
                     else {
-                        this.doError(r.data.message);
+                         this.errorMessage=r.data.message;
                     }
                 }
                 else {
-                    this.doError("An internet connection error occurred. Please check your connection");
+                    this.errorMessage="An internet connection error occurred. Please check your connection";
                 }
             })
         },
-        doError: function(msg) {   
-            this.errorMessage=msg;
-            this.isError=1;  
-            this.$forceUpdate();         
+        doFinishSignup: function() {
+            var phoneVerification = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im;
+            if (!phoneVerification.test(this.ssoPhone)) {
+                 this.errorMessage="Invalid phone number";
+                 return;
+            }
+
+            if (this.gU!==null) {
+                this.$http({
+                    method:'post',
+                    url:this.$hostname+'/verifygooglogin',
+                    data: {
+                        Token: this.gU.Zi.id_token,
+                        Phone: this.ssoPhone,
+                        EmailAddress: this.gU.w3.U3
+                    }
+                }).then(r=> {       
+                    this.$modal.hide("getPhone");
+                    if (r.status===200) {
+                        if (r.data.status===200 && r.data.message==="OK") {                          
+                            this.formStep=2;                                        
+                        }
+                        else {
+                            this.errorMessage=r.data.message;
+                        }
+                    }
+                    else {
+                        this.errorMessage="Error contacting backend service";
+                    }
+                });
+            }
         },
         doLogin: function() {
             if (this.Phone.length===0 || this.Passwd.length===0) {
-                this.doError("Invalid username or password");                
+                this.errorMessage="Invalid username or password";                
                 return;
             }
 
@@ -151,35 +217,80 @@ export default {
                     else {
                         if (r.data.message.length===36) {
                             this.clientID=r.data.message;
-                            this.undoError();
+                            this.errorMessage=null;
                             this.formStep=2;
                         }
                         else {
-                            this.doError(r.data.message);
+                            this.errorMessage=r.data.message;
                          
                         }
                     }
                 }
                 else {
-                    this.doError("Error connecting to Schedule Us service, please try again")
+                    this.errorMessage="Error connecting to Schedule Us service, please try again";
                 }
 
                 this.status="";
             });
         },
+        fbLogin: function(r) {
+            console.log(r);
+        },
         goToAccountRecovery: function() {
             this.formStep=1;
-            this.undoError();
+             this.errorMessage=null;
         },
         goToCreateAccount: function() {
             this.$router.push('signup');
         },
         goToLogin: function() {
             this.formStep=0;
-            this.undoError();
+            this.errorMessage=null;
         },
-        mounted() {
-          
+        onFailure: function() {
+            this.errorMessage="Error contacting backend service";
+        },
+        onSuccess: function(googleUser) {
+
+            this.errorMessage=null; 
+            this.gU=googleUser;
+    
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/verifygooglogin',
+                data: {
+                    Token: googleUser.Zi.id_token,
+                    Phone: null,
+                    EmailAddress: googleUser.w3.U3
+                }
+            }).then(r=> {       
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        if (r.data.message==="NEEDPHONE") {
+                            this.$modal.show("getPhone");
+                        }
+                        else {
+                           
+                            var s = JSON.parse(r.data.message);
+                            localStorage.setItem("_c",s.ClientID);
+                            localStorage.setItem("_s",s.SessionID);
+                            localStorage.setItem("_r",s.SessionLong);
+                            localStorage.setItem("_n",s.UserName);
+                            EventBus.$emit("MenuUpdateEvent");
+                            EventBus.$emit("AvatarUpdateEvent");
+                            this.$router.push('dashboard');
+                            
+                        }
+                    }
+                    else {
+                        this.errorMessage=r.data.message;
+                    }
+                }
+                else {
+                    this.errorMessage="Error contacting backend service";
+                }
+            });
+           
         },
         resendTextMessage: function() {
 
@@ -195,18 +306,13 @@ export default {
                 this.status='';
                 if (r.data.message==="OK") {
                     this.textResent=1;
-                    this.undoError();
+                    this.errorMessage=null;
                 }
                 else {
-                    this.doError(r.data.message);
+                    this.errorMessage=r.data.message;
                 }
             })
-        },
-        undoError: function() {
-            this.isError=0;
-            this.errorMessage="";
-            this.$forceUpdate();
-        },
+        }
     }
 }
 </script>

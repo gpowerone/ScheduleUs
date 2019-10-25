@@ -24,7 +24,7 @@ else if (window.location.origin.indexOf("localhost")>-1) {
 }
 else if (window.location.origin.indexOf("stage.schd.us")>-1)
 {
-  Vue.prototype.$hostname="https://stageapi.schd.us";
+  Vue.prototype.$hostname="https://api.schd.us";
 }
 else {
   Vue.prototype.$hostname="https://api.schd.us";

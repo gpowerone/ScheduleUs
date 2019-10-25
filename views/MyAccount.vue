@@ -49,7 +49,7 @@
 
         <h1>My Account</h1>
         <v-collapse-group :onlyOneActive="true">
-            <v-collapse-wrapper @onStatusChange="acc1s" ref="acc1">
+            <v-collapse-wrapper @onStatusChange="acc1s" ref="acc1" v-show="accounttype===0">
                 <div class="accheader" v-collapse-toggle>
                     <v-icon>{{ acc1i }}</v-icon> <span>Your Name</span>
                 </div>
@@ -181,7 +181,7 @@
                     </div>
                 </div>
             </v-collapse-wrapper>
-            <v-collapse-wrapper @onStatusChange="acc6s"  ref="acc6">
+            <v-collapse-wrapper @onStatusChange="acc6s"  ref="acc6" v-show="accounttype===0">
                 <div class="accheader" v-collapse-toggle>
                     <v-icon>{{ acc6i }}</v-icon> <span>Email Address</span>
                 </div>
@@ -214,7 +214,7 @@
                     </div>
                 </div>
             </v-collapse-wrapper>
-            <v-collapse-wrapper @onStatusChange="acc4s"  ref="acc4">
+            <v-collapse-wrapper @onStatusChange="acc4s"  ref="acc4" v-show="accounttype===0">
                 <div class="accheader" v-collapse-toggle>
                     <v-icon>{{ acc4i }}</v-icon> <span>Change Password</span>
                 </div>
@@ -310,6 +310,7 @@ export default {
             acc5i: "expand_less",
             acc6i: "expand_less",
             acc7i: "expand_less",
+            accounttype: 0,
             btnchangepassword:false,
             btnchangephone:false,
             btndelete:false,
@@ -413,7 +414,7 @@ export default {
             this.$forceUpdate();         
         },
         doCalendarGoogle: function() { 
-            window.open("https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id=801199894294-iei4roo6p67hitq9sc2tat5ft24qfakt.apps.googleusercontent.com&scope=https://www.googleapis.com/auth/calendar.readonly&response_type=code&redirect_uri=https://localhost:8000/#/googcalendar");
+            window.open("https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id=801199894294-iei4roo6p67hitq9sc2tat5ft24qfakt.apps.googleusercontent.com&scope=https://www.googleapis.com/auth/calendar.events&response_type=code&redirect_uri=https://localhost:8000/googcalendar");
         },
         doChangePassword: function() {
 
@@ -591,7 +592,7 @@ export default {
         }
     },
     mounted() {
-        this.$refs.acc1.open();
+       
 
         this.$http({
                 method:'post',
@@ -611,7 +612,15 @@ export default {
                     this.city=clidetails.City;
                     this.postalcode=clidetails.PostalCode;
                     this.phone=this.formatPhone(clidetails.PhoneNumber);
-                    this.email=clidetails.EmailAddress;
+                    this.email=clidetails.EmailAddress; 
+                    this.accounttype=clidetails.AccountType;
+
+                    if (this.accounttype===0) {
+                         this.$refs.acc1.open();
+                    }
+                    else {
+                         this.$refs.acc2.open();
+                    }
                 }
                 else {
                     this.doLogoutRoutine();

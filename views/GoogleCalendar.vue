@@ -1,8 +1,10 @@
 <template>
     <div class="moduleWrapper">
         <h1>Google Calendar</h1>
-        <p>Thank you for integrating Google Calendar!</p>
-        <p><button @click="goToMyAccount()">Return to My Account</button>
+        <div v-show="formStep===0" class="mt-2">Loading...</div>
+        <div v-show="formStep===1" class="mt-2">Thank you for integrating Google Calendar!</div>
+        <div v-show="formStep===2" class="mt-2">An error occurred, please try integrating again</div>
+        <div  class="mt-2"><button @click="goToMyAccount()">Return to My Account</button></div>
     </div>
 </template>
 
@@ -12,6 +14,11 @@ export default {
     methods: {
         goToMyAccount: function() {
             this.$router.push("myaccount");
+        }
+    },
+    data() {
+        return {
+            formStep: 0
         }
     },
     mounted() {
@@ -33,6 +40,13 @@ export default {
                     SessionLong: localStorage.getItem("_r"),    
                     CalendarType:0,
                     Code: c                         
+                }
+            }).then(r=>{
+                if (r.status===200 && r.data.status===200) {
+                    this.formStep=1;
+                }
+                else {
+                    this.formStep=2;
                 }
             })
         }

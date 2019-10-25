@@ -4,6 +4,9 @@
         <div class='errorBox' v-show='errorMessage!==null'>
             {{ errorMessage }}
         </div>
+        <div v-show="okMessage!==null" class="okBox">
+            {{okMessage}}
+        </div>
 
         <div id='loading' class='loadingImg' v-show='formStep === -2'>
             <img src="@/assets/loading.gif" />
@@ -18,6 +21,32 @@
             </p>
         </div>
 
+        <div id='limitreached' v-show='formStep === -9'>
+             <h1>Schedule It!</h1>
+             <p>You have reached the limit of events that you may schedule or re-schedule this month (3 for free accounts, 30 for premium accounts).</p>
+             <p>To schedule more events, please purchase Premium or Pro access</p>
+             <p><button @click="goToPremium()">Purchase</button></p>
+        </div>
+
+        <modal name="groupModal" width="300" height="200">
+            <div class="p2">
+                <div>
+                    Do you wish to save these attendees as a new group? This will make inviting them again in the future easier :)
+                </div>
+                <div class="mt-2 fieldwell">
+                    <label>Group Name:</label><br />
+                    <input type="text" class="textfield" v-model="newgroupname" />
+                </div>
+                <div class="layout row mt-2">
+                    <div class="flex xs6">
+                        <button @click="doSaveGroup()">Save Group</button>
+                    </div>
+                    <div class="flex xs6 textright">
+                        <button @click="proceedStepThree()">No, Continue</button>
+                    </div>
+                </div>
+            </div>
+        </modal>
 
         <div id='eventStepOne' v-show='formStep === 0'>
             
@@ -33,11 +62,6 @@
                 <div class='fieldwell xs-12 mtp-10'>
                     <label>Your Name</label><br />
                     <input type='text' v-model="cliname" class='textfield' :class='clinamefe' />
-                </div>
-
-                <div class='fieldwell xs-12 mtp-10' >
-                    <label>Your Phone Number</label><br />
-                    <input type='text' v-model="cliphone" class='textfield' :class='cliphonefe' />
                 </div>
                 
                 <div class='fieldwell xs-12 mtp-10'>
@@ -141,10 +165,10 @@
             
                 <div class='guestlist mt-2'>
                     <div class='layout row p2'>
-                        <div class='flex xs6 textleft spfield'>
+                        <div class='flex xs12 textleft spfield'>
                             <button class='transButton' @click='turnOnManualAddGuest'><v-icon>person_add</v-icon>&nbsp;<span>Add</span></button> 
                             &nbsp;&nbsp;
-                            <button class='transButton' @click='turnOnGroupAddGuest'><v-icon>group_add</v-icon>&nbsp;<span>Add</span></button> 
+                            <button class='transButton' @click='turnOnGroupAddGuest'><v-icon>group_add</v-icon>&nbsp;<span>Add Group</span></button> 
                         </div>
                         <div class='flex xs6 textright spfield'>
                             <div v-show="isCordova === true" >
@@ -197,7 +221,7 @@
            
           
             <div class="fieldwell mt-3">
-               <label>How Long is this event:</label><br />
+               <label>How long is this event:</label><br />
                 <select class="textfield" v-model="evlength">
                     <option value="">---Pick a Length---</option>
                     <option value="15">15 minutes</option>
@@ -213,14 +237,21 @@
                     <option value="360">6 hours</option>
                     <option value="420">7 hours</option>
                     <option value="480">8 hours</option>
+                    <option value="i">More than one day</option>
                 </select>
            </div>
 
-            <div class="fieldwell mt-3">
-                Pick a date and time or use Pick for Us to let Schedule Us choose the best date and time based upon who you've invited
+           <div v-show="evlength!=='i'">
+                <div class="fieldwell mt-3">
+                    Pick a date and time or use Pick for Us to let Schedule Us choose the best date and time based upon who you've invited
+                </div>
+                    <div class="fieldwell mt-1 textright">
+                    <button class='schdusButton' @click='pickForUs'>Pick for Us!</button>
+                </div>
            </div>
-            <div class="fieldwell mt-1 textright">
-               <button class='schdusButton' @click='pickForUs'>Pick for Us!</button>
+
+           <div v-show="evlength==='i'" class="fieldwell mt-3">
+                Pick a date and time for the event to start
            </div>
 
            <div class="fieldwell mt-3">
@@ -231,27 +262,27 @@
                <label>Time:</label>
                <datetime format="h:i" v-model="evtime" ></datetime>
            </div>
+
+           <div v-show="evlength==='i'">
+               <div class="fieldwell mt-3">
+                    Pick a date and time for the event to end  
+               </div>
+               <div class="fieldwell mt-3">
+                    <label>End Date:</label>
+                    <datetime format="MM-DD-YYYY" v-model="endevday"></datetime>
+                </div>
+                <div class="fieldwell mt-3">
+                    <label>End Time:</label>
+                    <datetime format="h:i" v-model="endevtime" ></datetime>
+                </div>
+           </div>
                   
 
             <div class="fieldwell mt-3">
                <label>Remind Attendees:</label><br />
                 <select class="textfield" v-model="remindertime">
-                    <option value="24">1 day before</option>
-                    <option value="">No reminder</option>
-                </select>
-           </div>
-
-           <div class="fieldwell mt-3">
-               <label>Cutoff RSVP Prior to event?</label><br />
-                <select class="textfield" v-model="schedulecutofftime">    
-                    <option value="">No Cutoff</option> 
-                    <option value="24">Cutoff 1 day from now</option>
-                    <option value="72">Cutoff 3 days from now</option>
-                    <option value="168">Cutoff 7 days from now</option>
-                    <option value="8">Cutoff 8 hours from now</option>
-                    <option value="3">Cutoff 3 hours from now</option>
-                    <option value="1">Cutoff 1 hour from now</option>
-                  
+                    <option value="yes">1 day before</option>
+                    <option value="no">No reminder</option>
                 </select>
            </div>
 
@@ -312,7 +343,7 @@
                    </div>
 
                </div>
-               <div class='mt-2' v-show="isPremium===true||isPro===true">
+               <div class='mt-2' v-show="evlength!=='i'&&(isPremium===true||isPro===true)">
                    <toggle-button width="35" height="16" v-model="guestsreschedule"/> Attendees Can Suggest a Different Time
                </div>
                <div v-show="guestsreschedule===true" class="indented1">
@@ -329,7 +360,7 @@
                     </div>
                </div>
                <div class='mt-2' v-show="isPremium===true||isPro===true">
-                   <toggle-button width="35" height="16" v-model="eventrecurring"/> event Will Occur Again
+                   <toggle-button width="35" height="16" v-model="eventrecurring"/> Schedule Event Multiple Times
                </div>
                <div v-show="eventrecurring===true">
 
@@ -427,10 +458,8 @@
             </div>
         </div>
 
-        <div id='addFromGroup' v-show='formStep === 5'>
-      
-                  
-      
+        <div id='addFromGroup' v-show='formStep === 9'>
+            <groupmanager ref="gmanager"></groupmanager> 
         </div>
         
 
@@ -463,25 +492,28 @@ import Avatar from 'vue-avatar'
 import datetime from 'vuejs-datetimepicker'
 import pickforus from "@/components/PickForUs"
 import locationfinder from "@/components/LocationFinder"
+import groupmanager from "@/components/GroupManager"
 import {utilities} from '../mixins/utilities'
+import { EventBus } from '../bus';
 
 export default {
-    components: {datetime,Avatar,pickforus,locationfinder},
+    components: {datetime,Avatar,pickforus,locationfinder,groupmanager},
     mixins: [utilities],
     data: function() {
         return {
             formStep: -2,
+            fromGroup: false,
             cliname: "",
             clinamefe: "",
             clidetails: null,
             contacts: [],
             evdescription:"",
             evname: "",
-            evnamefe: "",
-            cliphone: "",
-            cliphonefe: "",
+            evnamefe: "",        
             csearch: "",
             errorMessage: null,
+            endevday:null,
+            endevtime:null,
             evstreet: "",
             evcity: "",
             evcityfe: "",
@@ -515,10 +547,11 @@ export default {
             isCordova: (typeof window.cordova !== "undefined"),
             isPremium: false,
             isPro: false,
-            loggedin: false,    
+            newgroupname:null,
+            okMessage: null,
+            loggedin: false,
             sschit:false,
-            remindertime: "24",
-            schedulecutofftime: "",
+            remindertime: "yes",
             visiblehidecontacts:[],
             willattend:true
         }
@@ -534,11 +567,11 @@ export default {
                 this.guesterror="Either guest phone number or email address are required";
                 return;
             }
-            if (this.guestphone.length>1 && this.verifyPhone(this.guestphone)!=="OK") {
+            if (this.guestphone.length>0 && this.verifyPhone(this.guestphone)!=="OK") {
                 this.guesterror="Please enter valid phone number with area code in format NNN-NNN-NNNN";
                 return;
             } 
-            if (this.guestemail.length>1 && this.verifyEmail(this.guestemail)!=="OK") {
+            if (this.guestemail.length>0 && this.verifyEmail(this.guestemail)!=="OK") {
                 this.guesterror="Please enter valid email address";
                 return;
             }
@@ -664,42 +697,63 @@ export default {
             this.$forceUpdate();
         },
         dateChanged: function() {
-            var dao = new Date(this.makeDate());
+            var dao = new Date(this.makeDate(this.evday,this.evtime));
             var diff = dao.getTime()-new Date().getTime();
             var hours = Math.round(diff/(1000*60*60))
 
-            if (hours>48) {
-                this.remindertime="24";
+            if (hours>=25) {
+                this.remindertime="yes";
             }
             else {
-                this.remindertime=""; 
+                this.remindertime="no"; 
             }
 
-            if (this.schedulecutofftime!=="") {
-                if (hours<=1) {
-                    this.schedulecutofftime="";
-                }
-                else if (hours>=2 && hours<=5) {
-                    this.schedulecutofftime="1";
-                }
-                else if (hours>=6 && hours<=16) {
-                    this.schedulecutofftime="3";
-                }
-                else if (hours>=17 && hours<=36) {
-                    this.schedulecutofftime="8";
-                }
-                else if (hours>=37 && hours<=96) {
-                    this.schedulecutofftime="24";
-                }
-                else if (hours>=97 && hours<=216) {
-                    this.schedulecutofftime="72";
-                }
-                else {
-                    this.schedulecutofftime="168";
-                }
-            }
 
             this.$forceUpdate();
+        },
+        doSaveGroup: function() {
+             if (this.newgroupname.length===0 || this.newgroupname.length>128) {
+                 this.errorMessage="Group name is either too long or too short";
+                 return;
+             }
+
+             var clients=[]; 
+             for(var x=0; x<this.guests.length; x++) {
+                 clients.push({
+                     PhoneNumber: this.guests[x].gphone,
+                     EmailAddress: this.guests[x].gemail,
+                     Name: this.guests[x].gname
+                 })
+             }
+
+             this.$http({
+                method:'post',
+                url:this.$hostname+'/addgroup',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),
+                    GroupName: this.newgroupname,
+                    Clients: clients
+                }
+             }).then(r=>{
+                 if (r.status===200) {
+                    if (r.data.status===200) {
+                        this.okMessage="Successfully saved group";
+                        var self=this;
+                        window.setTimeout(function() {
+                            self.okMessage=null;
+                        },3000)
+                        this.proceedStepThree();
+                    }
+                    else {
+                        this.errorMessage=r.data.message;
+                    }
+                 }
+                 else {
+                     this.errorMesssage="Could not connect to backend service, check your internet connection";
+                 }
+             })
         },
         editGuest: function(item) {
             this.guesteditmode=item;
@@ -709,6 +763,22 @@ export default {
             this.formStep=3;
             this.$forceUpdate();
         },   
+        fillFromGroup: function(items) {
+           
+            for(var x=0; x<items.Clients.length; x++) {
+                this.guests.push({    
+                    gid: this.$uuid.v1(),               
+                    gname: items.Clients[x].Name,
+                    gphone: items.Clients[x].PhoneNumber,
+                    gemail: items.Clients[x].EmailAddress,
+                    photo: null,
+                    greq: false
+                });
+            }
+            this.formStep=1;
+            this.$forceUpdate();
+
+        },
         fillLocation: function(location, address, city) {
             this.evlocation=location;
             this.evstreet=address;
@@ -730,6 +800,7 @@ export default {
         },
         goStepTwo: function() {
             if (this.verifyStepOne()) {
+                this.errorMessage=null;
                 this.formStep=1;
             }
         },
@@ -737,18 +808,23 @@ export default {
             this.errorMessage=null; 
 
             if (this.guests.length>0) {
-                if (this.loggedin===true) {
-                    if (this.guests.length>50) {
-                        this.errorMessage="There is a maximum of 50 attendees";
-                        return;
-                    }
+
+                if (this.isPremium!==true && this.isPro!==true && this.guests.length>15) {
+                    this.errorMessage="There is a maximum of 15 attendees";
+                    return;
+                }
+             
+                if (this.isPremium===true && this.isPro!==true && this.guests.length>50) {
+                    this.errorMessage="There is a maximum of 50 attendees";
+                    return;
+                }
+
+                if (this.fromGroup===false) {
+                    this.$modal.show("groupModal");
                 }
                 else {
-                    if (this.guests.length>8) {
-                        this.errorMessage="There is a maximum of 8 attendees. Please register to get a maximum of 50 attendees";
-                    }
+                    this.formStep=2;
                 }
-                this.formStep=2;
             }
             else {
                 this.errorMessage="You must invite at least one person";
@@ -756,10 +832,11 @@ export default {
         },
         goStepFour: function() {
             if (this.verifyStepThree()) {
+                this.errorMessage=null;
                 this.formStep=5;
             }
         },
-        goToLogIn: function() {
+        goToLogin: function() {
             this.$router.push('auth');
         },
         goToAbout: function() {
@@ -768,6 +845,9 @@ export default {
         goToCreateAccount: function() {
             this.$router.push('signup');
         },
+        goToPremium: function() {
+            this.$router.push('premium');
+        },
         loadContacts: function() {
             var options      = {};
             options.filter   = "";
@@ -775,49 +855,6 @@ export default {
             options.desiredFields = [navigator.contacts.fieldType.id, navigator.contacts.fieldType.displayName, navigator.contacts.fieldType.name, navigator.contacts.fieldType.phoneNumbers, navigator.contacts.fieldType.emails, navigator.contacts.fieldType.photos];
             var fields  = [navigator.contacts.fieldType.displayName];
             navigator.contacts.find(fields, this.contactSuccess, this.contactFailure, options);
-        },
-        makeDate: function() {
-            var ds=this.evday.split('-');
-
-            var dt = ds[2]+"-"+ds[0]+"-"+ds[1]+"T";
-            
-            if (this.evtime!==null && this.evtime!=="") {
-                var pt=this.makeTime(this.evtime).split(":");
-                
-                var ah=0;
-                if (this.evtime.indexOf(" PM")>-1) {
-                    pt[0] = String(parseInt(pt[0])+12);
-                }
-
-                if (pt[0].length===1) {
-                    pt[0]="0"+pt[0];
-                }
-                if (pt[1].length===1) {
-                    pt[1]="0"+pt[1];
-                }
-                return dt+pt[0]+":"+pt[1]+":"+pt[2];
-            }
-            else {
-                return dt+"00:00:00";
-            }
-        },
-        makeTime: function() {
-            var e=this.evtime;
-            if (e.indexOf(" AM")>-1) {
-               return e.replace(" AM","")+":00";
-            }
-            else {
-                return e.replace(" PM","")+":00";
-            }
-        },
-        parseTime: function(ti) {
-            var tip = ti.split(":");
-            var ap="AM";
-            if (tip[0]>12) {
-                ap="PM";
-                tip[0]-=12;
-            }
-            return tip[0]+":"+tip[1]+" "+ap;
         },
         pickForUs: function() {
             if (this.evlength==="") {
@@ -886,8 +923,8 @@ export default {
                     SessionLong: localStorage.getItem("_r"),
                     EventName: this.evname,
                     ClientName: this.cliname,
-                    ClientPhone: this.cliphone,
-                    EventDate: this.makeDate(),
+                    EndDate: this.evlength==="i"?(this.makeDate(this.endevday,this.endevtime)):null,
+                    EventDate: this.makeDate(this.evday,this.evtime),
                     EventLength: this.evlength,
                     EventDescription: this.evdescription,
                     EventStreet: this.evstreet,
@@ -909,7 +946,6 @@ export default {
                     Guests: this.guests,
                     Location: this.evlocation,
                     ReminderTime: this.remindertime,
-                    ScheduleCutoffTime: this.schedulecutofftime,
                     MustApproveDiffTime: this.guestsrescheduleperm,
                     MustApproveDiffLocation: this.guestschangelocationperm,
                     UTCOffset: new Date().getTimezoneOffset(),
@@ -944,6 +980,11 @@ export default {
                 }
             });
         },
+        proceedStepThree: function() {
+            this.$modal.hide("groupModal");
+            this.formGroup=true;
+            this.formStep=2;
+        },
         selectContact: function(item) {
             item.isselected=!item.isselected;
             this.$forceUpdate();
@@ -958,7 +999,8 @@ export default {
              this.formStep=3;
         },
         turnOnGroupAddGuest: function() {
-            
+             this.$refs.gmanager.addFromGroup();
+             this.formStep=9; 
         },
         useHomeAddress: function() {
             if (this.clidetails!==null) {
@@ -977,26 +1019,11 @@ export default {
                 this.$forceUpdate();
             }
         },
-        verifyEmail: function(email) {
-            var emailVerification = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/;
-            if (!emailVerification.test(email)) {
-                return "Email address is invalid";
-            }
-            return "OK";
-        },
-        verifyPhone: function(phone) {
-            var phoneVerification = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im;
-            if (!phoneVerification.test(phone)) {
-                return "Phone number is invalid";
-            }
-            return "OK";
-        },
         verifyStepOne: function() {
             this.errorMessage=null;
        
             this.evnamefe=""; 
             this.clinamefe="";
-            this.cliphonefe=""; 
             this.evlocationfe="";
             this.evstreetfe="";
             this.evcityfe="";
@@ -1031,47 +1058,60 @@ export default {
                 this.evcityfe="errorHighlight";
                 return false;
             }
-
-
-            if (this.cliphone.length>2) {
-                if (this.cliphone[0]==="1" && !Number.isInteger(this.cliphone[1])) {
-                    this.cliphone=this.cliphone.substring(2);
-                }
-            }
           
-            var vp = this.verifyPhone(this.cliphone); 
-            if (vp!=="OK") {
-                this.errorMessage=vp;
-                this.cliphonefe="errorHighlight";
-                return false;
-            }
 
             return true;
         },
         verifyStepThree: function() {
             if (this.evlength==="") {
-                this.errorMessage="event Length is Required";
+                this.errorMessage="Event length is required";
+                return false;
+            }
+
+            if (this.evday===null || this.evday==="") {
+                this.errorMessage="Event date is required";
+                return false;
+            }
+
+            if (this.evtime===null || this.evtime==="") {
+                this.errorMessage="Event time is required";
                 return false;
             }
 
             // Correct users who do dumb stuff with dates
-            var dao = new Date(this.makeDate());
+            var dao = new Date(this.makeDate(this.evday,this.evtime)); 
             var diff = dao.getTime()-new Date().getTime();
             var hours = Math.round(diff/(1000*60*60))
-            var length = parseInt(this.evlength)/60;
-            if (hours<length) {
+
+            if (diff<0) {
                 this.errorMessage="Cannot schedule dates in the past";
                 return false;
             }
 
-            if (this.remindertime>hours) {
-                this.errorMessage="Cannot set a reminder time past the date of the event"
+            if (this.remindertime==='yes' && hours<25) {
+                this.errorMessage="Cannot set a reminder time for events less than 25 hours away"
                 return false;
             }
 
-            if (this.schedulecutofftime>hours) {
-                this.errorMessage="Cannot set a cutoff time past the date of the event";
-                return false;
+            if (this.evlength==='i') {
+
+                if (this.endevday===null || this.endevday==="") {
+                    this.errorMessage="End event date is required";
+                    return false;
+                }
+
+                if (this.endevtime===null || this.endevtime==="") {
+                    this.errorMessage="End event time is required";
+                    return false;
+                }
+
+                var edao = new Date(this.makeDate(this.endevday,this.endevtime));
+                var diff=edao.getTime()-dao.getTime();
+
+                if (diff<0) {
+                    this.errorMessage="Cannot set an end date prior to the start date";
+                    return false;
+                }
             }
 
             return true;
@@ -1087,6 +1127,13 @@ export default {
 
             this.guestslimittotal=15;
 
+            EventBus.$on("DoAddFromGroupEvent", (items) => {
+                this.fillFromGroup(items);
+            });
+            EventBus.$on("CloseGroupManagerEvent", () => {
+                this.formStep=1;
+            });
+
             this.$http({
                 method:'post',
                 url:this.$hostname+'/getclient',
@@ -1099,10 +1146,21 @@ export default {
                 if (r.status===200 && r.data.status===200) {
                     this.clidetails = JSON.parse(r.data.message);
                     this.cliname=this.clidetails.FirstName+" "+this.clidetails.LastName;
-                    this.cliphone=this.formatPhone(this.clidetails.PhoneNumber);
                     this.loggedin=true;
-                    this.isPremium=this.clidetails.isPremium;
+                    this.isPremium=this.clidetails.IsPremium;
+                    this.isPro=this.clidetails.IsPro;
                     this.formStep=0;
+
+                    if (this.isPremium===false && this.isPro===false) {
+                         if (this.clidetails.EventCount>=3) {
+                             this.formStep=-9;
+                         }
+                    }
+                    else if (this.isPro===false && this.isPremium===true) {
+                         if (this.clidetails.EventCount>=30) {
+                             this.formStep=-9;
+                         }
+                    }
                 }
                 else {
                     this.formStep=-1;

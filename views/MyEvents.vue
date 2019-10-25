@@ -14,59 +14,24 @@
                 <div class="mt-2 fieldwell boldchoice">
                     Events I am Organizing
                 </div>
-                <div class="mt-2">
+                <div class="mt-2 botdot">
                     <template v-for="(item, i) in isOrganizing">
                         <v-list-item :key="i" >
-                            <div v-if="item.ActionReq===1||item.ActionReq===2" class="myevscheduling" @click="goEvent(item.Hash)">
+                            <div v-if="item.ActionReq<9" class="myevscheduling" @click="goEvent(item.Hash)">
                                 <div class="layout row">
                                     <div class="flex xs10">
-                                        <div class="myevl">
-                                            SCHEDULING
-                                        </div>
-                                        <div>
+                                      
+                                        <div class='mt-2'>
                                             {{item.EventName}}
                                         </div>
                                         
                                     </div>
                                     <div class="flex xs2">
-                                        <v-icon size="50px">access_time</v-icon>
+                                        <v-icon size="50px">keyboard_arrow_right</v-icon>
                                     </div>
                                 </div>
-                        </div>
-                            <div v-if="item.ActionReq===3" class="myevscheduled" @click="goEvent(item.Hash)">
-                                <div class="layout row">
-                                    <div class="flex xs10">
-                                        <div class="myevl">
-                                            SCHEDULED
-                                        </div>
-
-                                        <div>
-                                            {{item.EventName}}
-                                        </div>
-                                        
-                                    </div>
-                                    <div class="flex xs2">
-                                        <v-icon size="50px">check</v-icon>
-                                    </div>
-                                </div>
-                        </div>
-                            <div v-if="item.ActionReq<1||item.ActionReq>3" class="myevactionreq" @click="goEvent(item.Hash)">
-                                <div class="layout row">
-                                    <div class="flex xs11">
-                                        <div class="myevl">
-                                            NEEDS ATTENTION
-                                        </div>
-
-                                        <div>
-                                            {{item.EventName}}
-                                        </div>
-                                        
-                                    </div>
-                                    <div class="flex xs2">
-                                        <v-icon size="50px">flag</v-icon>
-                                    </div>
-                                </div>
-                        </div>
+                            </div>
+                            
                         </v-list-item>
                     </template> 
                 </div>
@@ -74,6 +39,27 @@
             <div v-show="isParticipating.length>0">
                 <div class="mt-2 fieldwell boldchoice">
                     Events I am Participating In
+                </div>
+                 <div class="mt-2">
+                    <template v-for="(item, i) in isParticipating">
+                        <v-list-item :key="i" >
+                            <div v-if="item.ActionReq<9" class="myevscheduling" @click="goEvent(item.Hash)">
+                                <div class="layout row">
+                                    <div class="flex xs10">
+                                      
+                                        <div class='mt-2'>
+                                            {{item.EventName}}
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="flex xs2">
+                                        <v-icon size="50px">keyboard_arrow_right</v-icon>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </v-list-item>
+                    </template> 
                 </div>
             </div>
             <div v-show="isParticipating.length===0 && isOrganizing.length===0">
@@ -104,7 +90,7 @@ export default {
     },
     methods: {
         goToCreateEvent: function() {
-            this.$router.push("/");
+            this.$router.push("/create");
         },
         goEvent: function(evHash) {
             this.$router.push("/event?e="+evHash)

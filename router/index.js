@@ -15,6 +15,8 @@ import Event from '@/views/Event'
 import VerifyPhone from '@/views/VerifyPhone'
 import GoogleCalendar from '@/views/GoogleCalendar'
 import Home from '@/views/Home'
+import EventUpdate from '@/views/EventUpdate'
+import OptOut from '@/views/OptOut'
 
 Vue.use(Router);
 
@@ -35,6 +37,11 @@ const router =  new Router({
        path: '/event',
        name: 'Event',
        component: Event
+    },
+    {
+       path: '/update',
+       name: 'Event Update',
+       component: EventUpdate
     },
     {
       path: '/auth',
@@ -95,6 +102,11 @@ const router =  new Router({
         path: '/googcalendar',
         name: 'Google Calendar',
         component: GoogleCalendar
+    },
+    {
+        path: '/optout',
+        name: 'Opt Out',
+        component: OptOut
     }
   ]
 })

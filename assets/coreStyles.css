@@ -78,6 +78,11 @@
       font-size:1.4rem;
   }
   
+  h4 {
+    color:#333;
+}
+
+
   /* Layout specific */
   .v-content {
      background-color:#FFF!important;
@@ -97,6 +102,10 @@
   }
   .v-collapse-content-end {
     display:block!important;
+  }
+
+  .v-facebook-login {
+      display:inline-block!important;
   }
 
   .desktopOnly {
@@ -359,29 +368,16 @@
   }
 
 .myevscheduling {
-    background-color:beige;
-    color:#444;
-    padding:5px;
-    border-top:1px solid #444;
-}
-
-.myevscheduled {
-    background-color:lightgreen;
-    padding:5px;
-    color:#444;
-    border-top:1px solid #444;
-}
-
-.myevactionreq {
-    background-color:pink;
-    color:#444;
-    padding:5px;
-    border-top:1px solid #444;
-}
-
-.myevl {
-    color:royalblue;;
+    background-color:white;
+    color:#a80cba;
     font-size:1.3em;
+    padding:7px 5px;
+    border-top:1px dotted #888;
+   
+}
+
+.botdot {
+    border-bottom:1px dotted #888;
 }
 
 .scrollbox {
@@ -410,4 +406,12 @@
 .loadingImg {
     margin-top:50%;
     text-align:center;
+}
+
+.editicon {
+    opacity:0.5;
+}
+
+.ib { 
+    display:inline-block;
 }
