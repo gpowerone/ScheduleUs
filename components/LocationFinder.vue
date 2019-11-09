@@ -8,6 +8,35 @@
              Loading...
         </div>
     
+        <modal name="locationDetails" width="300" height="90%">
+            <div class="p2" style="overflow-y:scroll;height:100%;">
+                <h1>{{placename}}</h1>
+                <div class="mt-2">
+                    {{placeaddress}}<br />
+                    {{placephone}}
+                </div>
+                <h4 class="mt-3" v-show="placehours.length>0">Hours of Operation</h4>
+                <template class="mt-2" v-show="placehours.length>0" v-for="d in placehours">
+                    <div class="row layout" :key="d">
+                        <div class="flex xs12" v-html="d"></div>
+                    </div>
+                </template>
+
+                <h4 class="mt-3">Rating</h4>
+                <div class="mt-2">
+                    {{placeratingnum}}/5 ({{placetotalratings}} total ratings)
+                </div>
+                <h4 class="mt-3" v-show="placereviews.length>0">Reviews</h4>
+                <template v-show="placereviews.length>0" v-for="d in placereviews">
+                    <div class="mt-2 btop" :key="d">
+                        <div><em>Rating:</em>&nbsp;<span v-html="d.rating"></span>/5</div>
+                        <div class="mt-2"><em>Review Date:</em>&nbsp;<span v-html="d.relative_time_description"></span></div>
+                        <div class="mt-2" v-html="d.text"></div>         
+                    </div>
+                </template>
+            </div>
+        </modal>
+
         <div v-show="locations.length>0&&loading===null">
              <div class="layout row">
                 <div class="xs12 flex textcenter">
@@ -33,7 +62,12 @@
                                 Rating: {{ getRating(p.rating) }}
                         </div>
                           <div class="flex xs3 textcenter p5top">
-                            <button v-on:click="selectLocation(p.name, p.vicinity)">Select</button>
+                            <div>
+                                <button v-on:click="doDetails(p.reference)" class="tanButton" style="width:75px;">Details</button>
+                            </div>
+                            <div class="mt-2">
+                                <button v-on:click="selectLocation(p.name, p.vicinity)" style="width:75px;">Select</button>
+                            </div>
                         </div>
                    </div>
                 </div> 
@@ -201,6 +235,13 @@ export default {
             locations:[],
             pageNumber: 0,
             picklocation:true,
+            placename:null,
+            placeaddress:null,
+            placehours:[],
+            placephone:null,      
+            placeratingnum:null,
+            placereviews:[],
+            placetotalratings:null,
             state:"--"
         }
     },
@@ -248,6 +289,9 @@ export default {
                 method:'post',
                 url:this.$hostname+'/locationfinder',
                 data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),
                     Place: qry,
                     PickLocation: this.picklocation,
                     Geocode: geocode,
@@ -273,7 +317,7 @@ export default {
                         }
                     }
                     else {
-                        this.errorMessage="Error getting locations";
+                        this.errorMessage=r.data.message;
                         this.$forceUpdate();
                     }
                 }
@@ -283,6 +327,45 @@ export default {
                 }
             
             })
+        },
+        doDetails: function(ref) {
+            this.loading=true;
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/locationdetails',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),
+                    ref: ref                         
+                }
+            }).then(r=> {
+                this.loading=null;
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        var pd = JSON.parse(r.data.message);
+
+                        this.placename=pd.result.name;
+                        this.placeaddress=pd.result.formatted_address;
+                        this.placephone=pd.result.formatted_phone_number;
+                        this.placeratingnum=pd.result.rating
+                        this.placetotalratings=pd.result.user_ratings_total;
+                        this.placehours=[];
+                        this.placereviews=[];
+
+                        if (typeof(pd.result.opening_hours)!=="undefined" && typeof(pd.result.opening_hours.weekday_text)!=="undefined") {
+                            this.placehours=pd.result.opening_hours.weekday_text;
+                        }
+
+                        if (typeof(pd.result.reviews)!=="undefined") {
+                            this.placereviews=pd.result.reviews;
+                        }
+
+                        this.$modal.show("locationDetails");
+                    }
+                }
+            });
         },
         doRender: function() { 
             this.theseCoords=this.getCoords();

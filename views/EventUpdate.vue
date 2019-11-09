@@ -94,12 +94,12 @@
                 <div class="accheader" v-collapse-toggle>
                     <div class="layout row">
                         <div class="flex xs12">
-                            <v-icon>{{ acc2i }}</v-icon> <span>Edit Time</span>
+                            <v-icon>{{ acc2i }}</v-icon> <span>Edit Date/Time</span>
                         </div>
                     </div>
                 </div>
                 <div class="acccontent" v-collapse-content>
-                     <div class="fieldwell mt-3">
+                     <div class="fieldwell mt-2">
                         <label>How long is this event:</label><br />
                         <select class="textfield" v-model="evlength">
                             <option value="">---Pick a Length---</option>
@@ -120,16 +120,7 @@
                         </select>
                     </div>
 
-                    <div v-show="evlength!=='i'">
-                        <div class="fieldwell mt-3">
-                            Pick a date and time or use Pick for Us to let Schedule Us choose the best date and time based upon who you've invited
-                        </div>
-                            <div class="fieldwell mt-1 textright">
-                            <button class='schdusButton' @click='pickForUs'>Pick for Us!</button>
-                        </div>
-                    </div>
-
-                    <div v-show="evlength==='i'" class="fieldwell mt-3">
+                    <div v-show="evlength==='i'" class="fieldwell mt-2">
                             Pick a date and time for the event to start
                     </div>
 
@@ -156,8 +147,13 @@
                             </div>
                     </div>
 
-                    <div class="textright mt-2">
-                        <button @click="changeTime()">Submit</button>
+                    <div class="layout row mt-3">
+                        <div class="xs6 flex textleft">
+                             <button class='schdusButton' v-show="evlength!=='i'" @click='pickForUs'>Help Me Pick a Time</button> 
+                        </div>
+                        <div class="xs6 flex textright">
+                            <button @click="changeTime()">Submit</button>
+                        </div>
                     </div>
                 </div>
             </v-collapse-wrapper>
@@ -173,11 +169,11 @@
                 <div class="acccontent" v-collapse-content>
                     <div class='fieldwell xs-12 mt-2'>
                         <label>Location</label>
-                        <div class="layout row">
-                            <div class="flex xs6 spfield textleft" @click="goLocationFinder()">
-                                <v-icon>location_on</v-icon>&nbsp;<span>Find a Location</span>
-                            </div>                            
-                        </div>
+                               
+                        <div class="spfield textcenter p2 grayborder" @click="goLocationFinder()">
+                            <v-icon>location_on</v-icon>&nbsp;<span>Find a Location</span>
+                        </div>                       
+                     
                         <div class='mt-1'>
                             <input type='text' class='textfield' v-model="evlocation" :class='evlocationfe'  />
                         </div>
@@ -276,12 +272,13 @@
                                 <v-list-item :key="i">
                                     <div class='layout row p4'>
                                         <div class='flex xs2 pl2 relative'>                              
-                                            <avatar class="vertical-center" size="30" :username="item.GuestName"></avatar>                           
+                                            <avatar class="vertical-center" size="50" :username="item.GuestName" v-show="imageloaded[i]===false"></avatar>   
+                                            <img v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" width=50 height=50 />                          
                                         </div>
-                                        <div class='flex xs8 textleft fieldwell indented1 spfield'>
+                                        <div class='flex xs8 textleft fieldwell indented1 spfield mt-2'>
                                             {{item.GuestName}}
                                         </div>
-                                        <div class='flex xs2'>
+                                        <div class='flex xs2 mt-2'>
                                             <v-icon @click="removeAttendee(item)">remove_circle_outline</v-icon>
                                         </div>
                                     </div>
@@ -297,7 +294,7 @@
             <locationfinder ref="lf"></locationfinder>
         </div>
         <div v-show="formStep===2">
-            <pickforus></pickforus>
+            <pickforus ref="pt"></pickforus>
         </div>
 
          <div class='manualaddguest mt-2 p2' v-show="formStep === 3">
@@ -367,6 +364,8 @@ export default {
             guestname:"",
             guestphone:"",
             guestemail:"",
+            imageloaded:[],
+            imageurl:[],
             okMessage:null  
         }
     },
@@ -656,7 +655,17 @@ export default {
             this.$refs.lf.doRender();
             this.formStep=1;
         },
+        loadedImage: function(i) {
+            this.imageloaded[i]=true;
+            this.$forceUpdate();
+        },
         pickForUs: function() {
+            var _guests=[];
+            for (var x=0; x<this.guests.length; x++) {
+                _guests.push({cid: this.guests[x].ClientID});
+            }
+            this.$refs.pt.setGuests(_guests);
+
             this.formStep=2;
         },
         refresh: function() {
@@ -700,6 +709,16 @@ export default {
                                 this.evzip=this.tev.Schedules[0].PostalCode;
                                 this.evlength=this.tev.Schedules[0].EventLength;
                                 this.guests=this.tev.Guests;
+
+                                for(var x=0; x<this.tev.Guests.length; x++) {
+                                    this.imageloaded.push(false);
+                                    if (this.tev.Guests[x].ClientID!==null) {
+                                        this.imageurl.push("https://avatars.schd.us/"+this.tev.Guests[x].ClientID);
+                                    }
+                                    else {
+                                        this.imageurl.push(null);
+                                    }
+                                }
                             
                                 var d = new Date(parseInt(this.tev.Schedules[0].StartDate));
                                 var mth=d.getMonth()+1;

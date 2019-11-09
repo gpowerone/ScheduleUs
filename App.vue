@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <myToolbar />
-    <v-content>
+    <v-content style="padding:0px!important;">
       <v-slide-y-transition mode="out-in">
         <v-container class="dmContainer" pa-0 fluid align-content-center align-center>
           <div class="layout row dmRowContainer">

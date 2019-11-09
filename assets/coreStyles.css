@@ -14,10 +14,11 @@
   }
   
   button {
-      background:indianred;
+      background:#990033;
       color:#FFF;
-      padding:1% 4%;
+      padding:2px 8px;
       border-radius:6px;
+      height:35px;
   }
 
   button:disabled {
@@ -37,13 +38,13 @@
   
   .schdusButton {
       background: #a80cba;
-      padding:1% 4%;
+      padding:2px 8px;
   }
   
   .tanButton {
      background:#ffffee;
      color:#444;
-     padding:2px 4px;
+     padding:2px 8px;
      border:1px solid #666699;
   }
   
@@ -52,6 +53,7 @@
      border:none;
      text-decoration:none;
      color:#777;
+     height:inherit;
   }
   
   .modifiedNormal {
@@ -61,7 +63,6 @@
   
   .redButton {
     background:red;
-    border:1px solid #777;
     padding:2px 4px;
   }
   
@@ -72,6 +73,11 @@
   button span, button i {
     vertical-align: middle!important;
   }
+
+
+  .valign {
+      vertical-align:middle!important;
+  }
   
   h1 {
       color:royalblue;
@@ -79,7 +85,7 @@
   }
   
   h4 {
-    color:#333;
+    color:#777;
 }
 
 
@@ -157,11 +163,17 @@
      width:100%;
   }
   .fieldwell label {
-      color: #777;
+      color: #666;
       font-weight:bold;
   }
   .fieldwell {
       color:#777;
+  }
+  .grayborder {
+      border:1px solid #777;
+  }
+  .schdusborder {
+    border:1px solid #a80cba;
   }
   .selectedTile {
       background:#defcee;
@@ -274,15 +286,15 @@
   }
  
   .errorBox {
-     border:2px solid #800000;
-     background-color: #ff3333;
+     background-color: #cc0033;
+     border-radius:3px;
      color:white;
      padding:2%;
      margin-bottom:5px;
   }
   .okBox {
-     border:2px solid darkgreen;
      background-color: forestgreen;
+     border-radius:3px;
      color:white;
      padding:2%;
      margin-bottom:5px;
@@ -292,6 +304,9 @@
   }
   .pl2 {
      padding-left:2%;
+  }
+  .pl4 {
+      padding-left:4%;
   }
   .p2top {
       padding-top:2%;
@@ -311,6 +326,11 @@
   .pbot20 {
       padding-bottom:20px;
   }
+  .anchorbottom {
+      position:absolute;
+      bottom:3%;
+      width:90%;
+  }
   .poweredByGoogle {
       text-align:right;
       
@@ -319,7 +339,7 @@
       margin-bottom:5px;
   }
   .mtp-10 {
-     margin-top:7%;
+     margin-top:10%;
   }
   .fullWidth {
       width:100%
@@ -381,7 +401,7 @@
 }
 
 .scrollbox {
-    height:400px;
+    height:380px;
     overflow-y:auto;
 }
 
@@ -407,11 +427,31 @@
     margin-top:50%;
     text-align:center;
 }
+.loadingMod {
+    margin-top:10%;
+    text-align:center;
+    margin-bottom:10%;
+}
 
 .editicon {
     opacity:0.5;
+    font-size:2.5rem;
 }
 
 .ib { 
     display:inline-block;
+}
+
+.guestlist, .manualaddguest {
+    border:1px solid #777;
+    border-radius:6px;
+    color:#777;
+}
+
+.videowindow {
+    width:300px;
+    height:169px;
+    margin:0 auto;
+    border:1px solid #777;
+    padding:20%;
 }

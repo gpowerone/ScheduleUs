@@ -1,12 +1,18 @@
 <template>
   <div class="moduleWrapper">
-    <h1>Signup</h1>
+  
 
     <div class='errorBox' v-show='isError===1'>
         {{ errorMessage }}
     </div>
 
-    <div v-show='formStep === 0'>
+     <h1>Create Account</h1>
+
+     <div v-show='formStep === 0'>
+
+     <div class="textcenter mt-3">
+        <GoogleLogin class="mt-2 ib" :params="params" :renderParams="renderParams" :onSuccess="onSuccess" :onFailure="onFailure">Login with Google</GoogleLogin>
+      </div>
 
       <div class='mt-3'>
            <div class='boldchoice fieldwell'>First Name</div>
@@ -97,6 +103,9 @@
                   loadRecaptchaScript=true
                   sitekey="6Lc1xa4UAAAAAFWU99D-J6-RzsMZILRT2kaFCIy7"></vue-recaptcha> 
         </div>
+        <div class="mt-3">
+            By creating an account, you agree to our <a href='/termsofservice'>Terms of Service</a> and <a href='/privacypolicy'>Privacy Policy</a>
+        </div>
         <button class='fullWidth mt-3' :disabled="status==='submitting'"  @click='submitSignup()'>Sign Up</button>
     </div>
     <div v-show='formStep===2'>
@@ -114,10 +123,11 @@
 <script>
 import VueRecaptcha from 'vue-recaptcha'
 import {utilities} from '../mixins/utilities'
+import GoogleLogin from 'vue-google-login'
 
 export default {
     components: {
-        'vue-recaptcha': VueRecaptcha
+        'vue-recaptcha': VueRecaptcha, GoogleLogin
     },
     mixins: [utilities],
     data() {
@@ -127,6 +137,14 @@ export default {
           errorMessage: '',
           FirstName: '',
           LastName: '',
+          params: {
+                    client_id: "801199894294-ph8llsbfnu6lovla7ed46mq0rvk9rbnm.apps.googleusercontent.com"
+          },
+          renderParams: {
+                width: 210,
+                height: 40,
+                longtitle: true
+          },
           PhoneNumber: '',
           RPasswd: '',
           status: 'submitting',

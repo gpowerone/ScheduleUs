@@ -13,7 +13,7 @@
         </div>
         
         <div id='cannotcreate' v-show='formStep === -1'>
-            <h1>Schedule It!</h1>
+            <h1>Schedule Event</h1>
             <p>You must log in to create events</p>
             <p>
                 <button @click="goToLogin()">Log In</button>&nbsp;&nbsp;
@@ -22,13 +22,13 @@
         </div>
 
         <div id='limitreached' v-show='formStep === -9'>
-             <h1>Schedule It!</h1>
+             <h1>Schedule Event</h1>
              <p>You have reached the limit of events that you may schedule or re-schedule this month (3 for free accounts, 30 for premium accounts).</p>
              <p>To schedule more events, please purchase Premium or Pro access</p>
              <p><button @click="goToPremium()">Purchase</button></p>
         </div>
 
-        <modal name="groupModal" width="300" height="200">
+        <modal name="groupModal" width="300" height="400">
             <div class="p2">
                 <div>
                     Do you wish to save these attendees as a new group? This will make inviting them again in the future easier :)
@@ -39,46 +39,66 @@
                 </div>
                 <div class="layout row mt-2">
                     <div class="flex xs6">
-                        <button @click="doSaveGroup()">Save Group</button>
-                    </div>
-                    <div class="flex xs6 textright">
                         <button @click="proceedStepThree()">No, Continue</button>
                     </div>
+                    <div class="flex xs6 textright">
+                        <button @click="doSaveGroup()">Save Group</button>                       
+                    </div>
+                </div>
+            </div>
+        </modal>
+
+        <modal name="doneModal" width="300" height="400">
+            <div class="p2">
+                <h1>All Done</h1>
+                <div class="mt-2 textcenter">Now you can kick back and relax!</div>
+                <div class='mt-3 textcenter'>
+                    <img src="@/assets/EventCompleted.png" width="100">
+                </div>
+                <ul class='mt-3'>
+                    <li>We are texting or emailing your attendees. No need to send them any additional messages.</li>
+                    <li>You will get a message from us when everyone has responded</li>
+                    <li>You can check the status of the event on the dashboard</li>
+                </ul>
+                <div class='mt-2 textcenter'>
+                     <button class='schdusButton' @click="goToDashboard()">Go to Dashboard</button>
                 </div>
             </div>
         </modal>
 
         <div id='eventStepOne' v-show='formStep === 0'>
             
-            <h1>Schedule It!</h1>
-
+            <h1>Schedule Event</h1>
+            <div class="mt-2">
+                *-required field
+            </div>
             <div>
 
-                <div class='fieldwell xs-12 topEvent'>
-                    <label>Name of Event or Activity</label><br />
+                <div class='fieldwell xs-12 mt-4'>
+                    <label>Your Name*</label><br />
+                    <input type='text' v-model="cliname" class='textfield' :class='clinamefe' />
+                </div>
+
+                <div class='fieldwell xs-12 mt-4'>
+                    <label>What Will You Be Doing*</label><br />
                     <input type='text' v-model="evname" class='textfield' :class='evnamefe' />
                 </div>
 
-                <div class='fieldwell xs-12 mtp-10'>
-                    <label>Your Name</label><br />
-                    <input type='text' v-model="cliname" class='textfield' :class='clinamefe' />
-                </div>
-                
-                <div class='fieldwell xs-12 mtp-10'>
-                    <label>Location</label>
-                    <div class="layout row">
-                        <div class="flex xs6 spfield textleft" @click="goLocationFinder()">
-                            <v-icon>location_on</v-icon>&nbsp;<span>Find a Location</span>
-                        </div>
-                        <div class="flex xs6 spfield textright" v-show="loggedin===true" @click="useHomeAddress()">                           
-                            <v-icon>home</v-icon> <span>Use Home Address</span>
-                        </div>
-                    </div>
-                    <div class='mt-1'>
-                        <label>Name of Location (e.g., Jenn's Home)</label><br />
+                  
+                <div class='fieldwell xs-12 mt-4'>
+                   
+                    <div>
+                        <label>Where Will It Happen*</label><br />
                         <input type='text' class='textfield' v-model="evlocation" :class='evlocationfe' />
                     </div>
-                    <div class='mt-1 fieldwell'>
+                    <div class="spfield textcenter p2 schdusborder mt-2" v-show="loggedin===true" @click="goLocationFinder()">
+                        <v-icon>location_on</v-icon>&nbsp;<span>Find a Location</span>
+                    </div>
+                    <div class="spfield textcenter p2 schdusborder mt-2" v-show="loggedin===true" @click="useHomeAddress()">                           
+                        <v-icon>home</v-icon> <span>Use Home Address</span>
+                    </div>
+
+                    <div class='mt-2 fieldwell'>
                         <label>Address</label><br /> 
                         <input type='text' class='textfield' v-model="evstreet" :class='evstreetfe' />
                     </div>
@@ -150,11 +170,16 @@
                         <input type='text' class='textfield' id='eventZip' v-model='evzip' />
                     </div>
                 </div>
-            </div>
+
             
-    
-            <div class='buttonwell mt-4 textright'>
-                <button @click='goStepTwo'><span>Tell Us Who&rsquo;s Going</span> <v-icon color="#FFF">arrow_forward</v-icon></button>
+            </div>
+
+            <div class="mt-3">
+                <div class='layout row'>
+                    <div class="flex xs12 textright">
+                        <button @click='goStepTwo'><span>Tell Us Who&rsquo;s Going</span> <v-icon color="#FFF">arrow_forward</v-icon></button>
+                    </div>
+                </div>
             </div>
      
         </div>
@@ -183,19 +208,23 @@
                         <v-list v-show="guests.length>0">
                             <template v-for="(item, i) in guests">
                                <v-list-item :key="i">
-                                   <div class='layout row btop p4' @click="editGuest(item)">
-                                        <div class='flex xs2 pl2 relative'>
-                                            <div v-if="item.photo!==null">
+                                   <div class='layout row btop p4'>
+                                        <div class='flex xs2 pl2 relative'  @click="editGuest(item)">
+                                             <div v-if="item.cphoto!==null">
                                                 <div class="vertical-center">
-                                                    <img :src="item.photo" class="imgcircle" alt="photo" width="30" height="30" />
+                                                    <img :src="item.cphoto" class="imgcircle" alt="photo" width="30" height="30" />
                                                 </div>
                                             </div>
-                                            <div v-if="item.photo===null">
-                                                 <avatar class="vertical-center" size="30" :username="item.gname"></avatar>
+                                            <div v-if="item.cphoto===null">
+                                                <avatar class="vertical-center" size="50" :username="item.gname" v-show="imageloaded[i]===false"></avatar>
+                                                <img v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" width=50 height=50 />  
                                             </div>
                                         </div>
-                                        <div class='flex xs10 textleft fieldwell indented1 spfield'>
+                                        <div class='flex xs9 textleft fieldwell indented1 spfield mt-2' @click="editGuest(item)">
                                             {{item.gname}}
+                                        </div>
+                                        <div class='flex xs1 mt-2'>
+                                            <v-icon @click="removeGuest(item)">remove_circle_outline</v-icon>
                                         </div>
                                     </div>
                                 </v-list-item>
@@ -203,14 +232,19 @@
                         </v-list>
                     </div>
                 </div>
+                <div class="mt-2 fieldwell" v-show="loggedin===true">
+                   <toggle-button width="35" height="16" v-model="willattend"/> I Will Attend
+                </div>
 
-                <div class='layout row mt-3'>
-                    <div class='flex xs6 textleft'>
-                        <button @click='goStepOne'><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
-                    </div>
+                <div class="mt-3">
+                    <div class='layout row'>
+                        <div class='flex xs6 textleft'>
+                            <button @click='goStepOne'><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
+                        </div>
 
-                    <div class='flex xs6 textright'>
-                        <button @click='goStepThree'><span>Pick a Time</span><v-icon color="#FFF">arrow_forward</v-icon></button>
+                        <div class='flex xs6 textright'>
+                            <button @click='goStepThree'><span>Pick a Time</span><v-icon color="#FFF">arrow_forward</v-icon></button>
+                        </div>
                     </div>
                 </div>
       
@@ -219,81 +253,18 @@
         <div id='eventStepThree' v-show='formStep === 2'>
            <h1>Pick a Date and Time</h1>
            
-          
-            <div class="fieldwell mt-3">
-               <label>How long is this event:</label><br />
-                <select class="textfield" v-model="evlength">
-                    <option value="">---Pick a Length---</option>
-                    <option value="15">15 minutes</option>
-                    <option value="30">30 minutes</option>
-                    <option value="45">45 minutes</option>
-                    <option value="60">1 hour</option>
-                    <option value="90">1 hour and a half</option>
-                    <option value="120">2 hours</option>
-                    <option value="150">2 and a half hours</option>
-                    <option value="180">3 hours</option>
-                    <option value="240">4 hours</option>
-                    <option value="300">5 hours</option>
-                    <option value="360">6 hours</option>
-                    <option value="420">7 hours</option>
-                    <option value="480">8 hours</option>
-                    <option value="i">More than one day</option>
-                </select>
-           </div>
+            <picktime ref="pt" class="mt-2"></picktime>
 
-           <div v-show="evlength!=='i'">
-                <div class="fieldwell mt-3">
-                    Pick a date and time or use Pick for Us to let Schedule Us choose the best date and time based upon who you've invited
-                </div>
-                    <div class="fieldwell mt-1 textright">
-                    <button class='schdusButton' @click='pickForUs'>Pick for Us!</button>
-                </div>
-           </div>
+  
+            <div class="mt-3" v-show="buttonsenabled===true">
+                <div class='layout row'>
+                    <div class='flex xs6 textleft'>
+                        <button @click='goStepTwo'><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
+                    </div>
 
-           <div v-show="evlength==='i'" class="fieldwell mt-3">
-                Pick a date and time for the event to start
-           </div>
-
-           <div class="fieldwell mt-3">
-               <label>Date:</label>
-               <datetime format="MM-DD-YYYY" v-model="evday"></datetime>
-           </div>
-           <div class="fieldwell mt-3">
-               <label>Time:</label>
-               <datetime format="h:i" v-model="evtime" ></datetime>
-           </div>
-
-           <div v-show="evlength==='i'">
-               <div class="fieldwell mt-3">
-                    Pick a date and time for the event to end  
-               </div>
-               <div class="fieldwell mt-3">
-                    <label>End Date:</label>
-                    <datetime format="MM-DD-YYYY" v-model="endevday"></datetime>
-                </div>
-                <div class="fieldwell mt-3">
-                    <label>End Time:</label>
-                    <datetime format="h:i" v-model="endevtime" ></datetime>
-                </div>
-           </div>
-                  
-
-            <div class="fieldwell mt-3">
-               <label>Remind Attendees:</label><br />
-                <select class="textfield" v-model="remindertime">
-                    <option value="yes">1 day before</option>
-                    <option value="no">No reminder</option>
-                </select>
-           </div>
-
-        
-            <div class='layout row mt-4'>
-                <div class='flex xs6 textleft'>
-                    <button @click='goStepTwo'><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
-                </div>
-
-                 <div class='flex xs6 textright'>
-                     <button @click='goStepFour'><span>Finalize It!</span><v-icon color="#FFF">arrow_forward</v-icon></button>
+                    <div class='flex xs6 textright'>
+                        <button @click='goStepFour' v-show="datepicked===true"><span>Finalize It!</span><v-icon color="#FFF">arrow_forward</v-icon></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -308,9 +279,24 @@
                <div class="mt-3">
                    <label>Event Options:</label>
                </div>
-               <div class="mt-2" v-show="loggedin===true">
-                   <toggle-button width="35" height="16" v-model="willattend"/> I Will Attend
+               
+                <div class='mt-2' v-show="isPremium===true||isPro===true">
+                   <toggle-button width="35" height="16" v-model="eventrecurring"/> Automatically Schedule Again
                </div>
+               <div v-show="eventrecurring===true" class="fieldwell">
+                    <label>How often should it occur?</label>
+                    <select v-model="recurringamt">
+                        <option value="1">Every Week</option>
+                        <option value="2">Every 2 Weeks</option>
+                        <option value="3">Every 3 Weeks</option>
+                        <option value="4">Every Month</option>
+                        <option value="12">Every 3 Months</option>
+                        <option value="24">Every 6 Months</option>
+                        <option value="">Every Year</option>
+                    </select>
+               </div>
+
+              
                <div class="mt-2">
                    <toggle-button width="35" height="16" v-model="guestlistvisible"/> Attendees List is Visible to All
                </div>
@@ -359,20 +345,20 @@
                        <toggle-button width="35" height="16" v-model="guestschangelocationperm"/> I Must Approve Different Location
                     </div>
                </div>
-               <div class='mt-2' v-show="isPremium===true||isPro===true">
-                   <toggle-button width="35" height="16" v-model="eventrecurring"/> Schedule Event Multiple Times
-               </div>
-               <div v-show="eventrecurring===true">
-
-               </div>
+               <div class='mt-3'>
+                     By creating an event, you agree to our <a href='/termsofservice'>Terms of Service</a> and <a href='/privacypolicy'>Privacy Policy</a>
+                </div>
+             
               
-                <div class='layout row mt-4'>
-                    <div class='flex xs6 textleft'>
-                        <button @click='goStepThree'><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
-                    </div>
+                <div class="mt-3">
+                    <div class='layout row'>
+                        <div class='flex xs6 textleft'>
+                            <button @click='goStepThree'><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
+                        </div>
 
-                    <div class='flex xs6 textright'>
-                        <button @click='scheduleIt' :disabled="sschit" class='schdusButton'><span>Schedule It! </span><v-icon color="#FFF">event</v-icon></button>
+                        <div class='flex xs6 textright'>
+                            <button @click='scheduleIt' :disabled="sschit" class='schdusButton'><span>Schedule It! </span><v-icon color="#FFF">event</v-icon></button>
+                        </div>
                     </div>
                 </div>
  
@@ -385,7 +371,7 @@
                 {{guesterror}}
             </div>
 
-            <h1>Add Attendee</h1>
+            <h1>Add/Edit Attendee</h1>
 
             <div class='fieldwell mt-2'>
                     <label>Name</label><br />
@@ -400,15 +386,10 @@
                     <input type='text' class='textfield' v-model='guestemail' />
             </div>
             <div class='layout row mt-2'>
-                <div class='flex xs4 textleft'>
+                <div class='flex xs6 textleft'>
                     <button @click="closeManualAddGuest" class="tanButton">Cancel</button>
-                </div>
-                <div class='flex xs4'>
-                    <div class='textcenter' v-show="guesteditmode!==null">
-                        <button @click="removeGuest" class="redButton">Remove</button>
-                    </div>
-                </div>
-                <div class='flex xs4 textright'>
+                </div>    
+                <div class='flex xs6 textright'>
                     <button @click="addGuest" class="tanButton">Save</button>
                 </div>
             </div>
@@ -440,14 +421,14 @@
                                     <div class='flex xs2 pl2 relative'>
                                         <div v-if="item.hasimage!==null">
                                             <div class="vertical-center">
-                                                <img :src="item.hasimage" class="imgcircle" alt="photo" width="30" height="30" />
+                                                <img :src="item.hasimage" class="imgcircle" alt="photo" width="50" height="50" />
                                             </div>
                                         </div>
                                         <div v-if="item.hasimage===null">
-                                                <avatar class="vertical-center" :username="item.cname" size="30"></avatar>
+                                                <avatar class="vertical-center" :username="item.cname" size="50"></avatar>
                                         </div>
                                     </div>
-                                    <div class='flex xs10 textleft fieldwell indented1 spfield'>
+                                    <div class='flex xs10 textleft fieldwell indented1 spfield mt-2'>
                                         {{item.cname}}                                      
                                     </div>
                                 </div>
@@ -461,48 +442,35 @@
         <div id='addFromGroup' v-show='formStep === 9'>
             <groupmanager ref="gmanager"></groupmanager> 
         </div>
-        
-
-        <div class='pickforus' v-show="formStep === 6">
-             <pickforus></pickforus>
-        </div>
+         
 
         <div v-show="formStep === 7">
              <locationfinder ref="lf"></locationfinder>
         </div>
 
         <div v-show="formStep === 8">
-              Your event has been created You should receive a confirmation text shortly. 
+              <button @click="goToDashboard()" class="schdusButton">Go to Dashboard</button>
         </div>
 
     </div>
 </template>
 
-<style scoped>
-.guestlist, .manualaddguest {
-    border:1px solid #777;
-    border-radius:6px;
-    color:#777;
-}
-</style>
-
-
 <script>
 import Avatar from 'vue-avatar'
-import datetime from 'vuejs-datetimepicker'
-import pickforus from "@/components/PickForUs"
 import locationfinder from "@/components/LocationFinder"
 import groupmanager from "@/components/GroupManager"
+import picktime from "@/components/PickTime"
 import {utilities} from '../mixins/utilities'
 import { EventBus } from '../bus';
 
 export default {
-    components: {datetime,Avatar,pickforus,locationfinder,groupmanager},
+    components: {Avatar,locationfinder,groupmanager,picktime},
     mixins: [utilities],
     data: function() {
         return {
             formStep: -2,
             fromGroup: false,
+            buttonsenabled: true,
             cliname: "",
             clinamefe: "",
             clidetails: null,
@@ -511,9 +479,8 @@ export default {
             evname: "",
             evnamefe: "",        
             csearch: "",
+            datepicked: false,
             errorMessage: null,
-            endevday:null,
-            endevtime:null,
             evstreet: "",
             evcity: "",
             evcityfe: "",
@@ -521,9 +488,7 @@ export default {
             evlocation:"",
             evlocationfe:"",
             evstate: "",
-            evzip: "",   
-            evday:null,
-            evtime:null,
+            evzip: "",             
             guesteditmode:null,
             guestname: "",
             guestphone: "",
@@ -543,15 +508,17 @@ export default {
             guestsreschedule:false,
             guestschangelocation:false,
             eventrecurring:false,
-            guests:[],            
+            guests:[],          
+            imageloaded:[],
+            imageurl:[],  
             isCordova: (typeof window.cordova !== "undefined"),
             isPremium: false,
             isPro: false,
             newgroupname:null,
             okMessage: null,
+            recurringamt: "1",
             loggedin: false,
             sschit:false,
-            remindertime: "yes",
             visiblehidecontacts:[],
             willattend:true
         }
@@ -583,45 +550,92 @@ export default {
                 this.guestemail="Not Specified";
             }
 
-            if (this.guesteditmode===null) {
-                this.guests.push({
-                    gid: this.$uuid.v1(),     
-                    gname: this.guestname,
-                    gphone: this.guestphone,
-                    gemail: this.guestemail,
-                    greq: false,
-                    photo: null
-                });
-            }
-            else {
-                this.guesteditmode.gname=this.guestname;
-                this.guesteditmode.gphone=this.guestphone;
-                this.guesteditmode.gemail=this.guestemail;
-                this.guesteditmode.gid=this.gid;
-            }
+        
+            var self=this;
+            this.$http({
+                method:'post',                  
+                url:this.$hostname+'/getbyphoneoremail',
+                data: {
+                    PhoneNumber: this.guestphone,
+                    EmailAddress: this.guestemail 
+                }
+            }).then(r=> {
 
-            this.guesterror=""; 
-            this.guestname=""; 
-            this.guestphone="";
-            this.guestemail=""; 
-            this.formStep=1;
-            this.$forceUpdate();
+                var clid=this.$uuid.v1();
+                var hasc = false;
+
+                if (r.status===200 && r.data.status===200) {      
+                    clid = r.data.message;
+                    hasc = true;                      
+                }
+
+                if (self.guesteditmode===null) {
+                    self.guests.push({
+                            gid: clid,    
+                            gname: self.guestname,
+                            gphone: self.guestphone,
+                            gemail: self.guestemail,
+                            greq: false,
+                            photo: hasc,
+                            cphoto: null
+                    });
+
+                    self.imageloaded.push(false);
+
+                    if (hasc) {
+                        self.imageurl.push("https://avatars.schd.us/"+clid);
+                    }
+                    else {
+                        self.imageurl.push(null);
+                    }
+                }
+                else {
+                    
+                    self.guesteditmode.gname=self.guestname;
+                    self.guesteditmode.gphone=self.guestphone;
+                    self.guesteditmode.gemail=self.guestemail;
+                    self.guesteditmode.gid=self.gid;
+                    self.guesteditmode.photo=hasc;
+
+                    self.imageurl=[];
+                    self.imageloaded=[];
+
+                    for (var x=0; x<self.guests.length; x++) {
+                
+                        self.imageloaded.push(false);
+                        if (self.guests[x].photo) {
+                            self.imageurl[x]="https://avatars.schd.us/"+self.guests[x].gid;
+                        }
+                        else {
+                            self.imageurl[x]=null;
+                        }        
+                    }
+
+                }
+
+                self.guesterror=""; 
+                self.guestname=""; 
+                self.guestphone="";
+                self.guestemail=""; 
+                self.formStep=1;
+                self.$forceUpdate();
+            })
+         
         },
         closeContacts: function() {
             this.formStep=1;
             this.$forceUpdate();
+            window.scrollTo(0,0);
         },
         closeLocationFinder: function() {
             this.formStep=0;
             this.$forceUpdate();
+            window.scrollTo(0,0);
         },
         closeManualAddGuest: function() {
             this.formStep=1;
             this.$forceUpdate();
-        },
-        closePickForUs: function() {
-            this.formStep=2;
-            this.$forceUpdate();
+            window.scrollTo(0,0);
         },
         compareContacts: function( a, b ) {
             if ( a.cname < b.cname ){
@@ -695,22 +709,9 @@ export default {
 
             this.formStep=4;
             this.$forceUpdate();
+            window.scrollTo(0,0);
         },
-        dateChanged: function() {
-            var dao = new Date(this.makeDate(this.evday,this.evtime));
-            var diff = dao.getTime()-new Date().getTime();
-            var hours = Math.round(diff/(1000*60*60))
-
-            if (hours>=25) {
-                this.remindertime="yes";
-            }
-            else {
-                this.remindertime="no"; 
-            }
-
-
-            this.$forceUpdate();
-        },
+       
         doSaveGroup: function() {
              if (this.newgroupname.length===0 || this.newgroupname.length>128) {
                  this.errorMessage="Group name is either too long or too short";
@@ -757,24 +758,49 @@ export default {
         },
         editGuest: function(item) {
             this.guesteditmode=item;
+            this.gid = item.gid;
             this.guestname=item.gname;
             this.guestphone=item.gphone==="Not Specified"?"":item.gphone;
             this.guestemail=item.gemail==="Not Specified"?"":item.gemail;
             this.formStep=3;
             this.$forceUpdate();
+            window.scrollTo(0,0);
         },   
         fillFromGroup: function(items) {
-           
+
             for(var x=0; x<items.Clients.length; x++) {
-                this.guests.push({    
-                    gid: this.$uuid.v1(),               
-                    gname: items.Clients[x].Name,
-                    gphone: items.Clients[x].PhoneNumber,
-                    gemail: items.Clients[x].EmailAddress,
-                    photo: null,
-                    greq: false
-                });
+
+                var nogood=false;
+                for(var q=0; q<this.guests.length; q++) {
+                    if (this.guests[q].gphone!==null && this.guests[q].gphone!=="Not Specified" && this.guests[q].gphone===items.Clients[x].PhoneNumber) {
+                        nogood=true;
+                    }
+                    if (this.guests[q].gemail!==null && this.guests[q].gemail!=="Not Specified" && this.guests[q].gemail===items.Clients[x].EmailAddress) {
+                        nogood=true;
+                    }
+                }
+
+                if (!nogood) {
+                    this.guests.push({    
+                        gid: items.Clients[x].ClientID,               
+                        gname: items.Clients[x].Name,
+                        gphone: items.Clients[x].PhoneNumber,
+                        gemail: items.Clients[x].EmailAddress,
+                        photo: null,
+                        cphoto: null,
+                        greq: false
+                    });
+
+                    this.imageloaded.push(false);
+                    if (items.Clients[x].ClientID!==null) {
+                        this.imageurl.push("https://avatars.schd.us/"+items.Clients[x].ClientID);
+                    }
+                    else {
+                        this.imageurl.push(null);
+                    }
+                }
             }
+            this.fromGroup=true;
             this.formStep=1;
             this.$forceUpdate();
 
@@ -802,6 +828,7 @@ export default {
             if (this.verifyStepOne()) {
                 this.errorMessage=null;
                 this.formStep=1;
+                window.scrollTo(0,0);
             }
         },
         goStepThree: function() {
@@ -823,7 +850,23 @@ export default {
                     this.$modal.show("groupModal");
                 }
                 else {
+                    this.$refs.pt.formStep=1;
+                    this.$refs.pt.showreminder=false;
+                    var _guests=[];
+                    for (var y=0; y<this.guests.length; y++) {
+                        _guests.push(this.guests[y]);
+                    }
+
+                    if (this.willattend) {
+                        var c = localStorage.getItem("_c");
+                        _guests.push({
+                            cid: c  
+                        });
+                    }
+
+                    this.$refs.pt.setGuests(_guests);
                     this.formStep=2;
+                    window.scrollTo(0,0);
                 }
             }
             else {
@@ -834,7 +877,11 @@ export default {
             if (this.verifyStepThree()) {
                 this.errorMessage=null;
                 this.formStep=5;
+                window.scrollTo(0,0);
             }
+        },
+        goToDashboard: function() {
+            this.$router.push('dashboard');
         },
         goToLogin: function() {
             this.$router.push('auth');
@@ -856,23 +903,16 @@ export default {
             var fields  = [navigator.contacts.fieldType.displayName];
             navigator.contacts.find(fields, this.contactSuccess, this.contactFailure, options);
         },
-        pickForUs: function() {
-            if (this.evlength==="") {
-                this.errorMessage="Please choose a length for your event before using Pick for Us";
-            }
-            else {
-                this.errorMessage=null;
-                this.formStep=6;
-            }
+        loadedImage: function(i) {
+            this.imageloaded[i]=true;
+            this.$forceUpdate();
         },
-        removeGuest: function() {
+        removeGuest: function(item) {
             for(var x=0; x<this.guests.length; x++) {
-                if (this.guests[x].gid===this.guesteditmode.gid) {
+                if (this.guests[x].gid===item.gid) {
                     this.guests.splice(x,1);
                 }
             }
-            this.formStep=1;
-            this.$forceUpdate();
         },
         saveContacts: function() {   
             for(var x=0; x<this.contacts.length; x++) {
@@ -891,7 +931,8 @@ export default {
                             gname: this.contacts[x].cname,
                             gphone: this.contacts[x].cphone,
                             gemail: this.contacts[x].cemail,
-                            photo: this.contacts[x].hasimage,
+                            cphoto: this.contacts[x].hasimage,
+                            photo: false,
                             greq: false
                         });
                     }
@@ -901,6 +942,7 @@ export default {
             this.contacts=[];
             this.visiblehidecontacts=[];
             this.formStep=1;
+            window.scrollTo(0,0);
             this.$forceUpdate();
         },
         scheduleIt: function() {
@@ -914,6 +956,8 @@ export default {
 
              this.sschit=true;
 
+             var dt = this.makeDate(this.$refs.pt.evday,this.$refs.pt.evtime);
+
              this.$http({
                 method:'post',
                 url:this.$hostname+'/createevent',
@@ -923,9 +967,9 @@ export default {
                     SessionLong: localStorage.getItem("_r"),
                     EventName: this.evname,
                     ClientName: this.cliname,
-                    EndDate: this.evlength==="i"?(this.makeDate(this.endevday,this.endevtime)):null,
-                    EventDate: this.makeDate(this.evday,this.evtime),
-                    EventLength: this.evlength,
+                    EndDate: this.evlength==="i"?(this.makeDate(this.$refs.pt.endevday,this.$refs.pt.endevtime)):null,
+                    EventDate: dt,
+                    EventLength: this.$refs.pt.evlength,
                     EventDescription: this.evdescription,
                     EventStreet: this.evstreet,
                     EventCity: this.evcity,
@@ -945,10 +989,10 @@ export default {
                     EventIsRecurring: this.eventrecurring,
                     Guests: this.guests,
                     Location: this.evlocation,
-                    ReminderTime: this.remindertime,
+                    ReminderTime: this.$refs.pt.remindertime,
                     MustApproveDiffTime: this.guestsrescheduleperm,
                     MustApproveDiffLocation: this.guestschangelocationperm,
-                    UTCOffset: new Date().getTimezoneOffset(),
+                    UTCOffset: new Date(dt).getTimezoneOffset(),
                     WillAttend: this.willattend,
                     YourName: this.cliname
                 }
@@ -958,15 +1002,18 @@ export default {
                         this.errorMessage=null;
                         if (this.loggedin===true) {
                             if (r.data.message==="OK") {
-                                this.$router.push("/dashboard");
+                                this.$modal.show("doneModal");
+                                this.formStep=8;
+                                window.scrollTo(0,0);
                             }
                             else {
-                                this.$router.push("/events"+r.data.message);
+                                this.errorMessage=r.data.message;
                             }
                         }
                         else {
                             this.sschit=false;
                             this.formStep=8;
+                            window.scrollTo(0,0);
                         }
                     }
                     else {
@@ -984,23 +1031,21 @@ export default {
             this.$modal.hide("groupModal");
             this.formGroup=true;
             this.formStep=2;
+            window.scrollTo(0,0);
         },
         selectContact: function(item) {
             item.isselected=!item.isselected;
             this.$forceUpdate();
         },
-        setPickForUs: function(t) {
-             this.evday=t.date;
-             this.evtime=this.parseTime(t.time);
-             this.formStep=2;
-             this.$forceUpdate();
-        },
+       
         turnOnManualAddGuest: function() {
              this.formStep=3;
+             window.scrollTo(0,0);
         },
         turnOnGroupAddGuest: function() {
              this.$refs.gmanager.addFromGroup();
              this.formStep=9; 
+             window.scrollTo(0,0);
         },
         useHomeAddress: function() {
             if (this.clidetails!==null) {
@@ -1047,13 +1092,13 @@ export default {
                 return false;
             }
 
-            if (this.evstreet.length<1 || this.evlocation.length>255) {
+            if (this.evlocation.length>255) {
                 this.errorMessage="Street address is invalid";
                 this.evstreetfe="errorHighlight";
                 return false;
             }
 
-            if (this.evcity.length<1 || this.evcity.length>64) {
+            if (this.evcity.length>64) {
                 this.errorMessage="City is invalid";
                 this.evcityfe="errorHighlight";
                 return false;
@@ -1063,23 +1108,25 @@ export default {
             return true;
         },
         verifyStepThree: function() {
-            if (this.evlength==="") {
-                this.errorMessage="Event length is required";
-                return false;
-            }
-
-            if (this.evday===null || this.evday==="") {
+  
+  
+            if (this.$refs.pt.evday===null || this.$refs.pt.evday==="") {
                 this.errorMessage="Event date is required";
                 return false;
             }
 
-            if (this.evtime===null || this.evtime==="") {
+            if (this.$refs.pt.evtime===null || this.$refs.pt.evtime==="") {
                 this.errorMessage="Event time is required";
                 return false;
             }
 
+            if (this.$refs.pt.evlength==="") {
+                this.errorMessage="Event length is required";
+                return false;
+            }
+
             // Correct users who do dumb stuff with dates
-            var dao = new Date(this.makeDate(this.evday,this.evtime)); 
+            var dao = new Date(this.makeDate(this.$refs.pt.evday,this.$refs.pt.evtime)); 
             var diff = dao.getTime()-new Date().getTime();
             var hours = Math.round(diff/(1000*60*60))
 
@@ -1093,19 +1140,19 @@ export default {
                 return false;
             }
 
-            if (this.evlength==='i') {
+            if (this.$refs.pt.evlength==='i') {
 
-                if (this.endevday===null || this.endevday==="") {
+                if (this.$refs.pt.endevday===null || this.$refs.pt.endevday==="") {
                     this.errorMessage="End event date is required";
                     return false;
                 }
 
-                if (this.endevtime===null || this.endevtime==="") {
+                if (this.$refs.pt.endevtime===null || this.$refs.pt.endevtime==="") {
                     this.errorMessage="End event time is required";
                     return false;
                 }
 
-                var edao = new Date(this.makeDate(this.endevday,this.endevtime));
+                var edao = new Date(this.makeDate(this.$refs.pt.endevday,this.$refs.pt.endevtime));
                 var diff=edao.getTime()-dao.getTime();
 
                 if (diff<0) {
@@ -1132,6 +1179,7 @@ export default {
             });
             EventBus.$on("CloseGroupManagerEvent", () => {
                 this.formStep=1;
+                window.scrollTo(0,0);
             });
 
             this.$http({
@@ -1150,20 +1198,24 @@ export default {
                     this.isPremium=this.clidetails.IsPremium;
                     this.isPro=this.clidetails.IsPro;
                     this.formStep=0;
+                    window.scrollTo(0,0);
 
                     if (this.isPremium===false && this.isPro===false) {
                          if (this.clidetails.EventCount>=3) {
                              this.formStep=-9;
+                             window.scrollTo(0,0);
                          }
                     }
                     else if (this.isPro===false && this.isPremium===true) {
                          if (this.clidetails.EventCount>=30) {
                              this.formStep=-9;
+                             window.scrollTo(0,0);
                          }
                     }
                 }
                 else {
                     this.formStep=-1;
+                    window.scrollTo(0,0);
                     this.doLogoutRoutine();
                 }
             }).catch(e=> {
@@ -1176,11 +1228,6 @@ export default {
         }
     },
     watch: {
-        evday(value) {
-            if (value!==null && value!=="") {
-                this.dateChanged();
-            }
-        },
         csearch: function(val) {
             this.contacts=[]; 
             if (val===null || val.length===0) {     

@@ -9,9 +9,9 @@
                 {{isOK}}
             </div>
 
-            <h1>Dashboard</h1>
+            <h1>My Events</h1>
             <div v-show="isOrganizing.length>0">
-                <div class="mt-2 fieldwell boldchoice">
+                <div class="mt-3 fieldwell boldchoice">
                     Events I am Organizing
                 </div>
                 <div class="mt-2 botdot">
@@ -36,8 +36,16 @@
                     </template> 
                 </div>
             </div>
+            <div v-show="isOrganizing.length===0">
+                <div class="mt-3 fieldwell">
+                    I am not currently organizing any activities
+                </div>
+                <div class="mt-2">
+                    <button class="schdusButton" @click="goToCreateEvent()">Schedule Something!</button>
+                </div>
+            </div>
             <div v-show="isParticipating.length>0">
-                <div class="mt-2 fieldwell boldchoice">
+                <div class="mt-3 fieldwell boldchoice">
                     Events I am Participating In
                 </div>
                  <div class="mt-2">
@@ -62,14 +70,34 @@
                     </template> 
                 </div>
             </div>
-            <div v-show="isParticipating.length===0 && isOrganizing.length===0">
-                <div class="mt-2 fieldwell">
-                    I am not currently organizing or participating in any events or activities
+
+             <div v-show="isArchived.length>0">
+                <div class="mt-3 fieldwell boldchoice">
+                    Past Events
                 </div>
-                <div class="mt-2">
-                    <button class="schdusButton" @click="goToCreateEvent()">Schedule Something!</button>
+                 <div class="mt-2">
+                    <template v-for="(item, i) in isArchived">
+                        <v-list-item :key="i" >
+                            <div class="myevscheduling" @click="goEvent(item.Hash)">
+                                <div class="layout row">
+                                    <div class="flex xs10">
+                                      
+                                        <div class='mt-2'>
+                                            {{item.EventName}}
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="flex xs2">
+                                        <v-icon size="50px">keyboard_arrow_right</v-icon>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </v-list-item>
+                    </template> 
                 </div>
             </div>
+            
         </div>
     </div>
 </template>
@@ -82,6 +110,7 @@ export default {
     mixins: [utilities],
     data() {
         return {
+            isArchived: [],
             isOrganizing: [],
             isParticipating: [],
             isOK: null,
@@ -142,6 +171,7 @@ export default {
                     if (evdetails.h!==null) {
                         this.isOrganizing=evdetails.h;
                     }
+                    this.isArchived = evdetails.a;
                     this.isParticipating=rp; 
                 }
                 else {

@@ -23,7 +23,34 @@
             </div>
         </modal>
 
-        <modal name="commentModal" width="300" height="200">
+        <modal name="calendarAdd" width="300" height="225">
+            <div class="p2">
+                <div v-show="hasgoogcalendar===true">
+                    <div>
+                        Click below to add this event:
+                    </div>
+                    <div class="mt-2 layout row" @click="doCalendarGoogle()" style="cursor:pointer;">
+                        <div class="flex xs3 textcenter">
+                             <img src="@/assets/Google.png" alt="Google" />
+                        </div>
+                        <div class="flex xs9 fieldwell boldchoice mt-1">
+                             Google<br />
+                             Calendar
+                        </div>
+                    </div>
+                </div>
+                <div v-show="hasgoogcalendar===false">
+                    <div>
+                        You have not integrated any calendars. You may integrate calendars on the My Account page.
+                    </div>
+                    <div class="mt-2 textcenter">
+                        <button @click="goToMyAccount()">Go to My Account</button>
+                    </div>
+                </div>
+            </div>
+        </modal>
+
+        <modal name="commentModal" width="300" height="225">
             <div class="p2">
                 <div class="layout row">
                     <div class="xs9 flex textleft fieldwell mt-2">
@@ -47,7 +74,7 @@
             </div>
         </modal>
 
-        <modal name="confirmCancel" width="300" height="150">
+        <modal name="confirmCancel" width="300" height="175">
             <div class="p2">
                 <h1>Confirm Cancel Event</h1>
                 <div class="mt-2">
@@ -70,13 +97,19 @@
             </div>
         </modal>
 
-        <modal name="reportModal" width="300" height="200">
+        <modal name="reportModal" width="300" height="175">
             <div class="p2">
                 <div>
-                If this content is in violation of the Schedule Us Terms of Use (link needed) then it will be removed by a moderator. Are you sure you wish to make this report?
+                If this content is in violation of the Schedule Us <a href='/termsofservice'>Terms of Service</a> then it will be removed by a moderator. Are you sure you wish to make this report?
                 </div>
-                <div class="mt-2">
-                    <button @click="closeReportModal()">Close</button>
+                
+                <div class="mt-3 layout row">
+                    <div class="flex xs6">
+                        <button @click="closeReportModal()" class="redButton">Close</button>
+                    </div>
+                    <div class="flex xs6 textright">
+                        <button @click="doReportComment()">Report Comment</button>
+                    </div>
                 </div>
             </div>
         </modal>
@@ -108,34 +141,43 @@
 
         <div v-show="tev!==null&&showFinder===false&&showPick===false" class="mt-2 fieldwell">
             <div class="layout row">
-                <div class="flex xs10">
+                <div class="flex xs6">
                     <h1>{{EventName}}</h1>
                 </div>
-                <div class="flex xs1 textright">
+                  <div class="flex xs2 textright">
+                    <v-icon class="editicon" @click="goToMyEvents()" v-show="IsOwner==true">keyboard_arrow_left</v-icon>
+                </div>
+                <div class="flex xs2 textright">
                     <v-icon class="editicon" @click="doEventUpdate()" v-show="IsOwner==true">edit</v-icon>
                 </div>
-                <div class="flex xs1 textright">
+                <div class="flex xs2 textright">
                     <v-icon class="editicon" @click="doEventCancel()" v-show="IsOwner==true">remove_circle_outline</v-icon>
                 </div>
             </div>
             <div v-show="Rescheduled===true">*** Event Has Been Changed ***</div>
             <div>{{EventDescription}}</div>
-            <div class="layout row" v-show="IsMultiDay===false">
-                <div class="xs6 flex textleft">{{EventDate}}</div>
-                <div class="xs6 flex textright">{{EventTime}}</div>
-            </div>
-            <div class="layout row" v-show="IsMultiDay===true">
-                <div class="xs12 flex textleft">
-                    {{EventMultiDate}}
-                </div>            
-            </div>
+           
             <div class="layout row">
-                <div class="flex xs10">{{EventLocation}}</div>
-                <div class="flex xs1"><a @click="showAddress()" class="eventicons"><v-icon>map</v-icon></a></div>
-                <div class="flex xs1"><a v-bind:href="EventMap" target="_blank" class="eventicons" rel="nopener noreferrer"><v-icon>navigation</v-icon></a></div>
+                <div class="flex xs6">
+                    <div>
+                        {{EventLocation}}
+                    </div>
+                     <div v-show="IsMultiDay===false">
+                        <div>{{EventDate}}</div>
+                        <div>{{EventTime}}</div>
+                    </div>
+                    <div v-show="IsMultiDay===true">
+                        <div class="mt-2">
+                            {{EventMultiDate}}
+                        </div>            
+                    </div>
+                </div>
+                <div class="flex xs2 textright"><a @click="addToCalendar()" class="eventicons" v-show="imic===true"><v-icon>event</v-icon></a></div>
+                <div class="flex xs2 textright" v-show="HasAddress===true"><a @click="showAddress()" class="eventicons"><v-icon>map</v-icon></a></div>
+                <div class="flex xs2 textright" v-show="HasAddress===true"><a v-bind:href="EventMap" target="_blank" class="eventicons" rel="nopener noreferrer"><v-icon>navigation</v-icon></a></div>
             </div>
             <div v-show="IsOwner&&(ActionReq===5||ActionReq===6)">
-                You need to accept the rescheduled changes
+                Click below to accept or reject the schedule changes
             </div>
 
             <div v-show="needAcceptance===true&&EGID!==null" class="fullborder p2">
@@ -219,125 +261,140 @@
                         <v-icon>{{ acc2i }}</v-icon> <span>Suggest New Location</span>
                     </div>
                     <div class="acccontent fieldwell" v-collapse-content>
-                         <div class='boldchoice'>
-                             {{SuggestLocationStatus}}
-                         </div>
-                         <div class='mt-2'>
-                            The host has allowed you to suggest a new location for the event.
-                         </div>
-                         <div class='fieldwell xs-12 mt-2'>
-                            <label>Location</label>
-                            <div class="layout row">
-                                <div class="flex xs6 spfield textleft" @click="goLocationFinder()">
+
+                        <div v-show="locLoading===true" class="loadingMod">
+                            <img src="@/assets/loading.gif" />
+                        </div>
+                        <div v-show="locLoading===false">
+
+                            <div class='boldchoice'>
+                                {{suglocations}}
+                            </div>
+                            <div class='mt-2'>
+                                The host has allowed you to suggest a new location for the event.
+                            </div>
+                            <div class='fieldwell xs-12 mt-2'>
+                                <label>Location</label>
+                             
+                                <div class="spfield textcenter p2 grayborder" v-show="imic===true" @click="goLocationFinder()">
                                     <v-icon>location_on</v-icon>&nbsp;<span>Find a Location</span>
-                                </div>                            
+                                </div>
+                                                                   
+                                <div class='mt-2'>
+                                    <input type='text' class='textfield' v-model="evlocation" :class='evlocationfe'  />
+                                </div>
+                                <div class='mt-1 fieldwell'>
+                                    <label>Address</label><br /> 
+                                    <input type='text' class='textfield' v-model="evstreet" :class='evstreetfe'  />
+                                </div>
                             </div>
-                            <div class='mt-1'>
-                                <input type='text' class='textfield' v-model="evlocation" :class='evlocationfe'  />
+                            <div class="layout row mt-2">
+                                <div class='fieldwell flex xs6'>
+                                    <label>City:</label><br />
+                                    <input type='text' class='textfield' v-model="evcity" :class='evcityfe'   />
+                                </div>
+                                <div class='fieldwell flex xs3 ml-2'>
+                                    <label>State:</label><br />
+                                    <select class="textfield" v-model="evstate"  >
+                                        <option value="--" selected>-Choose-</option>
+                                        <option value="AL">Alabama</option>
+                                        <option value="AK">Alaska</option>
+                                        <option value="AZ">Arizona</option>
+                                        <option value="AR">Arkansas</option>
+                                        <option value="CA">California</option>
+                                        <option value="CO">Colorado</option>
+                                        <option value="CT">Connecticut</option>
+                                        <option value="DE">Delaware</option>
+                                        <option value="DC">District Of Columbia</option>
+                                        <option value="FL">Florida</option>
+                                        <option value="GA">Georgia</option>
+                                        <option value="HI">Hawaii</option>
+                                        <option value="ID">Idaho</option>
+                                        <option value="IL">Illinois</option>
+                                        <option value="IN">Indiana</option>
+                                        <option value="IA">Iowa</option>
+                                        <option value="KS">Kansas</option>
+                                        <option value="KY">Kentucky</option>
+                                        <option value="LA">Louisiana</option>
+                                        <option value="ME">Maine</option>
+                                        <option value="MD">Maryland</option>
+                                        <option value="MA">Massachusetts</option>
+                                        <option value="MI">Michigan</option>
+                                        <option value="MN">Minnesota</option>
+                                        <option value="MS">Mississippi</option>
+                                        <option value="MO">Missouri</option>
+                                        <option value="MT">Montana</option>
+                                        <option value="NE">Nebraska</option>
+                                        <option value="NV">Nevada</option>
+                                        <option value="NH">New Hampshire</option>
+                                        <option value="NJ">New Jersey</option>
+                                        <option value="NM">New Mexico</option>
+                                        <option value="NY">New York</option>
+                                        <option value="NC">North Carolina</option>
+                                        <option value="ND">North Dakota</option>
+                                        <option value="OH">Ohio</option>
+                                        <option value="OK">Oklahoma</option>
+                                        <option value="OR">Oregon</option>
+                                        <option value="PA">Pennsylvania</option>
+                                        <option value="RI">Rhode Island</option>
+                                        <option value="SC">South Carolina</option>
+                                        <option value="SD">South Dakota</option>
+                                        <option value="TN">Tennessee</option>
+                                        <option value="TX">Texas</option>
+                                        <option value="UT">Utah</option>
+                                        <option value="VT">Vermont</option>
+                                        <option value="VA">Virginia</option>
+                                        <option value="WA">Washington</option>
+                                        <option value="WV">West Virginia</option>
+                                        <option value="WI">Wisconsin</option>
+                                        <option value="WY">Wyoming</option>
+                                    </select>				
+                                </div>
+                                <div class='fieldwell flex xs3 ml-2'>
+                                    <label>Zip:</label><br />
+                                    <input type='text' class='textfield' id='eventZip'   v-model='evzip' />
+                                </div>
                             </div>
-                            <div class='mt-1 fieldwell'>
-                                <label>Address</label><br /> 
-                                <input type='text' class='textfield' v-model="evstreet" :class='evstreetfe'  />
+                            <div class="mt-2 fieldwell textright">
+                                <button @click="doLocationChange" :disabled="btnlocationchange">Submit</button> 
                             </div>
-                        </div>
-                        <div class="layout row mt-2">
-                            <div class='fieldwell flex xs6'>
-                                <label>City:</label><br />
-                                <input type='text' class='textfield' v-model="evcity" :class='evcityfe'   />
-                            </div>
-                            <div class='fieldwell flex xs3 ml-2'>
-                                <label>State:</label><br />
-                                <select class="textfield" v-model="evstate"  >
-                                    <option value="--" selected>-Choose-</option>
-                                    <option value="AL">Alabama</option>
-                                    <option value="AK">Alaska</option>
-                                    <option value="AZ">Arizona</option>
-                                    <option value="AR">Arkansas</option>
-                                    <option value="CA">California</option>
-                                    <option value="CO">Colorado</option>
-                                    <option value="CT">Connecticut</option>
-                                    <option value="DE">Delaware</option>
-                                    <option value="DC">District Of Columbia</option>
-                                    <option value="FL">Florida</option>
-                                    <option value="GA">Georgia</option>
-                                    <option value="HI">Hawaii</option>
-                                    <option value="ID">Idaho</option>
-                                    <option value="IL">Illinois</option>
-                                    <option value="IN">Indiana</option>
-                                    <option value="IA">Iowa</option>
-                                    <option value="KS">Kansas</option>
-                                    <option value="KY">Kentucky</option>
-                                    <option value="LA">Louisiana</option>
-                                    <option value="ME">Maine</option>
-                                    <option value="MD">Maryland</option>
-                                    <option value="MA">Massachusetts</option>
-                                    <option value="MI">Michigan</option>
-                                    <option value="MN">Minnesota</option>
-                                    <option value="MS">Mississippi</option>
-                                    <option value="MO">Missouri</option>
-                                    <option value="MT">Montana</option>
-                                    <option value="NE">Nebraska</option>
-                                    <option value="NV">Nevada</option>
-                                    <option value="NH">New Hampshire</option>
-                                    <option value="NJ">New Jersey</option>
-                                    <option value="NM">New Mexico</option>
-                                    <option value="NY">New York</option>
-                                    <option value="NC">North Carolina</option>
-                                    <option value="ND">North Dakota</option>
-                                    <option value="OH">Ohio</option>
-                                    <option value="OK">Oklahoma</option>
-                                    <option value="OR">Oregon</option>
-                                    <option value="PA">Pennsylvania</option>
-                                    <option value="RI">Rhode Island</option>
-                                    <option value="SC">South Carolina</option>
-                                    <option value="SD">South Dakota</option>
-                                    <option value="TN">Tennessee</option>
-                                    <option value="TX">Texas</option>
-                                    <option value="UT">Utah</option>
-                                    <option value="VT">Vermont</option>
-                                    <option value="VA">Virginia</option>
-                                    <option value="WA">Washington</option>
-                                    <option value="WV">West Virginia</option>
-                                    <option value="WI">Wisconsin</option>
-                                    <option value="WY">Wyoming</option>
-                                </select>				
-                            </div>
-                            <div class='fieldwell flex xs3 ml-2'>
-                                <label>Zip:</label><br />
-                                <input type='text' class='textfield' id='eventZip'   v-model='evzip' />
-                            </div>
-                        </div>
-                        <div class="mt-2 fieldwell textright">
-                             <button @click="doLocationChange" :disabled="btnlocationchange">Submit</button> 
                         </div>
                     </div>
                 </v-collapse-wrapper>
 
                  <v-collapse-wrapper @onStatusChange="acc3s" v-show="CanReschedule===true&&CanRSVP===true" ref="acc3">
                      <div class="accheader" v-collapse-toggle>
-                        <v-icon>{{ acc3i }}</v-icon> <span>Suggest New Time</span>
+                        <v-icon>{{ acc3i }}</v-icon> <span>Suggest New Date/Time</span>
                     </div>
                     <div class="acccontent fieldwell" v-collapse-content>
-                         <div class='boldchoice'>
-                             {{SuggestTimeStatus}}
-                         </div>
-                         <div class='mt-2'>
-                            The host has allowed you to suggest a new time for the event. Use Pick for Us to suggest a good time based upon who is going.
-                         </div>
-                         <div class="fieldwell mt-1 textright">
-                            <button class='schdusButton' @click='pickForUs'>Pick for Us!</button>
-                         </div>
 
-                         <div class="fieldwell mt-3">
-                            <label>Date:</label>
-                            <datetime format="MM-DD-YYYY" v-model="evday"></datetime>
-                         </div>
-                         <div class="fieldwell mt-3">
-                            <label>Time:</label>
-                            <datetime format="h:i" v-model="evtime" ></datetime>
-                         </div>
-                         <div class="mt-2 fieldwell textright">
-                             <button @click="doTimeChange" :disabled="btntimechange">Submit</button> 
+                        <div v-show="timeLoading===true" class="loadingMod">
+                            <img src="@/assets/loading.gif" />
+                        </div>
+                         <div v-show="timeLoading===false">
+                            <div class='boldchoice'>
+                                {{sugtimes}}
+                            </div>
+                            <div class='mt-2'>
+                                The host has allowed you to suggest a new date/time for the event. 
+                            </div>
+
+                            <div class="fieldwell mt-3">
+                                <label>Date:</label>
+                                <datetime format="MM-DD-YYYY" v-model="evday"></datetime>
+                            </div>
+                            <div class="fieldwell mt-3">
+                                <label>Time:</label>
+                                <datetime format="h:i" v-model="evtime" ></datetime>
+                            </div>
+                            <div class="mt-2 fieldwell layout row">
+                                <div class="flex xs6">
+                                    <button class='schdusButton' @click='pickForUs'>Help Me Pick a Time</button>
+                                </div>
+                                <div class="flex xs6 textright">
+                                    <button @click="doTimeChange" :disabled="btntimechange">Submit</button> 
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </v-collapse-wrapper>
@@ -351,14 +408,14 @@
                         </div>
                     </div>
                     <div class="acccontent" v-collapse-content>
-                         <div v-show="Guests.length===0">
+                         <div v-show="guests.length===0">
                             The attendee list is hidden
                         </div>
-                        <v-list v-show="Guests.length>0" >
-                            <template v-for="(item, i) in Guests">
+                        <v-list v-show="guests.length>0" >
+                            <template v-for="(item, i) in guests">
                                 <v-list-item :key="i">
                                     <div class='layout row p4'>
-                                        <div class='flex xs2 pl2 relative' v-show='SeeRSVPs===true'>
+                                        <div class='flex xs1 pl2 relative mt-3' v-show='SeeRSVPs===true'>
                                              <div class='greenicon' v-show="item.Acceptance===true">
                                                 <v-icon>check</v-icon>
                                              </div>
@@ -366,10 +423,19 @@
                                                 <v-icon>close</v-icon>      
                                              </div>                                         
                                         </div>
-                                        <div class='flex xs2 pl2 relative'>                              
-                                            <avatar class="vertical-center" size="30" :username="item.GuestName"></avatar>                           
+                                        <div class='flex xs3 pl4 relative'>                              
+                                            <avatar class="vertical-center" size="50" :username="item.GuestName" v-show="imageloaded[i]===false"></avatar>   
+                                            <img v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" width=50 height=50 />                        
                                         </div>
-                                        <div class='flex xs8 textleft fieldwell indented1 spfield'>
+                                        <div class='flex xs2 pl2 relative mt-2'>
+                                            <div v-show="item.Flair===1">
+                                                <img src="@/assets/SilverCrown.png" alt="Premium User" />
+                                            </div> 
+                                            <div v-show="item.Flair===2">
+                                                <img src="@/assets/GoldCrown.png" alt="Pro User" />
+                                            </div>
+                                        </div>
+                                        <div class='flex xs6 textleft fieldwell indented1 spfield p12 mt-2'>
                                             {{item.GuestName}}
                                         </div>
                                     </div>
@@ -381,25 +447,30 @@
 
                
 
-                <v-collapse-wrapper @onStatusChange="acc6s" v-show="CanChat===true" ref="acc6">
+                <v-collapse-wrapper @onStatusChange="acc6s" v-show="CanChat===true" ref="acc6" >
                      <div class="accheader" v-collapse-toggle>
                         <v-icon>{{ acc6i }}</v-icon> <span>Conversation</span>
                     </div>
                     <div class="acccontent" v-collapse-content>
 
-                        <div v-show="EventComments.length===0">
-                            <div>
-                                There are no comments
-                            </div>
-                            <div class="mt-2">
-                                <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
-                            </div>
+                        <div v-show="commentsLoading===true" class="loadingMod">
+                            <img src="@/assets/loading.gif" />
                         </div>
-                        <div v-show="EventComments.length>0">
-                            <div class="mt-2 mb-2 textright">
-                                <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
+                        <div v-show="commentsLoading===false">
+                            <div v-show="evcomments.length===0">
+                                <div>
+                                    There are no comments
+                                </div>
+                                <div class="mt-2">
+                                    <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
+                                </div>
                             </div>
-                           <comments v-for="(node,n) in EventComments" v-bind:key="n" :comment="node.item" :children="node.children"></comments> 
+                            <div v-show="evcomments.length>0">
+                                <div class="mt-2 mb-2 textright">
+                                    <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
+                                </div>
+                            <comments v-for="(node,n) in evcomments" v-bind:key="n" :comment="node.item" :children="node.children"></comments> 
+                            </div>
                         </div>
                                               
                     </div>
@@ -409,7 +480,10 @@
 
               <div v-show="CanShare===true" class="mt-2 accheader p2 textcenter" >
                     <a v-bind:href="TwitterURL" class="twitter-share-button" data-show-count="false"><img src="@/assets/TwitterIcon.png" alt="Tweet" width="30" height="30" /></a>  
-                    &nbsp;&nbsp;<a v-bind:href="LinkedInURL"><img src="@/assets/LIIcon.png" width="30" height="30" alt="Share on Linked In" /></a>           
+                    &nbsp;&nbsp;<a v-bind:href="LinkedInURL"><img src="@/assets/LIIcon.png" width="30" height="30" alt="Share on Linked In" /></a> 
+                    &nbsp;&nbsp;<a v-bind:href="FacebookURL"><img src="@/assets/Facebook.png" width="30" height="30" alt="Share on Facebook" /></a>  
+                    &nbsp;&nbsp;<a v-bind:href="PinterestURL"><img src="@/assets/Pinterest.png" width="30" height="30" alt="Share on Pinterest" /></a>
+                    &nbsp;&nbsp;<a v-bind:href="EmailURL"><img src="@/assets/Mail.png" width="30" height="30" alt="Share via Email" /></a>                      
               </div>
         </div>
 
@@ -418,14 +492,23 @@
         </div>
 
         <div v-show="showPick===true">
-              <pickforus></pickforus>
+              <pickforus ref="pt"></pickforus>
+        </div>
+
+        <div class="accheader" v-show="tev!==null&&Owner===false">
+            <div class="textcenter fieldwell">
+                Planning a get together?<br />Use <span class="schdusPurple">Schedule Us</span> to make it much easier!
+            </div>
+            <div class="mt-2 textcenter">
+                <button class="schdusButton" @click="goHome()">Learn More</button>
+            </div>
         </div>
     </div>
 </template>
 
 <style scoped>
  .eventicons i {
-     font-size:2rem;
+     font-size:2.5rem;
  }
  .notAttendingBox {
      border-radius:3px;
@@ -468,7 +551,10 @@ export default {
             btntimechange: false,
             btnlocationchange:false,
             commentParent: null,
+            commentsLoading: true,
+            currentec:null,
             errorMessage: null,
+            evcomments:[],
             evday: null,
             evtime: null,
             evlength:"",
@@ -482,16 +568,23 @@ export default {
             evcityfe: "",
             guestemail: "",
             guestname: "",
-            guestphone: "", 
+            guestphone: "",
+            hasgoogcalendar:false, 
+            imageloaded:[],
+            imageurl:[],
             imic: null,
             input: '',
             loading: null,
+            locLoading: true,
             needAcceptance: false,
             newComment: '',
             okMessage: null,
             search: '',
             showFinder: false,
             showPick: false,
+            suglocations: "",
+            sugtimes:"",
+            timeLoading: true,
             tev: null, 
             URL: null
         }
@@ -513,6 +606,7 @@ export default {
             }
             else {
                 this.acc2i="expand_more";
+                this.suggestedLocations();
             }
         },
         acc3s: function() {
@@ -522,6 +616,7 @@ export default {
             }
             else {
                 this.acc3i="expand_more";
+                this.suggestedTimes();
             }
         },
         acc4s: function() {
@@ -540,6 +635,7 @@ export default {
             }
             else {
                 this.acc6i="expand_more";
+                   this.commentsOpened();
             }
         },
         addComment: function(ec) {
@@ -587,10 +683,7 @@ export default {
                     EventID: this.tev.EventID,
                     gname: this.guestname,
                     gemail: this.guestemail,
-                    gphone:  this.guestphone,
-                    ClientID: localStorage.getItem("_c"),
-                    SessionID: localStorage.getItem("_s"),
-                    SessionLong: localStorage.getItem("_r"),                
+                    gphone:  this.guestphone             
                 }
             }).then(r=> {
                 if (r.status===200) {
@@ -619,6 +712,68 @@ export default {
             });
 
         },
+        addToCalendar: function() {
+             this.$http({
+                method:'post',
+                url:this.$hostname+'/getclientcalendars',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r")
+                }
+            }).then(r=> {
+                if (r.status===200 && r.data.status===200) {
+                    if (r.data.message.length>0) {
+                        this.hasgoogcalendar=true;
+                    }
+                }
+              
+                this.$modal.show("calendarAdd");           
+            });
+
+            
+        },
+        addToGoogleCalendar: function() {
+
+            this.errorMessage=null;
+            var address=this.EventLocation+" "+this.EventAddress+" "+this.EventCity+", "+this.EventState+" "+this.EventZip;
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/addtogooglecalendar',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),
+                    EventName: this.tev.EventName,
+                    EventAddr: address,
+                    EventStartDate: this.makeStartDate(),
+                    EventEndDate: this.makeEndDate(),
+                    EventDesc: this.tev.EventDescription
+                }
+            }).then(r=> {
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        
+                        this.okMessage="Event successfully added to your Google calendar";
+                        var self=this;
+                        window.setTimeout(function() {
+                            self.okMessage=null;
+                            window.location.reload();
+                        },3000) 
+                    }
+                    else {
+                        this.errorMessage=r.data.message;
+                    }
+                }
+                else {
+                    this.errorMessage="Error connecting to backend";
+                }
+
+                this.$modal.hide("calendarAdd");
+                   
+            });
+        },
         closeAddress: function() {
             this.$modal.hide("addressModal");
         },
@@ -633,6 +788,22 @@ export default {
         },
         closeReportModal: function() {
             this.$modal.hide("reportModal");
+        },
+        commentsOpened: function() {
+             this.commentsLoading=true;
+
+             this.$http({
+                method:'post',
+                url:this.$hostname+'/getcomments',
+                data: {
+                    EventID: this.tev.EventID
+                }
+            }).then(r=> {
+                if (r.status===200 && r.data.status===200) {
+                    this.evcomments=JSON.parse(r.data.message);
+                }
+                this.commentsLoading=false;
+            });
         },
         confirmEventCancel: function() {
              this.$modal.hide("confirmCancel");
@@ -674,18 +845,17 @@ export default {
                 return false;
             }
 
-            if (this.evstreet.length<1 || this.evlocation.length>255) {
+            if (this.evlocation.length>255) {
                 this.errorMessage="Street address is invalid";
                 this.evstreetfe="errorHighlight";
                 return false;
             }
 
-            if (this.evcity.length<1 || this.evcity.length>64) {
+            if (this.evcity.length>64) {
                 this.errorMessage="City is invalid";
                 this.evcityfe="errorHighlight";
                 return false;
             }
-
 
             this.$http({
                 method:'post',
@@ -730,7 +900,34 @@ export default {
             });
         },
         doReport: function(ec) {
+            this.currentec=ec;
             this.$modal.show("reportModal");
+        },
+        doReportComment: function() {
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/reportcomment',
+                data: {
+                    EventCommentID: this.currentec         
+                }
+            }).then(r=> {
+                if (r.status===200 && r.data.status===200) {
+                    this.okMessage="This comment has been reported to our moderation team for review";
+                    var self=this;
+                    window.setTimeout(function() {
+                        self.okMessage=null;
+                        window.location.reload();
+                    },3000) 
+                }
+                else {
+                    this.errorMessage="An unexpected error occurred";
+                }
+
+                 this.$modal.hide("reportModal");
+            });
+
+           
         },
         doTimeChange: function() {
 
@@ -837,16 +1034,82 @@ export default {
             this.evcity=city;
             this.showFinder=false;
         },
+        goHome: function() {
+            this.$router.push("/");
+        },
         goLocationFinder: function() {
             this.$refs.lf.doRender();
             this.showFinder=true;
+        },
+        goToMyEvents: function() {
+            this.$router.push("/dashboard");
+        },
+        goToMyAccount: function() {
+            this.$router.push("/myaccount");
         },
         insertEmoji: function(emoji) {
             this.newComment+=emoji;
             this.$modal.hide("emojiModal");
         },
+        loadedImage: function(i) {
+            this.imageloaded[i]=true;
+            this.$forceUpdate();
+        },
+        makeEndDate: function() {
+              var d = null;
+              if (this.EventMultiDate) {
+                 d = new Date(parseInt(this.tev.Schedules[0].EndDate));
+              }
+              else {
+                 d = new Date(parseInt(this.tev.Schedules[0].StartDate)+(this.tev.Schedules[0].EventLength*60*1000));
+              }
+              var i = d.toISOString();
+              var p = i.split(".");
+              var o = d.getTimezoneOffset()/60;
+              var po=null;
+              if (o<10) {
+                  po="0"+"0";
+              }
+              else {
+                  po=o;
+              }
+
+              if (o>0) {
+                return p[0]+"-"+po+":00";
+              }
+              else {
+                return p[0]+"+"+po+":00";
+              }
+        },
+        makeStartDate: function() {
+              var d = new Date(parseInt(this.tev.Schedules[0].StartDate));
+              var i = d.toISOString();
+              var p = i.split(".");
+              var o = d.getTimezoneOffset()/60;
+              var po=null;
+              if (o<10) {
+                  po="0"+"0";
+              }
+              else {
+                  po=o;
+              }
+
+              if (o>0) {
+                return p[0]+"-"+po+":00";
+              }
+              else {
+                return p[0]+"+"+po+":00";
+              }
+             
+        },
         pickForUs: function() {
-            this.showPick=true;
+            var _guests=[];
+            for (var x=0; x<this.tev.Guests.length; x++) {
+                _guests.push({cid: this.tev.Guests[x].ClientID});
+            }
+            this.$refs.pt.setGuests(_guests);
+
+            this.showPick=true; 
         },
         setPickForUs: function(t) {
              this.evday=t.date;
@@ -880,15 +1143,15 @@ export default {
                         var item =JSON.parse(r.data.message);
 
                         if (this.commentParent==="00000000-0000-0000-0000-000000000000") {
-                            this.tev.Comments.push({
+                            this.evcomments.push({
                                 children: [],
                                 item: item
                             })
                         }
                         else {
-                            for(var x=0; x<this.tev.Comments.length; x++) {
-                                if (this.tev.Comments[x].item.EventCommentID===item.ParentID) {
-                                    this.tev.Comments[x].children.push({
+                            for(var x=0; x<this.evcomments.length; x++) {
+                                if (this.evcomments[x].item.EventCommentID===item.ParentID) {
+                                    this.evcomments[x].children.push({
                                         children: [],
                                         item: item
                                     })                                    
@@ -912,6 +1175,46 @@ export default {
                 }
                 
             })
+        },
+        suggestedLocations: function() {
+            this.locLoading=true;
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/getsuggestedlocations',
+                data: {
+                    EventID: this.tev.EventID,
+                    IterationNum: this.tev.Schedules[0].IterationNum
+                }
+            }).then(r=> {
+                if (r.status===200 && r.data.status===200) {
+                    var loccnt = JSON.parse(r.data.message);
+                    this.suglocations="To reschedule: "+loccnt.length+" of "+Math.ceil(this.tev.Guests.length/2)+" required locations have been submitted"
+                }
+                this.locLoading=false;
+            });
+
+        },
+        suggestedTimes: function() {
+            this.timeLoading=true;
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/getsuggestedtimes',
+                data: {
+                    EventID: this.tev.EventID,
+                    IterationNum: this.tev.Schedules[0].IterationNum
+                }
+            }).then(r=> {
+                if (r.status===200 && r.data.status===200) {
+                    var loccnt = JSON.parse(r.data.message);
+                    this.sugtimes="To reschedule: "+loccnt.length+" of "+Math.ceil(this.tev.Guests.length/2)+" required times have been submitted"
+                }
+                this.timeLoading=false;
+            });
+        },
+        undoEventCancel: function() {
+            this.$modal.hide("confirmCancel");
         },
         verifyEmail: function(email) {
             var emailVerification = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/;
@@ -983,13 +1286,23 @@ export default {
                             this.evlength = this.tev.Schedules[0].EventLength;
                             this.needAcceptance = this.tev.NeedsAcceptance;
 
-                            console.log(this.tev);
-                            if (this.tev.GuestsCanChat===true) {
-                                this.$refs.acc6.open();
+                            for(var x=0; x<this.tev.Guests.length; x++) {
+                                this.imageloaded.push(false);
+                                if (this.tev.Guests[x].ClientID!==null) {
+                                    this.imageurl.push("https://avatars.schd.us/"+this.tev.Guests[x].ClientID);
+                                }
+                                else {
+                                    this.imageurl.push(null);
+                                }
                             }
 
                             if (this.tev.NeedsAcceptance===null) {
-                                this.$refs.acc4.open();
+                                if (this.RSVP===true&&this.needAcceptance===null&&this.CanRSVP===true) {
+                                    this.$refs.acc4.open();
+                                }
+                                else {
+                                    this.$refs.acc1.open();
+                                }
                             }
                             else {
                                 this.$refs.acc1.open();
@@ -1072,12 +1385,6 @@ export default {
                   return this.tev.Schedules[0].City;
               }
               return ""; 
-          },
-          EventComments: function() {
-              if (this.tev!==null) {
-                  return this.tev.Comments;
-              }
-              return [];
           },
           EventDescription: function() {
               if (this.tev!==null) {
@@ -1265,11 +1572,21 @@ export default {
                 }
                 return "";
           },
-          Guests: function() {
+          guests: function() {
               if (this.tev!==null) {
                   return this.tev.Guests;
               }
               return [];
+          },
+          HasAddress: function() {
+              if (this.tev===null) {
+                  return false;
+              }
+
+              if (this.tev.Schedules[0].Address.length>0 || this.tev.Schedules[0].City.length>0 || this.tev.Schedules[0].PostalCode.length>0) {
+                  return true;
+              }
+              return false;
           },
           IsMultiDay: function() {
               if (this.tev!==null) {
@@ -1282,10 +1599,7 @@ export default {
                   return this.tev.IsOwner;          
               }
               return false;
-          },
-          LinkedInURL: function() {
-               return "https://www.linkedin.com/shareArticle?mini=true&source=LinkedIn&title="+encodeURIComponent(this.EventName)+"&url="+encodeURIComponent(this.URL);
-          },
+          }, 
           MaxAttendees: function() {
               if (this.tev!==null) {
                   return this.tev.EventMaxCapacity;
@@ -1323,20 +1637,20 @@ export default {
 
               return false;
           },
-          SuggestLocationStatus: function() {
-              if (this.tev!==null) {
-                  return "To reschedule: "+this.tev.SuggestedLocationsCount+" of "+Math.ceil(this.tev.Guests.length/2)+" required locations have been submitted"
-              }
-              return ""; 
+          EmailURL: function() {
+              return "mailto:their_address@address.com?&subject="+this.EventName+"&body=Please join me at "+encodeURIComponent(this.EventName)+". For more information: "+encodeURIComponent(this.URL);
           },
-          SuggestTimeStatus: function() {
-              if (this.tev!==null) {
-                  return "To reschedule: "+this.tev.SuggestedTimesCount+" of "+Math.ceil(this.tev.Guests.length/2)+" required times have been submitted"
-              }
-              return ""; 
+          FacebookURL: function () {
+              return "https://www.facebook.com/sharer/sharer.php?u="+encodeURIComponent(this.URL);
+          },
+          LinkedInURL: function() {
+              return "https://www.linkedin.com/shareArticle?mini=true&source=LinkedIn&title="+encodeURIComponent(this.EventName)+"&url="+encodeURIComponent(this.URL);
+          },
+          PinterestURL: function() {
+              return "https://pinterest.com/pin/create/button/?url="+encodeURIComponent(this.URL)+"&media=&description="+encodeURIComponent(this.EventName);
           },
           TwitterURL: function() {
-              return "https://twitter.com/share?ref_src="+encodeURIComponent(this.URL);
+              return "https://twitter.com/home?status="+encodeURIComponent(this.URL)+" "+encodeURIComponent(this.EventName);
           }
     }
 }

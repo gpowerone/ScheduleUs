@@ -17,6 +17,10 @@ import GoogleCalendar from '@/views/GoogleCalendar'
 import Home from '@/views/Home'
 import EventUpdate from '@/views/EventUpdate'
 import OptOut from '@/views/OptOut'
+import TermsOfService from '@/views/TermsOfService'
+import PrivacyPolicy from '@/views/PrivacyPolicy'
+import Purchase from '@/views/Purchase'
+import Cancel from '@/views/Cancel'
 
 Vue.use(Router);
 
@@ -107,6 +111,26 @@ const router =  new Router({
         path: '/optout',
         name: 'Opt Out',
         component: OptOut
+    },
+    {
+      path: '/privacypolicy',
+      name: 'Privacy Policy',
+      component: PrivacyPolicy
+    },
+    {
+      path: '/termsofservice',
+      name: 'Terms of Service',
+      component: TermsOfService
+    },
+    {
+       path: '/purchase',
+       name: 'Purchase',
+       component: Purchase
+    },
+    {
+       path: '/cancel',
+       name: 'Cancel',
+       component: Cancel
     }
   ]
 })

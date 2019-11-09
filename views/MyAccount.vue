@@ -209,8 +209,14 @@
                     <div>
                         Integrate your calendars to help Schedule Us avoid conflicts when scheduling you
                     </div>
-                    <div class="mt-2">
-                        <button @click="doCalendarGoogle()">Google Calendar</button>
+                    <div class="mt-2 layout row" @click="doCalendarGoogle()" style="cursor:pointer;">
+                        <div class="flex xs3 textcenter">
+                             <img src="@/assets/Google.png" alt="Google" />
+                        </div>
+                        <div class="flex xs9 fieldwell boldchoice mt-1">
+                             Google<br />
+                             Calendar
+                        </div>
                     </div>
                 </div>
             </v-collapse-wrapper>
@@ -270,6 +276,53 @@
                     </div>
                 </div>
             </v-collapse-wrapper>
+
+            <v-collapse-wrapper @onStatusChange="acc8s"  ref="acc8">
+                <div class="accheader" v-collapse-toggle>
+                    <v-icon>{{ acc8i }}</v-icon> <span>Subscription Status</span>
+                </div>
+                <div class="acccontent" v-collapse-content>
+                    <div v-show="ispro===true">
+                        <div>
+                            You are currently a Pro subscriber
+                        </div>
+                        <div class="mt-2">
+                            <button class="redButton">Cancel</button>
+                        </div>
+                    </div>
+                    <div v-show="ispremium===true">
+                          <div>
+                            You are currently a Premium subscriber
+                        </div>
+                        <div class="mt-2 layout row">
+                            <div class="flex xs6 textleft">
+                                <button class="redButton">Cancel</button>
+                            </div>
+                            <div class="flex xs6 textright">
+                                <button class="schdusButton">Upgrade to Pro</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-show="ispremium===false&&ispro===false">
+                        <div>
+                            You are not currently subscribed
+                        </div>
+                        <div class='mt-2'>
+                            <button class="schdusButton" @click="doPremium()">Get a Premium Subscription!</button>
+                        </div>
+                    </div>
+                </div>
+            </v-collapse-wrapper>
+
+             <v-collapse-wrapper @onStatusChange="acc9s"  ref="acc9">
+                <div class="accheader" v-collapse-toggle>
+                    <v-icon>{{ acc9i }}</v-icon> <span>Order History</span>
+                </div>
+                <div class="acccontent" v-collapse-content>
+
+                </div>
+            </v-collapse-wrapper>
+
             <v-collapse-wrapper  @onStatusChange="acc5s" ref="acc5">
                 <div class="accheader" v-collapse-toggle>
                     <v-icon>{{ acc5i }}</v-icon> <span>Delete Account</span>
@@ -279,7 +332,7 @@
                         Are you sure you wish to delete your account?
                     </div>
                     <div class='mt-2'> 
-                        WARNING: this will automatically cancel any scheduled events that were created with this account. Your guests will be notified
+                        WARNING: this will automatically cancel any scheduled events that were created with this account. Attendees will be notified
                         of the cancellation. You will not be removed from other events which you are currently participating in. 
                     </div>
                     <div class="layout row mt-3">
@@ -310,6 +363,8 @@ export default {
             acc5i: "expand_less",
             acc6i: "expand_less",
             acc7i: "expand_less",
+            acc8i: "expand_less",
+            acc9i: "expand_less",
             accounttype: 0,
             btnchangepassword:false,
             btnchangephone:false,
@@ -324,6 +379,8 @@ export default {
             postalcode:"",
             errorMessage: null,
             firstName: "",
+            ispro: false,
+            ispremium: false,
             isOK: null,
             lastName: "",
             loading: true,
@@ -403,6 +460,24 @@ export default {
                 this.acc7i="expand_more";
             }
         },
+        acc8s: function() {
+
+            if (this.acc8i==="expand_more") {
+                this.acc8i="expand_less";
+            }
+            else {
+                this.acc8i="expand_more";
+            }
+        },
+        acc9s: function() {
+
+            if (this.acc9i==="expand_more") {
+                this.acc9i="expand_less";
+            }
+            else {
+                this.acc9i="expand_more";
+            }
+        },
         closeDeleteModal: function() {
             this.$modal.hide("deleteModal");
         },
@@ -414,7 +489,7 @@ export default {
             this.$forceUpdate();         
         },
         doCalendarGoogle: function() { 
-            window.open("https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id=801199894294-iei4roo6p67hitq9sc2tat5ft24qfakt.apps.googleusercontent.com&scope=https://www.googleapis.com/auth/calendar.events&response_type=code&redirect_uri=https://localhost:8000/googcalendar");
+            window.open("https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id=801199894294-iei4roo6p67hitq9sc2tat5ft24qfakt.apps.googleusercontent.com&scope=https://www.googleapis.com/auth/calendar.readonly%20https://www.googleapis.com/auth/calendar.events&response_type=code&redirect_uri=https://localhost:8000/googcalendar");
         },
         doChangePassword: function() {
 
@@ -449,6 +524,9 @@ export default {
         doPasswordCallback: function() {
             this.$modal.hide("verifyPassword")
             this.pcallback();
+        },
+        doPremium: function() {
+            this.$router.push("premium")
         },
         doSaveAddress: function() {
 
@@ -614,6 +692,8 @@ export default {
                     this.phone=this.formatPhone(clidetails.PhoneNumber);
                     this.email=clidetails.EmailAddress; 
                     this.accounttype=clidetails.AccountType;
+                    this.ispro = clidetails.IsPro;
+                    this.ispremium = clidetails.IsPremium;
 
                     if (this.accounttype===0) {
                          this.$refs.acc1.open();

@@ -1,16 +1,17 @@
 <template>
   <div>
     <div class="mobileOnly">
-        <v-navigation-drawer v-model="drawer" app>
+        <v-navigation-drawer v-model="drawer" width=200 app>
           <myContentDrawer />
         </v-navigation-drawer>
 
-        <v-toolbar clipped-left flat app>
+        <v-toolbar flat>
           <v-toolbar-side-icon  @click.stop="drawer = !drawer"></v-toolbar-side-icon>
           <div @click="doImageUpload()">
             <avatar :size="36" :username="uname" v-show="loggedIn===true&&imageloaded===false"></avatar>
-            <img v-bind:src="imageurl" v-show="imageloaded===true" @load="loaded" width=36 height=36 />
+            <img v-bind:src="imageurl" v-show="imageloaded===true" @load="loaded" width=36 height=36 />         
           </div>
+
           <v-spacer></v-spacer>
           <v-toolbar-title class="mt-2" @click="goHome"><img src="@/assets/ScheduleUsWeb.png" width="150" alt="Schedule Us Logo" /></v-toolbar-title>
         </v-toolbar>
@@ -20,10 +21,11 @@
     <div class="desktopOnly">
         <div class="layout row toolbarDesktop">
             <div class="lg6 textleft">
-                <img src="@/assets/ScheduleUs.png" width="200" alt="Schedule Us Logo" />
+                <a href="/"><img src="@/assets/ScheduleUs.png" width="200" alt="Schedule Us Logo" /></a>
             </div>
-            <div class="lg6 divright">
-                <avatar :size="50" :username="uname" v-show="loggedIn===true"></avatar>               
+            <div class="lg6 divright" @click="doImageUpload()">
+                <avatar :size="50" :username="uname" v-show="loggedIn===true&&imageloaded===false"></avatar>   
+                <img v-bind:src="imageurl" v-show="imageloaded===true" width=36 height=36 />             
             </div>
         </div>
     </div>
@@ -73,7 +75,7 @@
             </div>
           </div>
           <div v-show="imageuploaded===true">
-              <div class="mt-2">The image was uploaded successfully</div>
+              <div class="mt-2">The image was uploaded successfully and will appear shortly. You may need to refresh the page or close out of the app to see the new image.</div>
               <div class="mt-2"><button @click="endUpload()">Close</button></div>
           </div>
         </div>
@@ -150,7 +152,7 @@ export default {
       this.drawer = !this.drawer;
     },
     goHome (){
-      window.location.hash = "/";
+       this.$router.push("/");
     },
     loaded (){
        this.imageloaded=true;
@@ -159,7 +161,7 @@ export default {
         this.hasImage = true
         this.image = file.dataUrl;
     },
-    updateAvatar() {
+    updateAvatar(ut) {
         var c = localStorage.getItem("_c");
         if (typeof(c)==="undefined" || c===null || c==="null") {          
             this.loggedIn=false;
@@ -169,7 +171,13 @@ export default {
         else {
           this.uname=localStorage.getItem("_n");
           this.loggedIn=true;
-          this.imageurl="https://avatars.schd.us/"+c;
+
+          if (ut) {
+            this.imageurl="https://avatars.schd.us/"+c+"?q="+new Date().getTime();
+          }
+          else {
+            this.imageurl="https://avatars.schd.us/"+c
+          }
         }
     },
     uploadImage() {
@@ -186,7 +194,7 @@ export default {
             }
         }).then(r=>{
             self.imageuploaded=true;
-            this.updateAvatar();
+            window.setTimeout(function() { self.updateAvatar(true) },10000);
         })
     }
   }

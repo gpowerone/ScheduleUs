@@ -2,7 +2,7 @@
   <div class="footer">
       
       <div class="infoLine">
-          <span class="schdusPurple">Schedule Us</span> v2.0 (BETA 1), &copy;2019 Conjurus Technologies
+          <span class="schdusPurple">Schedule Us</span> v2.0 (BETA 1), &copy;2019 Conjurus Technologies, LLC
       </div>
   </div>
 </template>

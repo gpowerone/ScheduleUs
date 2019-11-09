@@ -26,11 +26,8 @@
             <div class="textcenter">
                 <GoogleLogin class="mt-2 ib" :params="params" :renderParams="renderParams" :onSuccess="onSuccess" :onFailure="onFailure">Login with Google</GoogleLogin>
             </div>
-            <div class="textcenter">
-                <v-facebook-login :login="fbLogin" app-id="3169905106414058"></v-facebook-login>
-            </div>
-
            
+    
             <div class="layout row mt-5">
                 <div class="fieldwell flex xs12">
                     Phone Number or Email Address:<br />
@@ -98,11 +95,10 @@
 <script>
 import { EventBus } from '../bus';
 import GoogleLogin from 'vue-google-login';
-import VFacebookLogin from 'vue-facebook-login-component'
 
 export default {
     name: "Auth",
-    components:{GoogleLogin,VFacebookLogin},
+    components: {GoogleLogin},
     data() {
         return {
             ARPhone: "",
