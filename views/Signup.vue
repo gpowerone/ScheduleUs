@@ -186,6 +186,12 @@ export default {
             this.$refs.recaptcha.reset();
         },
         submitSignup: function() {
+
+            if (this.SecAnswer.length===0) {
+                this.doError("You must choose a security question answer");
+                return;
+            }
+
             const self = this;
             self.status = "submitting";
             self.$refs.recaptcha.reset();

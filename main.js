@@ -12,6 +12,7 @@ import VueCollapse from 'vue2-collapse'
 import ToggleButton from 'vue-js-toggle-button'
 import ImageUploader from 'vue-image-upload-resize'
 import UUID from 'vue-uuid';
+import Notifications from 'vue-notification'
 
 // Determine if we are in a phone app, that changes how we do things a lot
 const isCordovaApp = (typeof window.cordova !== "undefined");
@@ -35,8 +36,9 @@ Vue.use(VueAxios, axios)
 Vue.use(VModal)
 Vue.use(VueCollapse)
 Vue.use(ToggleButton)
-Vue.use(UUID);
+Vue.use(UUID)
 Vue.use(ImageUploader)
+Vue.use(Notifications)
 
 const init = () => {
   new Vue({

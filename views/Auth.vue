@@ -47,11 +47,11 @@
             </div>
             <div class="layout row mt-2">
                  <div class="fieldwell flex xs6 p2">
-                    <button @click="goToCreateAccount()" class="fullWidth tanButton" >Register</button>
+                    <button @click="goToCreateAccount()" class="fullWidth blueButton" >Register</button>
                 </div>
     
                 <div class="fieldwell flex xs6 p2">
-                    <button @click="goToAccountRecovery()" class="fullWidth tanButton">Forgot Password?</button>
+                    <button @click="goToAccountRecovery()" class="fullWidth blueButton">Forgot Password?</button>
                 </div>
             </div>
            
@@ -59,18 +59,20 @@
         </div>    
         <div id='accountRecoveryFlow' v-show="formStep===1">
              <h1>Recover Your Account</h1>
-                <div class="textright mt-3">
+          
+            <div class="fieldwell mt-2">
+            Enter the Phone Number associated this account:<br />
+            <input type='text' id='arph' v-model="ARPhone" class='textfield' />
+            </div>
+            <div class="layout row mt-2">
+                <div class="flex xs6 textleft">
                     <button @click="goToLogin()" class="tanButton">Return to Login</button>
                 </div>
-                <div class="mt-2">
-                  <div class="fieldwell">
-                    Enter the Phone Number associated this account:<br />
-                    <input type='text' id='arph' v-model="ARPhone" class='textfield' />
-                  </div>
-                  <div class="fieldwell mt-2">
-                      <button @click="doAR">Submit</button>
-                  </div>
+                <div class="flex xs6 textright">
+                    <button @click="doAR()">Submit</button>
                 </div>
+            </div>
+               
         </div>
         <div id='accountVerificationFlow' v-show="formStep===2">
              <h1>Verification Required</h1>
@@ -264,6 +266,11 @@ export default {
                     if (r.data.status===200) {
                         if (r.data.message==="NEEDPHONE") {
                             this.$modal.show("getPhone");
+                        }
+                        else if (r.data.message.length===36) {
+                            // Do verification
+                            this.formStep=2;
+                            this.clientID=r.data.message;
                         }
                         else {
                            

@@ -39,7 +39,7 @@
                     <v-icon color="#a80cba">star</v-icon>
                 </div>
                 <div class="flex xs9">
-                    If you do not have an agreed-upon time, Schedule Us can automatically suggest the best time using your calendar, your friend's calendars, and our AI
+                    If you do not have an agreed-upon time, Schedule Us can automatically suggest the best time using your calendar, your friends' calendars, and our AI
                 </div>
              </div>
              <div class="mt-3 layout row"> 

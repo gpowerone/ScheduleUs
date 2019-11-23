@@ -106,30 +106,6 @@ export default {
             })
 
         }
-    },
-    mounted() {
-         var c = localStorage.getItem("_c");
-        if (!(typeof(c)==="undefined" || c===null || c==="null")) {    
-
-            this.$http({
-                method:'post',
-                url:this.$hostname+'/getclient',
-                data: {
-                    ClientID: c,
-                    SessionID: localStorage.getItem("_s"),
-                    SessionLong: localStorage.getItem("_r"),                    
-                }
-            }).then(r=> {
-                if (r.status!==200 || r.data.status!==200) {
-                    this.doLogoutRoutine();
-                }
-            }).catch(e=> {
-                this.doLogoutRoutine();
-            })
-        }
-        else {
-            this.doLogoutRoutine();
-        }
     }
 }
 </script>

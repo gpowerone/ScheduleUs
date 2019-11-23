@@ -39,7 +39,7 @@
                 </div>
                 <div class="layout row mt-2">
                     <div class="flex xs6">
-                        <button @click="proceedStepThree()">No, Continue</button>
+                        <button @click="proceedStepThree()" class="redButton">No, Continue</button>
                     </div>
                     <div class="flex xs6 textright">
                         <button @click="doSaveGroup()">Save Group</button>                       
@@ -239,7 +239,7 @@
                 <div class="mt-3">
                     <div class='layout row'>
                         <div class='flex xs6 textleft'>
-                            <button @click='goStepOne'><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
+                            <button @click='goStepOne' class="redButton"><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
                         </div>
 
                         <div class='flex xs6 textright'>
@@ -259,7 +259,7 @@
             <div class="mt-3" v-show="buttonsenabled===true">
                 <div class='layout row'>
                     <div class='flex xs6 textleft'>
-                        <button @click='goStepTwo'><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
+                        <button @click='goStepTwo' class="redButton"><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
                     </div>
 
                     <div class='flex xs6 textright'>
@@ -353,7 +353,7 @@
                 <div class="mt-3">
                     <div class='layout row'>
                         <div class='flex xs6 textleft'>
-                            <button @click='goStepThree'><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
+                            <button @click='goStepThree' class="redButton"><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
                         </div>
 
                         <div class='flex xs6 textright'>
@@ -387,10 +387,10 @@
             </div>
             <div class='layout row mt-2'>
                 <div class='flex xs6 textleft'>
-                    <button @click="closeManualAddGuest" class="tanButton">Cancel</button>
+                    <button @click="closeManualAddGuest" class="redButton">Cancel</button>
                 </div>    
                 <div class='flex xs6 textright'>
-                    <button @click="addGuest" class="tanButton">Save</button>
+                    <button @click="addGuest">Save</button>
                 </div>
             </div>
         </div>
@@ -846,25 +846,27 @@ export default {
                     return;
                 }
 
+                this.$refs.pt.formStep=1;
+                this.$refs.pt.showreminder=false;
+
+                var _guests=[];
+                for (var y=0; y<this.guests.length; y++) {
+                    _guests.push(this.guests[y]);
+                }
+
+                if (this.willattend) {
+                    var c = localStorage.getItem("_c");
+                    _guests.push({
+                        cid: c  
+                    });
+                }
+
+                this.$refs.pt.setGuests(_guests);
+
                 if (this.fromGroup===false) {
                     this.$modal.show("groupModal");
                 }
                 else {
-                    this.$refs.pt.formStep=1;
-                    this.$refs.pt.showreminder=false;
-                    var _guests=[];
-                    for (var y=0; y<this.guests.length; y++) {
-                        _guests.push(this.guests[y]);
-                    }
-
-                    if (this.willattend) {
-                        var c = localStorage.getItem("_c");
-                        _guests.push({
-                            cid: c  
-                        });
-                    }
-
-                    this.$refs.pt.setGuests(_guests);
                     this.formStep=2;
                     window.scrollTo(0,0);
                 }
@@ -906,6 +908,12 @@ export default {
         loadedImage: function(i) {
             this.imageloaded[i]=true;
             this.$forceUpdate();
+        },
+        proceedStepThree: function() {
+            this.$modal.hide("groupModal");
+            this.fromGroup=true;
+            this.formStep=2;
+            window.scrollTo(0,0);
         },
         removeGuest: function(item) {
             for(var x=0; x<this.guests.length; x++) {
@@ -1027,12 +1035,7 @@ export default {
                 }
             });
         },
-        proceedStepThree: function() {
-            this.$modal.hide("groupModal");
-            this.formGroup=true;
-            this.formStep=2;
-            window.scrollTo(0,0);
-        },
+       
         selectContact: function(item) {
             item.isselected=!item.isselected;
             this.$forceUpdate();
@@ -1216,15 +1219,14 @@ export default {
                 else {
                     this.formStep=-1;
                     window.scrollTo(0,0);
-                    this.doLogoutRoutine();
+                   
                 }
             }).catch(e=> {
-                this.doLogoutRoutine();
+                this.formStep=-1;
             })
         }
         else {
             this.formStep=-1;
-            this.doLogoutRoutine();
         }
     },
     watch: {

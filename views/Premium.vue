@@ -1,5 +1,10 @@
 <template>
     <div class="moduleWrapper">
+
+        <div class='errorBox' v-show='errorMessage!==null'>
+            {{ errorMessage }}
+        </div>
+
         <h1 class="valign">Schedule Us Premium&nbsp;&nbsp;<img src="@/assets/SilverCrown.png" height=20 /></h1>
         <div class='mt-3 fieldwell'>
             <span class='boldchoice'>Benefits</span>
@@ -42,6 +47,7 @@ export default {
     mixins: [utilities],
     data() {
         return {
+            errorMessage:null,
             ispro:false,
             ispremium:false
         }
@@ -85,7 +91,7 @@ export default {
                 }
             }).then(r=> {
                 if (r.status!==200 || r.data.status!==200) {
-                    this.doLogoutRoutine();
+                
                 }
                 else {
                     var cli = JSON.parse(r.data.message);
@@ -94,11 +100,11 @@ export default {
                     this.ispremium=cli.IsPremium;
                 }
             }).catch(e=> {
-                this.doLogoutRoutine();
+                this.errorMessage="Something went wrong"; 
             }) 
         }
         else {
-            this.doLogoutRoutine();
+           this.errorMessage="Something went wrong"; 
         }
 
         let stripeJS = document.createElement('script')

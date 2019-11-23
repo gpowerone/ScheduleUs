@@ -37,7 +37,7 @@ export default {
     mounted() {
         if (this.isLoggedIn()) {
             this.formStep=1;
-            this.doLogoutRoutine();
+            this.doLogoutRoutine(true);
         }
         else {
             this.$http({
@@ -49,7 +49,7 @@ export default {
                 }
             }).then(()=> {        
                 this.formStep=1;
-                this.doLogoutRoutine();
+                this.doLogoutRoutine(true);
             });
         }
     }

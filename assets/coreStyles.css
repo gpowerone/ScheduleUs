@@ -40,12 +40,17 @@
       background: #a80cba;
       padding:2px 8px;
   }
+
+  .blueButton {
+      background:royalblue;
+      color:#FFF;
+      padding: 2px 8px;
+  }
   
   .tanButton {
-     background:#ffffee;
-     color:#444;
-     padding:2px 8px;
-     border:1px solid #666699;
+        background:royalblue;
+        color:#FFF;
+        padding: 2px 8px;
   }
   
   .transButton {

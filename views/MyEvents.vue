@@ -1,9 +1,13 @@
 <template>  
     <div class="moduleWrapper">
-        <div v-show="loading===true">
+        <div class='loadingImg'  v-show="loading===true">
              <img src="@/assets/loading.gif" />
         </div>
         <div v-show="loading===false">
+
+            <div class='errorBox' v-show='errorMessage!==null'>
+                {{ errorMessage }}
+            </div>
 
             <div class='okBox' v-show='isOK!==null'>
                 {{isOK}}
@@ -110,6 +114,7 @@ export default {
     mixins: [utilities],
     data() {
         return {
+            errorMessage:null,
             isArchived: [],
             isOrganizing: [],
             isParticipating: [],
@@ -147,42 +152,51 @@ export default {
             }).then(r=> {
 
                 
-                if (r.status===200 && r.data.status===200) {
-                    var evdetails = JSON.parse(r.data.message);
-                    var rp=[];
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        var evdetails = JSON.parse(r.data.message);
+                        var rp=[];
 
-                    if (evdetails.p!==null && evdetails.p.length>0) {
-                        for(var r=0; r<evdetails.p.length; r++) {
-                            var include=true;
+                        if (evdetails.p!==null && evdetails.p.length>0) {
+                            for(var r=0; r<evdetails.p.length; r++) {
+                                var include=true;
 
-                            if (evdetails.h!==null && evdetails.h.length>0) {
-                                for(var o=0; o<evdetails.h.length; o++) {
-                                    if (evdetails.h[o].EventID===evdetails.p[r].EventID) {
-                                        include=false;
-                                    }                          
-                                }
-                                if (include) {
-                                    rp.push(evdetails.p[r]);
+                                if (evdetails.h!==null && evdetails.h.length>0) {
+                                    for(var o=0; o<evdetails.h.length; o++) {
+                                        if (evdetails.h[o].EventID===evdetails.p[r].EventID) {
+                                            include=false;
+                                        }                          
+                                    }
+                                    if (include) {
+                                        rp.push(evdetails.p[r]);
+                                    }
                                 }
                             }
                         }
+                    
+                        if (evdetails.h!==null) {
+                            this.isOrganizing=evdetails.h;
+                        }
+                        this.isArchived = evdetails.a;
+                        this.isParticipating=rp; 
+                        this.loading=false;
                     }
-                  
-                    if (evdetails.h!==null) {
-                        this.isOrganizing=evdetails.h;
+                    else {
+                        this.doLogoutRoutine();
                     }
-                    this.isArchived = evdetails.a;
-                    this.isParticipating=rp; 
                 }
                 else {
-                    this.doLogoutRoutine();
+                    this.loading=false;
+                    this.errorMessage="Something went wrong"; 
                 }
+               
 
             }).catch(e=> {
-                this.doLogoutRoutine();
+                this.loading=false;
+                this.errorMessage="Something went wrong"; 
             })
 
-            this.loading=false;
+           
     }
 }
 </script>

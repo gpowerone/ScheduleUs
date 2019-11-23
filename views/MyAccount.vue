@@ -14,6 +14,29 @@
             {{isOK}}
         </div>
 
+         <modal name="cancelSubscriptionModal" width=300 height=200>
+            <div class='paddedField'>
+                <div>
+                    Are you ABSOLUTELY SURE you want to cancel your subscription? 
+                </div>
+                <div class='mt-2'>
+                    <button class='mr-2' @click="closeCancelSubscription()">No</button>
+                    <button class='redButton' @click="proceedCancelSubscription()">Yes, Do It</button>
+                </div>
+            </div>
+        </modal>
+
+        <modal name="cancelSubscriptionComplete" width=300 height=150>
+            <div class='paddedField'>
+                <div>
+                    Your subscription has been cancelled. You will retain upgraded access until {{nextsubdate}}
+                </div>
+                <div class="mt-2">
+                    <button @click="closeSubscriptionComplete()">Close</button>
+                </div>
+            </div>
+        </modal>
+
         <modal name="deleteModal" width=300 height=200>
             <div class='paddedField'>
                 <div>
@@ -282,27 +305,37 @@
                     <v-icon>{{ acc8i }}</v-icon> <span>Subscription Status</span>
                 </div>
                 <div class="acccontent" v-collapse-content>
-                    <div v-show="ispro===true">
+                    <div v-show="nextsubdate!==null">
+                         Next Billing Date: {{nextsubdate}}
+                    </div>
+                    <div v-show="nextsubdate!==null" class="mt-2">
+                        <button @click="updateSubscription()">Update Subscription</button>
+                    </div>
+                    <div class="mt-2"  v-show="ispro===true&&nextsubdate!==null">
                         <div>
                             You are currently a Pro subscriber
                         </div>
                         <div class="mt-2">
-                            <button class="redButton">Cancel</button>
+                            <button class="redButton" @click="cancelSubscription()">Cancel</button>
                         </div>
                     </div>
-                    <div v-show="ispremium===true">
+                    <div class="mt-2"  v-show="ispremium===true&&nextsubdate!==null">
                           <div>
                             You are currently a Premium subscriber
                         </div>
                         <div class="mt-2 layout row">
                             <div class="flex xs6 textleft">
-                                <button class="redButton">Cancel</button>
+                                <button class="redButton" @click="cancelSubscription()">Cancel</button>
                             </div>
                             <div class="flex xs6 textright">
                                 <button class="schdusButton">Upgrade to Pro</button>
                             </div>
                         </div>
                     </div>
+                    <div class="mt-2" v-show="(ispremium===true||ispro===true)&&nextsubdate===null">
+                        Could not get next billing date, this subscription may have already been cancelled
+                    </div>
+                 
                     <div v-show="ispremium===false&&ispro===false">
                         <div>
                             You are not currently subscribed
@@ -319,7 +352,24 @@
                     <v-icon>{{ acc9i }}</v-icon> <span>Order History</span>
                 </div>
                 <div class="acccontent" v-collapse-content>
-
+                    <v-list v-show="orderhistory.length>0" class="p2" >
+                        <template v-for="(item, i) in orderhistory">
+                            <v-list-item :key="i">
+                                <div class='layout row mt-2'>
+                                    <div class="flex xs3"  v-html="renderDate(item.OrderDate)"> </div>
+                                    <div class="flex xs2">
+                                        ${{item.Amount}}
+                                    </div>
+                                    <div class="flex xs7">
+                                        {{item.Description}}
+                                    </div>
+                                </div>
+                            </v-list-item>
+                        </template>
+                    </v-list>
+                    <div v-show="orderhistory.length===0">
+                        You have no order history
+                    </div>
                 </div>
             </v-collapse-wrapper>
 
@@ -344,6 +394,7 @@
             </v-collapse-wrapper>
         </v-collapse-group>
      </div>
+      <notifications group="mya" position="bottom center" >
   </div>
 </template>
 
@@ -384,9 +435,11 @@ export default {
             isOK: null,
             lastName: "",
             loading: true,
+            nextsubdate:null,
             phone: "",
             email: "",
             pcallback: null,
+            orderhistory:[],
             vpass: "",
             cpassnew: "",
             cpassrnew: "",
@@ -467,6 +520,7 @@ export default {
             }
             else {
                 this.acc8i="expand_more";
+                this.doGetNextSub();
             }
         },
         acc9s: function() {
@@ -476,10 +530,20 @@ export default {
             }
             else {
                 this.acc9i="expand_more";
+                this.doOrderHistory();
             }
+        },
+        cancelSubscription: function() {
+            this.$modal.show("cancelSubscriptionModal");
+        },
+        closeCancelSubscription: function() {
+            this.$modal.hide("cancelSubscriptionModal");
         },
         closeDeleteModal: function() {
             this.$modal.hide("deleteModal");
+        },
+        closeSubscriptionComplete: function() {
+            this.$modal.hide("cancelSubscriptionComplete")
         },
         doDeleteAccount: function() {
             this.$modal.show("deleteModal");
@@ -489,7 +553,7 @@ export default {
             this.$forceUpdate();         
         },
         doCalendarGoogle: function() { 
-            window.open("https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id=801199894294-iei4roo6p67hitq9sc2tat5ft24qfakt.apps.googleusercontent.com&scope=https://www.googleapis.com/auth/calendar.readonly%20https://www.googleapis.com/auth/calendar.events&response_type=code&redirect_uri=https://localhost:8000/googcalendar");
+            window.open("https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id=801199894294-iei4roo6p67hitq9sc2tat5ft24qfakt.apps.googleusercontent.com&scope=https://www.googleapis.com/auth/calendar.readonly%20https://www.googleapis.com/auth/calendar.events&response_type=code&redirect_uri=https://stage.schd.us/googcalendar");
         },
         doChangePassword: function() {
 
@@ -520,6 +584,50 @@ export default {
                 this.cpassrnew="";
                 this.handleHTTPResult(r, "Password changed successfully");                
             })   
+        },
+        doGetNextSub: function() {
+
+            this.nextsubdate=null;
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/getnextpaymentdate',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r")
+                }
+             }).then(r=>{
+                 if (r.status===200) {
+                     if (r.data.status===200) {
+                         var d = new Date(parseInt(r.data.message)*1000);
+                         this.nextsubdate=d.getMonth()+1+"/"+d.getDate()+"/"+d.getFullYear();
+                     } 
+                 }
+                
+             })
+        },
+        doOrderHistory: function() {
+             this.$http({
+                method:'post',
+                url:this.$hostname+'/getclientorderhistory',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r")
+                }
+             }).then(r=>{
+                 if (r.status===200) {
+                     if (r.data.status===200) {
+                         this.orderhistory=r.data.message;
+                     }
+                     else {
+                         this.errorMessage=r.data.message;
+                     }
+                 }
+                 else {
+                     this.errorMessage="There was an error contacting the backend service";
+                 }
+             })
         },
         doPasswordCallback: function() {
             this.$modal.hide("verifyPassword")
@@ -639,7 +747,22 @@ export default {
                 this.doError("Error contacting the backend service, check your Internet connection");
             }
         },
-        proceedDeleteModal: function() {
+        proceedCancelSubscription: function() {
+             this.$modal.hide("cancelSubscriptionModal");
+             this.$http({
+                method:'post',
+                url:this.$hostname+'/cancelsubscription',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r")                   
+                }
+            }).then(r=> {
+                this.$modal.show("cancelSubscriptionComplete");
+            })
+        },
+        proceedDeleteAccount: function() {
+           
             this.btndelete=true;
             this.$http({
                 method:'post',
@@ -650,13 +773,50 @@ export default {
                     SessionLong: localStorage.getItem("_r"),                    
                 }
             }).then(r=> {
-                 this.btndelete=false;
-                 this.$router.push("logout")
+                 if (r.status===200) {
+                    if (r.data.status === 200) {
+                        this.btndelete=false;
+                        this.$router.push("logout")
+                    }
+                    else {
+                        this.errorMessage=r;
+                    }
+                 }
+                 else {
+                     this.errorMessage="Error contacting backend service";
+                 }
             })
+        },
+        renderDate: function(dt) {
+            var d = new Date(parseInt(dt));
+            return d.getMonth()+1+"/"+d.getDate()+"/"+d.getFullYear();
         },
         undoError: function() {
             this.errorMessage=null;
             this.$forceUpdate();
+        },
+        updateSubscription: function() {
+            
+            this.errorMessage=null;
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/updatesubscription',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),                    
+                }
+            }).then(r=> {
+                 if (r.status===200) {
+                    var stripe = Stripe("pk_test_iwwy5i2P24b4VzmePCkvvv4h00zjnLQL6k");
+                    stripe.redirectToCheckout({
+                        sessionId: r.data.sessionId
+                    }).then(handleResult);
+                 }
+                 else {
+                     this.errMessage="An error occurred, please try again";
+                 }
+            });
         }
     },
     beforeRouteEnter (to, from, next) {
@@ -671,6 +831,28 @@ export default {
     },
     mounted() {
        
+        var upd=null;
+        try {
+            upd=this.$route.query.upd;
+        }
+        catch(e) {}
+
+        if (upd=="1") {
+            this.$notify({
+                group: 'mya',
+                duration: -1,
+                title: 'Subscription',
+                text: "Your subscription was updated successfully"
+            })
+        }
+         if (upd=="2") {
+            this.$notify({
+                group: 'mya',
+                duration: -1,
+                title: 'Subscription',
+                text: "Your subscription was not updated"
+            })
+        }
 
         this.$http({
                 method:'post',
@@ -681,34 +863,44 @@ export default {
                     SessionLong: localStorage.getItem("_r"),                    
                 }
             }).then(r=> {
-                if (r.status===200 && r.data.status===200) {
-                    var clidetails = JSON.parse(r.data.message);
-                    this.firstName=clidetails.FirstName;
-                    this.lastName=clidetails.LastName;
-                    this.address=clidetails.Address;
-                    this.state=clidetails.State;
-                    this.city=clidetails.City;
-                    this.postalcode=clidetails.PostalCode;
-                    this.phone=this.formatPhone(clidetails.PhoneNumber);
-                    this.email=clidetails.EmailAddress; 
-                    this.accounttype=clidetails.AccountType;
-                    this.ispro = clidetails.IsPro;
-                    this.ispremium = clidetails.IsPremium;
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        var clidetails = JSON.parse(r.data.message);
+                        this.firstName=clidetails.FirstName;
+                        this.lastName=clidetails.LastName;
+                        this.address=clidetails.Address;
+                        this.state=clidetails.State;
+                        this.city=clidetails.City;
+                        this.postalcode=clidetails.PostalCode;
+                        this.phone=this.formatPhone(clidetails.PhoneNumber);
+                        this.email=clidetails.EmailAddress; 
+                        this.accounttype=clidetails.AccountType;
+                        this.ispro = clidetails.IsPro;
+                        this.ispremium = clidetails.IsPremium;
 
-                    if (this.accounttype===0) {
-                         this.$refs.acc1.open();
+                        if (this.accounttype===0) {
+                            this.$refs.acc1.open();
+                        }
+                        else {
+                            this.$refs.acc2.open();
+                        }
                     }
                     else {
-                         this.$refs.acc2.open();
+                        this.doLogoutRoutine();
                     }
                 }
                 else {
-                    this.doLogoutRoutine();
+                    this.errorMessage="An error occurred";
                 }
                 this.loading=false;
             }).catch(e=> {
-                this.doLogoutRoutine();
+                this.loading=false;
+                this.errorMessage="An error occurred";
             })
+        
+        let stripeJS = document.createElement('script')
+        stripeJS.setAttribute('src', 'https://js.stripe.com/v3/')
+        document.head.appendChild(stripeJS)
     }
 }
 </script>
