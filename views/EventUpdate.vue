@@ -8,6 +8,44 @@
             {{okMessage}}
         </div>
 
+        <modal name="addGroupModal" width="300" height="90%">
+            <div class="p2" style="overflow:auto;height:100%;">
+                <h1>Groups</h1>
+                <div v-show="groups.length===0" class="mt-2">
+                    <div>
+                        You have no groups
+                    </div>
+                    <div class="mt-2 layout row">
+                        <div class="flex xs12">
+                            <button @click="closeGroupManager()">Close</button>
+                        </div>                        
+                    </div>
+                </div>
+
+                <div v-show="groups.length>0">
+                    <v-list>
+                        <template v-for="(item, i) in groups">
+                            <v-list-item :key="i">
+                                <div class='layout row p4' style="border-bottom:1px solid #555;">   
+                                    <div class='flex xs12 textleft fieldwell spfield' @click="doAddFromGroup(item)">
+                                        <v-icon>group</v-icon>&nbsp;&nbsp;<span>{{item.GroupName}}</span>
+                                    </div>
+                                    
+                                </div>
+                            </v-list-item>
+                        </template>
+                    </v-list>
+                    <div class="mt-2 layout row">
+                        <div class="flex xs12">
+                            <button @click="closeGroupManager()">Close</button>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        </modal>
+
         <modal name="changeLocationModal" width="300" height="200">
             <div class="p2">
                 <h3 class="fieldwell">Warning!</h3>
@@ -167,14 +205,18 @@
                     </div>
                 </div>
                 <div class="acccontent" v-collapse-content>
-                    <div class='fieldwell xs-12 mt-2'>
-                        <label>Location</label>
+                    <div class='fieldwell xs-12 mt-2'> 
                                
-                        <div class="spfield textcenter p2 grayborder" @click="goLocationFinder()">
-                            <v-icon>location_on</v-icon>&nbsp;<span>Find a Location</span>
-                        </div>                       
+                        <div class="layout row">
+                            <div class="flex xs12 textright">
+                                <button class="schdusButton textcenter" @click="goLocationFinder()">
+                                    <v-icon color="#FFF">location_on</v-icon>&nbsp;<span>Find Location</span>
+                                </button>               
+                            </div>
+                        </div>        
                      
-                        <div class='mt-1'>
+                        <div class='mt-2 fieldwell'>
+                            <label>Place Name</label>
                             <input type='text' class='textfield' v-model="evlocation" :class='evlocationfe'  />
                         </div>
                         <div class='mt-1 fieldwell'>
@@ -264,16 +306,19 @@
                     </div>
                 </div>
                 <div class="acccontent" v-collapse-content>
-                     <div class="textright">
-                        <a @click="addAttendee()" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Attendee</span></a>
+                     <div class='flex xs12 textleft spfield'>
+                            <button class='transButton' @click='addAttendee()'><v-icon>person_add</v-icon>&nbsp;<span>Add</span></button> 
+                            &nbsp;&nbsp;
+                            <button class='transButton' @click='doAddGroupModal()'><v-icon>group_add</v-icon>&nbsp;<span>Add Group</span></button> 
                      </div>
+                   
                      <v-list v-show="guests.length>0" >
                             <template v-for="(item, i) in guests">
                                 <v-list-item :key="i">
                                     <div class='layout row p4'>
                                         <div class='flex xs2 pl2 relative'>                              
                                             <avatar class="vertical-center" size="50" :username="item.GuestName" v-show="imageloaded[i]===false"></avatar>   
-                                            <img v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" width=50 height=50 />                          
+                                            <img v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" style="border-radius:50%;" width=50 height=50 />                          
                                         </div>
                                         <div class='flex xs8 textleft fieldwell indented1 spfield mt-2'>
                                             {{item.GuestName}}
@@ -299,29 +344,7 @@
 
          <div class='manualaddguest mt-2 p2' v-show="formStep === 3">
 
-            <h1>Add Attendee</h1>
-
-            <div class='fieldwell mt-2'>
-                    <label>Name</label><br />
-                    <input type='text' class='textfield' v-model='guestname' />
-            </div>
-            <div class='fieldwell mt-2'>
-                    <label>Phone</label><br />
-                    <input type='text' class='textfield' v-model='guestphone' />
-            </div>
-            <div class='fieldwell mt-2'>
-                    <label>Email</label><br />
-                    <input type='text' class='textfield' v-model='guestemail' />
-            </div>
-            <div class='layout row mt-2'>
-                <div class='flex xs6 textleft'>
-                    <button @click="closeAddGuest">Cancel</button>
-                </div>
-              
-                <div class='flex xs6 textright'>
-                    <button @click="doAddGuest">Save</button>
-                </div>
-            </div>
+            <addeditattendee ref="aeAttendee"></addeditattendee>
         </div>
 
 </template>
@@ -330,13 +353,14 @@
 import Avatar from 'vue-avatar'
 import locationfinder from "@/components/LocationFinder"
 import pickforus from "@/components/PickForUs"
+import addeditattendee from "@/components/Attendee"
 import datetime from 'vuejs-datetimepicker'
 import {utilities} from '../mixins/utilities'
 
 export default {
     name: "EventUpdate",
     mixins: [utilities],
-    components: {Avatar,locationfinder,pickforus,datetime},
+    components: {Avatar,locationfinder,pickforus,datetime,addeditattendee},
     data() {
         return {
             acc1i: "expand_less",
@@ -360,10 +384,8 @@ export default {
             evstreetfe: "",
             evcityfe: "",
             formStep:0,
+            groups:[],
             guests:[],
-            guestname:"",
-            guestphone:"",
-            guestemail:"",
             imageloaded:[],
             imageurl:[],
             okMessage:null  
@@ -425,11 +447,17 @@ export default {
         closeAttendeeModal: function() {
             this.$modal.hide("removeAttendeeModal")
         },
+        closeGroupManager: function() {
+            this.$modal.hide("addGroupModal");
+        },
         closeLocationFinder: function() {
             this.formStep=0;
         },
         closeLocationModal: function() {
             this.$modal.hide("changeLocationModal")     
+        },
+        closeManualAddGuest: function() {
+            this.formStep=0;
         },
         closePickForUs: function() {
             this.formStep=0;
@@ -437,24 +465,60 @@ export default {
         closeTimeModal: function() {
             this.$modal.hide("changeTimeModal")    
         },
-        doAddGuest: function() {
-             if (this.guestname.length<1 || this.guestname.length>128) {
-                this.errorMessage="Guest name is required and should not be longer than 128 characters";
-                return;
-            }
-            if (this.guestphone.length<1 && this.guestemail.length<1) {
-                this.errorMessage="Either guest phone number or email address are required";
-                return;
-            }
-            if (this.guestphone.length>0 && this.verifyPhone(this.guestphone)!=="OK") {
-                this.errorMessage="Please enter valid phone number with area code in format NNN-NNN-NNNN";
-                return;
-            } 
+        doAddGroupModal: function() {
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/getgroupsforclient',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r")
+            }}).then(r=>{
+                if (r.status===200 && r.data.status===200) {
+                    if (r.data.message!=="NOGROUPS") {
+                        this.groups=JSON.parse(r.data.message);
+                    }
+                    else {
+                        this.groups=[];
+                    }
+                }
+                else {
+                    this.errorMessage="Could not contact backend service";
+                }
 
-            if (this.guestemail.length>0 && this.verifyEmail(this.guestemail)!=="OK") {
-                this.errorMessage="Please enter valid email address";
-                return;
-            }
+                this.$modal.show("addGroupModal");
+            })        
+      
+        },
+        doAddFromGroup: function(item) {
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/getclientsforgroup',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"), 
+                    ClientGroupID: item.ClientGroupID
+            }}).then(r=>{
+                if (r.status===200 && r.data.status===200) {
+                     if (r.data.message!=="NOCLIENTS") {
+                         this.fillFromGroup(JSON.parse(r.data.message));                       
+                     }
+                     else {
+                         this.errorMessage="This group has no members";
+                     }
+                }
+                else {
+                    this.errorMessage="Could not contact backend service";
+                }
+
+                this.$modal.hide("addGroupModal");
+            })        
+
+        },
+        doAddGuest: function() {
+           
 
             this.$http({
                 method:'post',                  
@@ -464,9 +528,9 @@ export default {
                     SessionID: localStorage.getItem("_s"),
                     SessionLong: localStorage.getItem("_r"),
                     EventID: this.eventid,
-                    gname: this.guestname,
-                    gphone: this.guestphone,
-                    gemail: this.guestemail
+                    gname: this.$refs.aeAttendee.guestname,
+                    gphone: this.$refs.aeAttendee.guestphone,
+                    gemail: this.$refs.aeAttendee.guestemail
                 }
             }).then(r=> {
                 if (r.status===200) {
@@ -543,6 +607,7 @@ export default {
           
         },
         doChangeName: function() {
+            this.errorMessage=null;
             if (this.evname.length>0 && this.evname.length<=128) {
                 this.$http({
                     method:'post',                  
@@ -579,6 +644,7 @@ export default {
         },
         doChangeTime: function() {
 
+            this.errorMessage=null;
             this.$modal.hide("changeTimeModal");  
 
             var edate=null;
@@ -618,6 +684,7 @@ export default {
 
         },
         doRemoveAttendee: function() {
+            this.errorMessage=null;
             this.$modal.hide("removeAttendeeModal")
 
             this.$http({
@@ -651,6 +718,53 @@ export default {
             })
 
         },
+        failPickForUs: function() {
+            this.errorMessage="We failed to find a good time";
+            this.formStep=0;
+            this.$forceUpdate();
+        },
+        fillFromGroup: function(items) {
+
+            for(var x=0; x<items.Clients.length; x++) {
+
+                var nogood=false;
+                for(var q=0; q<this.guests.length; q++) {
+                    if (this.guests[q].gphone!==null && this.guests[q].gphone===items.Clients[x].PhoneNumber) {
+                        nogood=true;
+                    }
+                    if (this.guests[q].gemail!==null && this.guests[q].gemail===items.Clients[x].EmailAddress) {
+                        nogood=true;
+                    }
+                }
+
+                if (!nogood) {
+
+                    this.$http({
+                        method:'post',                  
+                        url:this.$hostname+'/addguest',
+                        data: {
+                            ClientID: localStorage.getItem("_c"),
+                            SessionID: localStorage.getItem("_s"),
+                            SessionLong: localStorage.getItem("_r"),
+                            EventID: this.eventid,
+                            gname: items.Clients[x].Name,
+                            gphone: items.Clients[x].PhoneNumber,
+                            gemail: items.Clients[x].EmailAddress
+                        }
+                    });
+
+                   
+                }
+            }
+
+            this.okMessage="Successfully added, page will refresh";
+            var self=this;
+            window.setTimeout(function() {
+                self.refresh();
+            }, 1000);
+
+
+        },
         goLocationFinder: function() {
             this.$refs.lf.doRender();
             this.formStep=1;
@@ -669,6 +783,10 @@ export default {
             this.formStep=2;
         },
         refresh: function() {
+
+            window.scrollTo(0,0);
+            localStorage.setItem("clidetails",null);
+
             var ev=null;
             var gu=null;
 

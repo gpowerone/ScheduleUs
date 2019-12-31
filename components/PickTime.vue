@@ -6,10 +6,10 @@
 
         <div v-show="formStep===1" class="mt-5">
             <div class="textcenter mt-2">
-                <img src="@/assets/EventImage1.png" alt="I know what date and time I want" @click="doKnownDate()" />
+                <button @click="doKnownDate()" class="transButton"><img src="@/assets/EventImage1.png" width="271" alt="I know what date and time I want" /></button>
             </div>
             <div class="mt-3 textcenter">
-                <img src="@/assets/EventImage2.png" alt="Help me pick a date and time" @click="doPickForUs()" />
+                <button @click="doPickForUs()" class="transButton"><img src="@/assets/EventImage2.png" width="271" alt="Help me pick a date and time" /></button>
             </div>
         </div>
         <div v-show="formStep===2">
@@ -62,15 +62,15 @@
         <div v-show="formStep === 3" class="mt-2">
              
              <div class="mt-4 textcenter">
-                <img src="@/assets/EventImage3.png" alt="Pick the best time using default options" @click="doPFUSDefault()" />
+                <button class="transButton" @click="doPFUSDefault()"><img src="@/assets/EventImage3.png" width="271" alt="Pick the best time using default options"  /></button>
             </div>
          
             <div class="mt-2 textcenter">
-                <img src="@/assets/EventImage4.png" alt="Provide additional data to help pick the time" @click="pickForUs()" />
+                <button class="transButton" @click="pickForUs()" ><img src="@/assets/EventImage4.png" width="271" alt="Provide additional data to help pick the time" /></button>
             </div>
            
             <div class="mt-2 textcenter">
-                <img src="@/assets/EventImage5.png" alt="I change my mind and I'll pick the time" @click="doKnownDate()" />
+                <button class="transButton" @click="doKnownDate()" ><img src="@/assets/EventImage5.png" width="271" alt="I change my mind and I'll pick the time" /></button>
             </div>
         </div>
 
@@ -140,6 +140,7 @@ export default {
             this.$parent.datepicked=true;
         },
         doPickForUs: function() {
+            this.errorMessage=null;
             this.formStep=3;
         },
         doPFUSDefault: function() {
@@ -194,7 +195,7 @@ export default {
         },
         failPickForUs: function() {
             this.errorMessage="We failed to find a good time";
-            this.formStep=2;
+            this.formStep=3;
         },
         pickForUs: function() {
             if (this.evlength==="" || this.evlength==="i") {

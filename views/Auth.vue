@@ -9,7 +9,7 @@
             <div class="p2">
                 <h1>Phone Number Required</h1>
                 <div class="mt-2">
-                    Enter your phone number to complete sign-up:
+                    Enter your phone number to complete<br />sign-up:
                 </div>
                 <div class="mt-2 fieldwell">
                     <input type="text" class="textfield" v-model="ssoPhone" />
@@ -23,7 +23,7 @@
         <div id='loginFlow' v-show="formStep===0">
             <h1>Login</h1>
 
-            <div class="textcenter">
+            <div class="textcenter lgLeft">
                 <GoogleLogin class="mt-2 ib" :params="params" :renderParams="renderParams" :onSuccess="onSuccess" :onFailure="onFailure">Login with Google</GoogleLogin>
             </div>
            
@@ -40,17 +40,17 @@
                     <input type='password' id='pass' v-model="Passwd" class='textfield' />
                 </div>
             </div>
-            <div class="layout row mt-2">
-                <div class="fieldwell flex xs12 p2">
+            <div class="layout row mt-4">
+                <div class="fieldwell flex xs12">
                     <button class="fullWidth" @click="doLogin()" :disabled="status==='submitting'" >Login</button>
                 </div>
             </div>
             <div class="layout row mt-2">
-                 <div class="fieldwell flex xs6 p2">
+                 <div class="fieldwell flex xs6 lg3" style="padding-right:7px;">
                     <button @click="goToCreateAccount()" class="fullWidth blueButton" >Register</button>
                 </div>
     
-                <div class="fieldwell flex xs6 p2">
+                <div class="fieldwell flex xs6 lg9" style="padding-left:7px;">
                     <button @click="goToAccountRecovery()" class="fullWidth blueButton">Forgot Password?</button>
                 </div>
             </div>
@@ -97,10 +97,12 @@
 <script>
 import { EventBus } from '../bus';
 import GoogleLogin from 'vue-google-login';
+import {utilities} from '../mixins/utilities'
 
 export default {
     name: "Auth",
     components: {GoogleLogin},
+    mixins: [utilities],
     data() {
         return {
             ARPhone: "",
@@ -122,6 +124,10 @@ export default {
                     longtitle: true
             }
         }
+    },
+    mounted() {
+        window.scrollTo(0,0);
+        this.doLogoutRoutine();
     },
     methods: {
         doAR: function() {
@@ -173,8 +179,10 @@ export default {
                 }).then(r=> {       
                     this.$modal.hide("getPhone");
                     if (r.status===200) {
-                        if (r.data.status===200 && r.data.message==="OK") {                          
-                            this.formStep=2;                                        
+                        if (r.data.status===200 && r.data.message.length===36) {                          
+                            this.formStep=2;     
+                            this.errorMessage=null;
+                            this.clientID=r.data.message;                                   
                         }
                         else {
                             this.errorMessage=r.data.message;
@@ -268,9 +276,8 @@ export default {
                             this.$modal.show("getPhone");
                         }
                         else if (r.data.message.length===36) {
-                            // Do verification
-                            this.formStep=2;
-                            this.clientID=r.data.message;
+                            this.formStep=2;     
+                            this.clientID=r.data.message;      
                         }
                         else {
                            

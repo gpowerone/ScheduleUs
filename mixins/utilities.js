@@ -13,6 +13,11 @@ export const utilities = {
                 this.$router.push("auth");
             }
         },
+        formatPhone: function(ed) {
+            ed=ed.splice(7, 0, "-");
+            ed=ed.splice(4, 0, "-");
+            return ed.splice(1, 0, "-");
+        },
         makeDate: function(day,time) {
             var ds=day.split('-');
 
@@ -24,6 +29,9 @@ export const utilities = {
                 var ah=0;
                 if (time.indexOf(" PM")>-1) {
                     pt[0] = String(parseInt(pt[0])+12);
+                }
+                else if (pt[0]==="12") {
+                    pt[0]="0";
                 }
 
                 if (pt[0].length===1) {
@@ -49,11 +57,25 @@ export const utilities = {
         parseTime: function(ti) {
             var tip = ti.split(":");
             var ap="AM";
-            if (tip[0]>12) {
+            if (tip[0]>=12) {
                 ap="PM";
                 tip[0]-=12;
             }
             return tip[0]+":"+tip[1]+" "+ap;
+        },
+        standardizePhone(phone) {
+            try {
+                phone= phone.replace(/[^0-9]/g,"");
+                if (phone.length===10) {
+                    phone="1"+phone;
+                }
+                if (phone.length===11) {
+                    return phone;
+                }
+            }
+            catch(e) {}
+    
+            return "NotOK";
         },
         verifyEmail: function(email) {
             var emailVerification = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/;

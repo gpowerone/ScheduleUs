@@ -232,17 +232,27 @@
                     <div>
                         Integrate your calendars to help Schedule Us avoid conflicts when scheduling you
                     </div>
-                    <div class="mt-2 layout row" @click="doCalendarGoogle()" style="cursor:pointer;">
-                        <div class="flex xs3 textcenter">
+                    <div class="mt-2 layout row" tabindex="0" @click="doCalendarGoogle()" style="cursor:pointer;border:1px solid #777;border-radius:5px;width:150px;padding-top:2px;">
+                        <div class="flex xs5 textcenter">
                              <img src="@/assets/Google.png" alt="Google" />
                         </div>
-                        <div class="flex xs9 fieldwell boldchoice mt-1">
+                        <div class="flex xs7 fieldwell boldchoice mt-1">
                              Google<br />
                              Calendar
                         </div>
                     </div>
                 </div>
             </v-collapse-wrapper>
+
+            <v-collapse-wrapper @onStatusChange="acc10s"  ref="acc3">
+                <div class="accheader" v-collapse-toggle>
+                    <v-icon>{{ acc10i }}</v-icon> <span>Manage Groups</span>
+                </div>
+                <div class="acccontent" v-collapse-content>
+                    <groupmanager v-bind:passheaders="false" ref="gM"></groupmanager>
+                </div>
+            </v-collapse-wrapper>
+
             <v-collapse-wrapper @onStatusChange="acc4s"  ref="acc4" v-show="accounttype===0">
                 <div class="accheader" v-collapse-toggle>
                     <v-icon>{{ acc4i }}</v-icon> <span>Change Password</span>
@@ -328,7 +338,7 @@
                                 <button class="redButton" @click="cancelSubscription()">Cancel</button>
                             </div>
                             <div class="flex xs6 textright">
-                                <button class="schdusButton">Upgrade to Pro</button>
+                                <button class="schdusButton" @click="goToPrePro()">Upgrade to Pro</button>
                             </div>
                         </div>
                     </div>
@@ -400,10 +410,12 @@
 
 <script>
 import {utilities} from '../mixins/utilities'
+import groupmanager from '@/components/GroupManager'
 import { copyFileSync } from 'fs';
 
 export default {
     name: "myaccount",
+    components: {groupmanager},
     mixins: [utilities],
     data() {
         return {
@@ -416,6 +428,7 @@ export default {
             acc7i: "expand_less",
             acc8i: "expand_less",
             acc9i: "expand_less",
+            acc10i: "expand_less",
             accounttype: 0,
             btnchangepassword:false,
             btnchangephone:false,
@@ -531,6 +544,16 @@ export default {
             else {
                 this.acc9i="expand_more";
                 this.doOrderHistory();
+            }
+        },
+        acc10s: function() {
+
+            if (this.acc10i==="expand_more") {
+                this.acc10i="expand_less";
+            }
+            else {
+                this.acc10i="expand_more";
+                this.$refs.gM.addFromGroup();
             }
         },
         cancelSubscription: function() {
@@ -719,12 +742,16 @@ export default {
                 })
             }
 
-            this.$modal.show("verifyPassword");
+            if (this.accounttype===0) {
+                this.$modal.show("verifyPassword");
+            }
+            else {
+                self.vpass="";
+                this.pcallback();
+            }
         },
-        formatPhone: function(ed) {
-            ed=ed.splice(7, 0, "-");
-            ed=ed.splice(4, 0, "-");
-            return ed.splice(1, 0, "-");
+        goToPrePro: function() {
+            this.$router.push("/premium");
         },
         handleHTTPResult: function(r,okmsg) {
             if (r.status===200) {
@@ -779,7 +806,8 @@ export default {
                         this.$router.push("logout")
                     }
                     else {
-                        this.errorMessage=r;
+                        this.errorMessage=r.data.message;
+                        this.$modal.hide("deleteModal");
                     }
                  }
                  else {
@@ -831,6 +859,8 @@ export default {
     },
     mounted() {
        
+        window.scrollTo(0,0);
+
         var upd=null;
         try {
             upd=this.$route.query.upd;
@@ -852,55 +882,38 @@ export default {
                 title: 'Subscription',
                 text: "Your subscription was not updated"
             })
+        }     
+        
+        var clidetails = JSON.parse(localStorage.getItem("clidetails"));
+
+        this.firstName=clidetails.FirstName;
+        this.lastName=clidetails.LastName;
+        this.address=clidetails.Address;
+        this.state=clidetails.State;
+        this.city=clidetails.City;
+        this.postalcode=clidetails.PostalCode;
+        this.phone=this.formatPhone(clidetails.PhoneNumber);
+        this.email=clidetails.EmailAddress; 
+        this.accounttype=clidetails.AccountType;
+        this.ispro = clidetails.IsPro;
+        this.ispremium = clidetails.IsPremium;  
+
+        if (this.accounttype===0) {
+            this.$refs.acc1.open();
+        }
+        else {
+            this.$refs.acc2.open();
         }
 
-        this.$http({
-                method:'post',
-                url:this.$hostname+'/getclient',
-                data: {
-                    ClientID: localStorage.getItem("_c"),
-                    SessionID: localStorage.getItem("_s"),
-                    SessionLong: localStorage.getItem("_r"),                    
-                }
-            }).then(r=> {
-                if (r.status===200) {
-                    if (r.data.status===200) {
-                        var clidetails = JSON.parse(r.data.message);
-                        this.firstName=clidetails.FirstName;
-                        this.lastName=clidetails.LastName;
-                        this.address=clidetails.Address;
-                        this.state=clidetails.State;
-                        this.city=clidetails.City;
-                        this.postalcode=clidetails.PostalCode;
-                        this.phone=this.formatPhone(clidetails.PhoneNumber);
-                        this.email=clidetails.EmailAddress; 
-                        this.accounttype=clidetails.AccountType;
-                        this.ispro = clidetails.IsPro;
-                        this.ispremium = clidetails.IsPremium;
-
-                        if (this.accounttype===0) {
-                            this.$refs.acc1.open();
-                        }
-                        else {
-                            this.$refs.acc2.open();
-                        }
-                    }
-                    else {
-                        this.doLogoutRoutine();
-                    }
-                }
-                else {
-                    this.errorMessage="An error occurred";
-                }
-                this.loading=false;
-            }).catch(e=> {
-                this.loading=false;
-                this.errorMessage="An error occurred";
-            })
+        localStorage.setItem("clidetails",null);
+        this.loading=false;
         
-        let stripeJS = document.createElement('script')
-        stripeJS.setAttribute('src', 'https://js.stripe.com/v3/')
-        document.head.appendChild(stripeJS)
+        if (typeof(window.StripeLoaded)==="undefined") {
+            window.StripeLoaded=true;
+            let stripeJS = document.createElement('script')
+            stripeJS.setAttribute('src', 'https://js.stripe.com/v3/')
+            document.head.appendChild(stripeJS)
+        }
     }
 }
 </script>

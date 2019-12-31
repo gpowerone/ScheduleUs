@@ -1,0 +1,24 @@
+@media (min-width: 768px) and (max-width: 1024px)  {
+
+    input.textfield, select.textfield {
+        height:3vh;
+    }
+
+    .accheader {
+        padding:1%;
+        cursor:pointer;
+    }
+
+    .acccontent {
+        padding:2%;
+    }
+
+    .attendingBox {
+        padding:1%!important;
+    }
+
+    .errorBox,.okBox {
+        padding:1%;
+    }
+
+}

@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import Axios from 'axios'
 import CreateEvent from '@/views/CreateEvent'
 import Auth from '@/views/Auth'
 import Signup from '@/views/Signup'
@@ -21,118 +22,192 @@ import TermsOfService from '@/views/TermsOfService'
 import PrivacyPolicy from '@/views/PrivacyPolicy'
 import Purchase from '@/views/Purchase'
 import Cancel from '@/views/Cancel'
+import Ethics from '@/views/Ethics'
 
 Vue.use(Router);
 
 const router =  new Router({
   mode:'history',
+  components: { Axios },
   routes: [
     {
       path: '/',
       name: 'Home',
-      component: Home
+      component: Home,
+      meta: { requiresAuth: false }
     },
     {     
        path: '/create',
        name: 'Create Event',
-       component: CreateEvent
+       component: CreateEvent,
+       meta: { requiresAuth: true }
     },
     {
        path: '/event',
        name: 'Event',
-       component: Event
+       component: Event,
+       meta: { requiresAuth: false }
     },
     {
        path: '/update',
        name: 'Event Update',
-       component: EventUpdate
+       component: EventUpdate,
+       meta: { requiresAuth: true }
     },
     {
       path: '/auth',
       name: 'Login',
-      component: Auth
+      component: Auth,
+      meta: { requiresAuth: false }
     },
     {
        path: '/signup',
        name: 'Sign Up',
-       component: Signup
+       component: Signup,
+       meta: { requiresAuth: false }
     },
     {
       path: '/premium',
       name: 'Premium/Pro',
-      component: Premium
+      component: Premium,
+      meta: { requiresAuth: true }
     },
     {
       path: '/contact',
       name: 'Contact Us',
-      component: Contact
+      component: Contact,
+      meta: { requiresAuth: false }
     },
     {
        path: '/dashboard',
        name: 'Dashboard',
-       component: MyEvents
+       component: MyEvents,
+       meta: { requiresAuth: true }
     },
     {
        path: '/logout',
        name: 'Logout',
-       component: Logout
+       component: Logout,
+       meta: { requiresAuth: false }
     },
     {
        path: '/myaccount',
        name: 'My Account',
-       component: MyAccount
+       component: MyAccount,
+       meta: { requiresAuth: true }
     },
     {
        path: '/verify',
        name: 'Verification',
-       component: Verify
+       component: Verify,
+       meta: { requiresAuth: false }
     },
     {
        path: '/recover',
        name: 'Recover',
-       component: Recover
+       component: Recover,
+       meta: { requiresAuth: false }
     },
     {
        path: '/verifyemail',
        name: 'Verify Email',
-       component: VerifyEmail
+       component: VerifyEmail,
+       meta: { requiresAuth: false }
     },
     {
        path: '/verifyphone',
        name: 'Verify Phone',
-       component: VerifyPhone
+       component: VerifyPhone,
+       meta: { requiresAuth: false }
     },
     {
         path: '/googcalendar',
         name: 'Google Calendar',
-        component: GoogleCalendar
+        component: GoogleCalendar,
+        meta: { requiresAuth: true }
     },
     {
         path: '/optout',
         name: 'Opt Out',
-        component: OptOut
+        component: OptOut,
+        meta: { requiresAuth: false }
     },
     {
       path: '/privacypolicy',
       name: 'Privacy Policy',
-      component: PrivacyPolicy
+      component: PrivacyPolicy,
+      meta: { requiresAuth: false }
     },
     {
       path: '/termsofservice',
       name: 'Terms of Service',
-      component: TermsOfService
+      component: TermsOfService,
+      meta: { requiresAuth: false }
     },
     {
        path: '/purchase',
        name: 'Purchase',
-       component: Purchase
+       component: Purchase,
+       meta: { requiresAuth: false }
     },
     {
        path: '/cancel',
        name: 'Cancel',
-       component: Cancel
+       component: Cancel,
+       meta: { requiresAuth: false }
+    },
+    {
+       path: '/ethics',
+       name: 'Ethics',
+       component: Ethics,
+       meta: { requiresAuth: false }
     }
   ]
 })
 
-export default router;
+router.beforeEach((to,from,next)=> {
+  
+  if (!to.matched.some(record => record.meta.requiresAuth)) {
+      next();
+  }
+  else {
+
+
+      var c = localStorage.getItem("_c");
+      if (typeof(c)==="undefined" || c===null || c.length===0) {
+           next("/auth");
+      }
+      else {
+
+         var n=next;
+
+         Axios({
+               method:'post',
+               url:Vue.prototype.$hostname+'/getclient',
+               data: {
+                  ClientID: c,
+                  SessionID: localStorage.getItem("_s"),
+                  SessionLong: localStorage.getItem("_r"),                    
+               }
+         }).then(r=> {
+               if (r.status===200) {
+                  if (r.data.status===200) {
+   
+                     localStorage.setItem("clidetails",r.data.message);
+                     n();
+                  }      
+                  else {
+                     n("/auth");
+                  }
+               }
+               else {
+                  n("/auth");
+               }
+         }).catch(e=> {
+            n("/auth");
+         })
+      }
+   }
+});
+
+export default router

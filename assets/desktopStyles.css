@@ -1,4 +1,4 @@
-@media (min-width: 1281px) {
+@media (min-width: 1025px) {
   
     html {
         background-color: #444;
@@ -26,14 +26,13 @@
     }
 
     .toolbarDesktop {
-        padding:1%;
-        background-color:#FFF;
-        border-bottom:1px solid gray;
+        padding:0.3% 1%;
+        border-bottom:1px dotted gray;
     }
 
     .toolbarMenu {
-        padding:1%;
-        border-right:1px solid gray;
+        width:300px;
+        border-right:1px dotted gray;
     }
 
     .mobileOnly {
@@ -68,6 +67,43 @@
         flex-basis: 0;
         flex-grow: 1;
         width:84%;
+     }
+
+     .desktopTopSpacer {
+         margin-top:80px!important;
+     }
+
+     .fullWidth {
+        width:250px;
+     }
+
+     input.textfield, select.textfield {
+         height:3vh;
+     }
+
+     .accheader {
+         padding:1%;
+         cursor:pointer;
+     }
+
+     .acccontent {
+         padding:2%;
+     }
+
+     .attendingBox {
+         padding:1%!important;
+     }
+
+     .lgLeft {
+         text-align:left!important;
+     }
+
+     .errorBox,.okBox {
+         padding:1%;
+     }
+
+     .mobileCenter {
+         text-align:inherit!important;
      }
 }
   

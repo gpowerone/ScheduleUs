@@ -23,6 +23,8 @@ export default {
     },
     mounted() {
 
+        window.scrollTo(0,0);
+
         var c=null;  
         try {
              c=this.$route.query.code;

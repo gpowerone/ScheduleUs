@@ -23,11 +23,15 @@
             <div class="lg6 textleft">
                 <a href="/"><img src="@/assets/ScheduleUs.png" width="200" alt="Schedule Us Logo" /></a>
             </div>
-            <div class="lg6 divright" @click="doImageUpload()">
+            <div class="lg6 divright" style="padding-top:0.5%" @click="doImageUpload()">
                 <avatar :size="50" :username="uname" v-show="loggedIn===true&&imageloaded===false"></avatar>   
                 <img v-bind:src="imageurl" v-show="imageloaded===true" width=36 height=36 />             
             </div>
         </div>
+    </div>
+
+    <div class="betaVersion">
+        BETA
     </div>
 
     <modal name="htmlUploader" width=90% height=80%>

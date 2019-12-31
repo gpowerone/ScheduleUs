@@ -1,6 +1,6 @@
 <template>
     <div id='groupManager'>
-        <div id='loading' v-show="formStep===-1">
+        <div id='loading' class='loadingImg' v-show="formStep===-1">
             <img src="@/assets/loading.gif" />
         </div>
 
@@ -46,8 +46,8 @@
 
         </modal>
 
-        <div id='addFromGroup' v-show="formStep===0">
-            <h1>Add from Group</h1>   
+        <div v-show="formStep===0">
+            <h1 v-show="headers===true">Edit Groups</h1>   
                 
             <div v-show="groups.length===0" class="mt-2">
                 <div>
@@ -68,13 +68,13 @@
                     <template v-for="(item, i) in groups">
                         <v-list-item :key="i">
                             <div class='layout row btop p4'>   
-                                <div class='flex xs10 textleft fieldwell spfield' @click="doAddFromGroup(item)">
+                                <div class='flex xs8 lg10 md10 textleft fieldwell spfield'>
                                     <v-icon>group</v-icon>&nbsp;&nbsp;<span>{{item.GroupName}}</span>
                                 </div>
-                                <div class="flex xs1 textcenter">
+                                <div class="flex xs2 lg1 md1 textright">
                                     <v-icon @click="doEditGroup(item)">edit</v-icon>
                                 </div>
-                                 <div class="flex xs1 textcenter">
+                                 <div class="flex xs2 lg1 md1 textright">
                                     <v-icon @click="doRemoveGroup(item)">remove_circle_outline</v-icon>
                                 </div>
                             </div>
@@ -93,7 +93,7 @@
         </div>  
 
         <div id='createGroup' v-show="formStep===1">
-            <h1>Create Group</h1>
+            <h1 v-show="headers===true">Create Group</h1>
             <div class="mt-2 fieldwell">
                 <label>Group Name</label><br />
                 <input type="text" v-model="newgroupname" class="textfield" />
@@ -109,7 +109,7 @@
         </div>
 
         <div id='editGroup' v-show="formStep===2">
-            <h1>Edit Group</h1>
+            <h1 v-show="headers===true">Edit Group</h1>
             <div class="mt-2 fieldwell">
                 <label>Group Name:</label>&nbsp;&nbsp; <input type="text" v-model="groupName" class="textfield" />
             </div>
@@ -141,7 +141,7 @@
                                         </div>
                                         <div v-if="item.photo===null">
                                                 <avatar class="vertical-center" size="50" :username="item.gname" v-show="imageloaded[i]===false"></avatar>
-                                                <img v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" width=50 height=50 />
+                                                <img v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" style="border-radius:50%;" width=50 height=50 />
                                         </div>
                                     </div>
                                     <div class='flex xs9 textleft fieldwell indented1 spfield mt-2' @click="editGroupMember(item)">
@@ -167,33 +167,7 @@
             </div>
         </div>
         <div class='manualaddguest mt-2 p2' v-show="formStep === 3">
-
-            <div v-show="guesterror!==null" class="errorBox">
-                {{guesterror}}
-            </div>
-
-            <h1>Add/Edit Group Member</h1>
-
-            <div class='fieldwell mt-2'>
-                    <label>Name</label><br />
-                    <input type='text' class='textfield' v-model='guestname' />
-            </div>
-            <div class='fieldwell mt-2'>
-                    <label>Phone</label><br />
-                    <input type='text' class='textfield' v-model='guestphone' />
-            </div>
-            <div class='fieldwell mt-2'>
-                    <label>Email</label><br />
-                    <input type='text' class='textfield' v-model='guestemail' />
-            </div>
-            <div class='layout row mt-2'>
-                <div class='flex xs6 textleft'>
-                    <button @click="closeManualAddGuest" class="tanButton">Cancel</button>
-                </div>
-                <div class='flex xs6 textright'>
-                    <button @click="addGuest" class="tanButton">Save</button>
-                </div>
-            </div>
+            <addeditattendee ref="aeAttendee"></addeditattendee>
         </div>
     </div>
 </template>
@@ -202,10 +176,11 @@
 import { EventBus } from '../bus';
 import {utilities} from '../mixins/utilities'
 import Avatar from 'vue-avatar'
+import addeditattendee from '@/components/Attendee'
 
 export default {
     name: "Group Manager",
-    components: {Avatar},
+    components: {Avatar,addeditattendee},
     mixins: [utilities],
     data() {
         return {
@@ -213,11 +188,7 @@ export default {
             editmode: false,
             errorMessage:null,
             formStep: -1,
-            gid:null,
-            guestname:"",
-            guestphone:"",
-            guestemail:"",
-            guesterror:null,
+            gid:null,        
             groupName:null,
             groupID:null,
             groups:[],
@@ -226,6 +197,17 @@ export default {
             members:[],
             newgroupname: null,
             okMessage:null
+        }
+    },
+    props: ['passheaders'],
+    computed: {
+        headers: function() {
+            if (typeof(this.passheaders)!=="undefined") {
+                return this.passheaders;
+            }
+            else {
+                return true;
+            }
         }
     },
     methods: {
@@ -243,45 +225,20 @@ export default {
                     if (r.data.message!=="NOGROUPS") {
                         this.groups=JSON.parse(r.data.message);
                     }
+                    else {
+                        this.groups=[];
+                    }
                 }
                 else {
                     this.errorMessage="Could not contact backend service";
                 }
 
                 this.formStep=0;
+                this.$forceUpdate();
             })        
         },
-        addGuest: function() {
+        addEditGuest: function() {
 
-            this.guesterror=null;
-
-            if (this.guestname.length<1 || this.guestname.length>128) {
-                this.guesterror="Guest name is required and should not be longer than 128 characters";
-                this.$forceUpdate();
-                return;
-            }
-            if (this.guestphone.length<1 && this.guestemail.length<1) {
-                this.guesterror="Either guest phone number or email address are required";
-                this.$forceUpdate();
-                return;
-            }
-            if (this.guestphone.length>0 && this.verifyPhone(this.guestphone)!=="OK") {
-                this.guesterror="Please enter valid phone number with area code in format NNN-NNN-NNNN";
-                this.$forceUpdate();
-                return;
-            } 
-            if (this.guestemail.length>0 && this.verifyEmail(this.guestemail)!=="OK") {
-                this.guesterror="Please enter valid email address";
-                this.$forceUpdate();
-                return;
-            }
-
-            if (this.guestphone.length<1) {
-                this.guestphone="Not Specified";
-            }
-            if (this.guestemail.length<1) {
-                this.guestemail="Not Specified";
-            }
 
             if (this.editmode===false) {
                 this.doAddToGroup();
@@ -340,33 +297,6 @@ export default {
         createGroup: function() {
             this.formStep=1;
         },
-        doAddFromGroup: function(item) {
-
-            this.$http({
-                method:'post',
-                url:this.$hostname+'/getclientsforgroup',
-                data: {
-                    ClientID: localStorage.getItem("_c"),
-                    SessionID: localStorage.getItem("_s"),
-                    SessionLong: localStorage.getItem("_r"), 
-                    ClientGroupID: item.ClientGroupID
-            }}).then(r=>{
-                if (r.status===200 && r.data.status===200) {
-                     if (r.data.message!=="NOCLIENTS") {
-                        EventBus.$emit("DoAddFromGroupEvent",JSON.parse(r.data.message));
-                     }
-                     else {
-                         this.errorMessage="This group has no members and cannot be added";
-                     }
-                }
-                else {
-                    this.errorMessage="Could not contact backend service";
-                }
-
-         
-            })        
-
-        },
         doAddToGroup: function(name,phone,email) {
               this.$http({
                 method:'post',
@@ -377,9 +307,9 @@ export default {
                     SessionLong: localStorage.getItem("_r"),
                     ClientGroupID: this.groupID,
                     Client: {
-                        Name: this.guestname,
-                        PhoneNumber: this.guestphone,
-                        EmailAddress: this.guestemail
+                        Name: this.$refs.aeAttendee.guestname,
+                        PhoneNumber: this.$refs.aeAttendee.guestphone,
+                        EmailAddress: this.$refs.aeAttendee.guestemail
                     }
             }}).then(r=>{
                 if (r.status===200) {
@@ -390,9 +320,9 @@ export default {
 
                         this.members.push({
                             gid: r.data.message, 
-                            gname: this.guestname,
-                            gphone: this.guestphone,
-                            gemail: this.guestemail,
+                            gname: this.$refs.aeAttendee.guestname,
+                            gphone: this.$refs.aeAttendee.guestphone,
+                            gemail: this.$refs.aeAttendee.guestemail,
                             greq: false,
                             photo: null
                         });
@@ -402,11 +332,6 @@ export default {
                         window.setTimeout(function() {
                             self.okMessage=null;
                         },3000) 
-
-                        this.guesterror=null;
-                        this.guestname=""; 
-                        this.guestphone="";
-                        this.guestemail=""; 
                         
                         this.doEditGroup({
                             ClientGroupID: this.groupID,
@@ -416,10 +341,6 @@ export default {
                     else {
                         this.errorMessage=r.data.message;
 
-                        this.guesterror=null;
-                        this.guestname=""; 
-                        this.guestphone="";
-                        this.guestemail=""; 
                         this.formStep=2;
                         this.$forceUpdate();
                     }
@@ -427,10 +348,6 @@ export default {
                 else {
                     this.errorMessage="Could not contact backend service";
 
-                    this.guesterror=null;
-                    this.guestname=""; 
-                    this.guestphone="";
-                    this.guestemail=""; 
                     this.formStep=2;
                     this.$forceUpdate();
                 }
@@ -534,9 +451,9 @@ export default {
                     SessionID: localStorage.getItem("_s"),
                     SessionLong: localStorage.getItem("_r"),
                     ClientGroupClientID: this.editgid,
-                    Name: this.guestname,
-                    PhoneNumber: this.guestphone,
-                    EmailAddress: this.guestemail               
+                    Name: this.$refs.aeAttendee.guestname,
+                    PhoneNumber: this.$refs.aeAttendee.guestphone,
+                    EmailAddress: this.$refs.aeAttendee.guestemail               
             }}).then(r=>{
                 if (r.status===200) {
                     if (r.data.status===200) {
@@ -545,12 +462,7 @@ export default {
                         var self=this;
                         window.setTimeout(function() {
                             self.okMessage=null;
-                        },3000) 
-
-                        this.guesterror=null;
-                        this.guestname=""; 
-                        this.guestphone="";
-                        this.guestemail=""; 
+                        },3000)  
 
                         this.doEditGroup({
                             ClientGroupID: this.groupID,
@@ -560,7 +472,6 @@ export default {
                     else {
                         this.errorMessage=r.data.message;
 
-                        this.guesterror=null;
                         this.formStep=2;
                         this.$forceUpdate();
                     }
@@ -568,7 +479,6 @@ export default {
                 else {
                     this.errorMessage="Could not contact backend service";
 
-                    this.guesterror=null;
                     this.formStep=2;
                     this.$forceUpdate();
                 }
@@ -616,9 +526,12 @@ export default {
             });
         },
         editGroupMember: function(item) {
-            this.guestname=item.gname;
-            this.guestphone=item.gphone==="Not Specified"?"":item.gphone;
-            this.guestemail=item.gemail==="Not Specified"?"":item.gemail;
+            this.$refs.aeAttendee.gname=item.gname;
+            this.$refs.aeAttendee.gphone=item.gphone===null?"":item.gphone;
+            this.$refs.aeAttendee.gemail=item.gemail===null?"":item.gemail;
+             if (item.gemail!==null) {
+                this.$refs.aeAttendee.isemail='e';
+            }
             this.editgid=item.gid;
             this.formStep=3;
             this.editmode=true;

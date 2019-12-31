@@ -7,16 +7,16 @@
       <template v-for="(item, i) in items">
         <div v-if="item.display" :key="i">
           <v-divider dark v-if="item.divider" :key="i"></v-divider>
-          <v-list-tile :to="item.action" :key="i" v-else>
-            <v-list-tile-action>
-              <v-icon class="iconSize">{{ item.icon }}</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-content>
-              <v-list-tile-title class="menuSize">
-                {{ item.text }}
-              </v-list-tile-title>
-            </v-list-tile-content>
-          </v-list-tile>
+          <v-list-tile class="menuItem" :to="item.action" :key="i" v-else>
+                <v-list-tile-action>
+                  <v-icon class="iconSize">{{ item.icon }}</v-icon>
+                </v-list-tile-action>
+                <v-list-tile-content>
+                  <v-list-tile-title class="menuSize">
+                    {{ item.text }}
+                  </v-list-tile-title>
+                </v-list-tile-content>
+          </v-list-tile>         
         </div>
       </template>
     </v-list>
@@ -28,11 +28,15 @@
    font-family: 'Dream Orphans';
    font-size:25px;
 }
-.menuSize,.iconSize {
-   color:#777;
+.menuItem {
+  border-bottom:1px dotted #AAA;
 }
-.primary--text .menuSize {
-   color:rgb(25, 118, 210)!important
+.menuSize {
+   color:#555;
+}
+
+.primary--text .menuSize, .primary--text .iconSize {
+   color:#a80cba!important;
 }
 .menuSize {
    font-family: 'Aileron';
@@ -40,6 +44,7 @@
 }
 .iconSize {
    font-size:28px!important;
+   color:rgb(25, 118, 210);
 }
 
 </style>

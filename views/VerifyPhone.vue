@@ -20,6 +20,7 @@ export default {
         }
     },
     mounted() {
+         window.scrollTo(0,0);
 
          var ev=null;
          var h=null;

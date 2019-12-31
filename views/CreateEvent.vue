@@ -28,6 +28,48 @@
              <p><button @click="goToPremium()">Purchase</button></p>
         </div>
 
+        <modal name="addGroupModal" width="300" height="90%">
+            <div class="p2" style="overflow:auto;height:100%;">
+                <div class="layout row">
+                    <div class="xs12 flex textright">
+                        <button @click="turnOnGroupAddGuest" class="tanButton">Add/Edit Groups</button>
+                    </div>
+                </div>
+                <div v-show="groups.length===0" class="mt-2">
+                    <div>
+                        You have no groups
+                    </div>
+                    <div class="mt-2 layout row">
+                        <div class="flex xs12">
+                            <button @click="closeGroupManager()">Close</button>
+                        </div>                        
+                    </div>
+                </div>
+
+                <div v-show="groups.length>0">
+                    <v-list>
+                        <template v-for="(item, i) in groups">
+                            <v-list-item :key="i">
+                                <div class='layout row btop p4'>   
+                                    <div class='flex xs12 textleft fieldwell spfield' @click="doAddFromGroup(item)">
+                                        <v-icon>group</v-icon>&nbsp;&nbsp;<span>{{item.GroupName}}</span>
+                                    </div>
+                                    
+                                </div>
+                            </v-list-item>
+                        </template>
+                    </v-list>
+                    <div class="mt-2 layout row">
+                        <div class="flex xs12">
+                            <button @click="closeGroupManager()">Close</button>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        </modal>
+
         <modal name="groupModal" width="300" height="400">
             <div class="p2">
                 <div>
@@ -57,8 +99,8 @@
                 </div>
                 <ul class='mt-3'>
                     <li>We are texting or emailing your attendees. No need to send them any additional messages.</li>
-                    <li>You will get a message from us when everyone has responded</li>
-                    <li>You can check the status of the event on the dashboard</li>
+                    <li>You will get a message from us when everyone has responded.</li>
+                    <li>You can check the status of the event on the dashboard.</li>
                 </ul>
                 <div class='mt-2 textcenter'>
                      <button class='schdusButton' @click="goToDashboard()">Go to Dashboard</button>
@@ -80,7 +122,7 @@
                 </div>
 
                 <div class='fieldwell xs-12 mt-4'>
-                    <label>What Will You Be Doing*</label><br />
+                    <label>What Would You Like to Plan*</label><br />
                     <input type='text' v-model="evname" class='textfield' :class='evnamefe' />
                 </div>
 
@@ -88,14 +130,23 @@
                 <div class='fieldwell xs-12 mt-4'>
                    
                     <div>
-                        <label>Where Will It Happen*</label><br />
+                        <label>Where Should It Happen?</label>
+                    </div>
+                    <div class="mt-2 layout row" v-show="loggedin===true">
+                        <button class="textcenter flex xs5 lg2 blueButton"  @click="goLocationFinder()">
+                            <v-icon color="#FFF">location_on</v-icon>&nbsp;<span>Find Location</span>
+                        </button>
+                        <div class="flex xs2 lg8">
+                            &nbsp;
+                        </div>
+                        <button class="blueButton textcenter flex xs5 lg2"  @click="useHomeAddress()">                           
+                            <v-icon color="#FFF">home</v-icon> <span>Use Home</span>
+                        </button>
+                    </div>
+
+                    <div class="mt-2">
+                        <label>Place Name*</label>
                         <input type='text' class='textfield' v-model="evlocation" :class='evlocationfe' />
-                    </div>
-                    <div class="spfield textcenter p2 schdusborder mt-2" v-show="loggedin===true" @click="goLocationFinder()">
-                        <v-icon>location_on</v-icon>&nbsp;<span>Find a Location</span>
-                    </div>
-                    <div class="spfield textcenter p2 schdusborder mt-2" v-show="loggedin===true" @click="useHomeAddress()">                           
-                        <v-icon>home</v-icon> <span>Use Home Address</span>
                     </div>
 
                     <div class='mt-2 fieldwell'>
@@ -111,7 +162,7 @@
                     <div class='fieldwell flex xs3 ml-2'>
                         <label>State:</label><br />
                         <select class="textfield" v-model="evstate">
-                            <option value="--" selected>-Choose-</option>
+                            <option value="">-Choose-</option>
                             <option value="AL">Alabama</option>
                             <option value="AK">Alaska</option>
                             <option value="AZ">Arizona</option>
@@ -193,7 +244,7 @@
                         <div class='flex xs12 textleft spfield'>
                             <button class='transButton' @click='turnOnManualAddGuest'><v-icon>person_add</v-icon>&nbsp;<span>Add</span></button> 
                             &nbsp;&nbsp;
-                            <button class='transButton' @click='turnOnGroupAddGuest'><v-icon>group_add</v-icon>&nbsp;<span>Add Group</span></button> 
+                            <button class='transButton' @click='doAddGroupModal'><v-icon>group_add</v-icon>&nbsp;<span>Add Group</span></button> 
                         </div>
                         <div class='flex xs6 textright spfield'>
                             <div v-show="isCordova === true" >
@@ -217,7 +268,7 @@
                                             </div>
                                             <div v-if="item.cphoto===null">
                                                 <avatar class="vertical-center" size="50" :username="item.gname" v-show="imageloaded[i]===false"></avatar>
-                                                <img v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" width=50 height=50 />  
+                                                <img v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" style="border-radius:50%;" width=50 height=50 />  
                                             </div>
                                         </div>
                                         <div class='flex xs9 textleft fieldwell indented1 spfield mt-2' @click="editGuest(item)">
@@ -233,7 +284,7 @@
                     </div>
                 </div>
                 <div class="mt-2 fieldwell" v-show="loggedin===true">
-                   <toggle-button width="35" height="16" v-model="willattend"/> I Will Attend
+                   <toggle-button width="35" height="16" v-model="willattend" /> I Will Attend
                 </div>
 
                 <div class="mt-3">
@@ -256,7 +307,7 @@
             <picktime ref="pt" class="mt-2"></picktime>
 
   
-            <div class="mt-3" v-show="buttonsenabled===true">
+            <div class="mt-5" v-show="buttonsenabled===true">
                 <div class='layout row'>
                     <div class='flex xs6 textleft'>
                         <button @click='goStepTwo' class="redButton"><v-icon color="#FFF">arrow_back</v-icon><span>Back</span></button>
@@ -276,24 +327,92 @@
                    <label>Description of your event:</label><br />
                    <textarea rows="1" cols="1" v-model="evdescription"></textarea>
                </div>
-               <div class="mt-3">
+               <div class="mt-2">
                    <label>Event Options:</label>
                </div>
                
                 <div class='mt-2' v-show="isPremium===true||isPro===true">
-                   <toggle-button width="35" height="16" v-model="eventrecurring"/> Automatically Schedule Again
+                   <toggle-button width="35" height="16" v-model="eventrecurring"/> Event Will Happen Again
                </div>
-               <div v-show="eventrecurring===true" class="fieldwell">
-                    <label>How often should it occur?</label>
-                    <select v-model="recurringamt">
-                        <option value="1">Every Week</option>
-                        <option value="2">Every 2 Weeks</option>
-                        <option value="3">Every 3 Weeks</option>
-                        <option value="4">Every Month</option>
-                        <option value="12">Every 3 Months</option>
-                        <option value="24">Every 6 Months</option>
-                        <option value="">Every Year</option>
-                    </select>
+               <div v-show="eventrecurring===true" class="mt-1 fieldwell p2" style="border:1px solid #999">
+                    <div class="fieldwell">
+                        Each re-occurring event will count as an additional event towards your monthly limit
+                    </div>
+                    <div class="mt-2 fieldwell">
+                       
+                        <div class="boldchoice">
+                            Will it happen:
+                        </div>
+                        <select v-model="freqtype" class="textfield">
+                            <option value=0>--- Select ---</option>
+                            <option value=1>Weekly</option>
+                            <option value=2>Monthly</option> 
+                        </select>
+
+                    </div>
+                    <div class="mt-2 fieldwell" v-show="freqtype>0">
+                         <div class="boldchoice">
+                            Happens every:
+                         </div>
+                         <div v-show="freqtype==1">
+                            <select v-model="week_frequency" class="textfield">
+                                    <option value=0>--- Select ---</option>
+                                    <option value=1>1</option>
+                                    <option value=2>2</option> 
+                                    <option value=3>3</option> 
+                            </select>   
+                            <div class="boldchoice"> 
+                            Week(s)
+                            </div>
+                         </div> 
+
+                          <div v-show="freqtype==2">
+                            <select v-model="mth_frequency" class="textfield">
+                                    <option value=0>--- Select ---</option>
+                                    <option value=1>1</option>
+                                    <option value=2>2</option> 
+                                    <option value=3>3</option> 
+                                    <option value=6>6</option> 
+                                    <option value=12>12</option> 
+                            </select>   
+                            <div class="boldchoice">
+                            Month(s)
+                            </div>
+                         </div> 
+                    </div>
+                    <div class="mt-2" v-show="mth_frequency>0||week_frequency>0">
+                          <input type="radio" v-model="exacttime" value=0 /> I know exactly when my event should happen<br />
+                          <input type="radio" v-model="exacttime" value=1 /> Schedule Us should suggest the date/time for my event (a new date/time will be suggested each time the event occurs)
+                    </div>
+                    <div v-show="exacttime==0&&(mth_frequency>0||week_frequency>0)">
+                        <div class="mt-2 fieldwell" v-show="mth_frequency>0">
+                            <div class="boldchoice">Week of the Month:</div> 
+                            <select v-model="week_month" class="textfield">
+                                <option value=0>--- Select --- </option>
+                                <option value=1>1</option>
+                                <option value=2>2</option> 
+                                <option value=3>3</option> 
+                                <option value=4>4</option> 
+                            </select>
+                        </div>
+                        <div class="mt-2 fieldwell">
+                            <div class="boldchoice">Day of the Week:</div> 
+                            <select v-model="day_week" class="textfield">
+                                <option value=0>--- Select --- </option>
+                                <option value=1>Monday</option>
+                                <option value=2>Tuesday</option> 
+                                <option value=3>Wednesday</option> 
+                                <option value=4>Thursday</option> 
+                                <option value=5>Friday</option> 
+                                <option value=6>Saturday</option> 
+                                <option value=7>Sunday</option>
+                            </select>
+                        </div>
+                        <div class="mt-2 fieldwell textfield">
+                            <div class="boldchoice">Time of Day:</div>
+                            <datetime format="h:i" v-model="recur_time" ></datetime>
+                        </div>
+                    </div>
                </div>
 
               
@@ -345,9 +464,7 @@
                        <toggle-button width="35" height="16" v-model="guestschangelocationperm"/> I Must Approve Different Location
                     </div>
                </div>
-               <div class='mt-3'>
-                     By creating an event, you agree to our <a href='/termsofservice'>Terms of Service</a> and <a href='/privacypolicy'>Privacy Policy</a>
-                </div>
+              
              
               
                 <div class="mt-3">
@@ -366,33 +483,7 @@
          </div>
 
         <div class='manualaddguest mt-2 p2' v-show="formStep === 3">
-
-            <div v-show="guesterror!==''" class="errorBox">
-                {{guesterror}}
-            </div>
-
-            <h1>Add/Edit Attendee</h1>
-
-            <div class='fieldwell mt-2'>
-                    <label>Name</label><br />
-                    <input type='text' class='textfield' v-model='guestname' />
-            </div>
-            <div class='fieldwell mt-2'>
-                    <label>Phone</label><br />
-                    <input type='text' class='textfield' v-model='guestphone' />
-            </div>
-            <div class='fieldwell mt-2'>
-                    <label>Email</label><br />
-                    <input type='text' class='textfield' v-model='guestemail' />
-            </div>
-            <div class='layout row mt-2'>
-                <div class='flex xs6 textleft'>
-                    <button @click="closeManualAddGuest" class="redButton">Cancel</button>
-                </div>    
-                <div class='flex xs6 textright'>
-                    <button @click="addGuest">Save</button>
-                </div>
-            </div>
+            <addeditattendee ref="aeAttendee"></addeditattendee>
         </div>
        
 
@@ -421,7 +512,7 @@
                                     <div class='flex xs2 pl2 relative'>
                                         <div v-if="item.hasimage!==null">
                                             <div class="vertical-center">
-                                                <img :src="item.hasimage" class="imgcircle" alt="photo" width="50" height="50" />
+                                                <img :src="item.hasimage" class="imgcircle" style="border-radius:50%;" alt="photo" width="50" height="50" />
                                             </div>
                                         </div>
                                         <div v-if="item.hasimage===null">
@@ -440,7 +531,7 @@
         </div>
 
         <div id='addFromGroup' v-show='formStep === 9'>
-            <groupmanager ref="gmanager"></groupmanager> 
+            <groupmanager v-bind:passheaders="true" ref="gmanager"></groupmanager> 
         </div>
          
 
@@ -460,40 +551,42 @@ import Avatar from 'vue-avatar'
 import locationfinder from "@/components/LocationFinder"
 import groupmanager from "@/components/GroupManager"
 import picktime from "@/components/PickTime"
+import addeditattendee from "@/components/Attendee"
+import datetime from "vuejs-datetimepicker"
 import {utilities} from '../mixins/utilities'
 import { EventBus } from '../bus';
 
 export default {
-    components: {Avatar,locationfinder,groupmanager,picktime},
+    components: {Avatar,locationfinder,groupmanager,picktime,addeditattendee,datetime},
     mixins: [utilities],
     data: function() {
         return {
-            formStep: -2,
+            formStep: 0,
             fromGroup: false,
             buttonsenabled: true,
             cliname: "",
             clinamefe: "",
             clidetails: null,
-            contacts: [],
-            evdescription:"",
+            contacts: [],    
             evname: "",
             evnamefe: "",        
             csearch: "",
             datepicked: false,
+            day_week: 0,
             errorMessage: null,
+            exacttime: 0,
             evstreet: "",
             evcity: "",
             evcityfe: "",
+            evdescription:"",
             evlength:"",
             evlocation:"",
             evlocationfe:"",
             evstate: "",
-            evzip: "",             
-            guesteditmode:null,
-            guestname: "",
-            guestphone: "",
-            guestemail: "",
-            guesterror: "",
+            evzip: "",     
+            freqtype: 0,
+            groups:[],        
+            guesteditmode:null,       
             guestsrescheduleperm:false,
             guestschangelocationperm:false,
             guestscandiscuss:true,
@@ -501,7 +594,7 @@ export default {
             guestsprovidesharing:false,
             guestsbringchildren:false,
             guestslimittotalhas:false,
-            guestslimittotal: 8,
+            guestslimittotal: 15,
             guestlistvisible: true,
             guestsbringothers: false,
             guestsseersvps: true,
@@ -517,47 +610,29 @@ export default {
             newgroupname:null,
             okMessage: null,
             recurringamt: "1",
+            recurringpackage: [],
+            recur_time:"",
             loggedin: false,
+            mth_frequency:0,
             sschit:false,
             visiblehidecontacts:[],
+            week_frequency: 0,
+            week_month: 0,
             willattend:true
         }
     },
 
     methods: {
-        addGuest: function() {
-            if (this.guestname.length<1 || this.guestname.length>128) {
-                this.guesterror="Guest name is required and should not be longer than 128 characters";
-                return;
-            }
-            if (this.guestphone.length<1 && this.guestemail.length<1) {
-                this.guesterror="Either guest phone number or email address are required";
-                return;
-            }
-            if (this.guestphone.length>0 && this.verifyPhone(this.guestphone)!=="OK") {
-                this.guesterror="Please enter valid phone number with area code in format NNN-NNN-NNNN";
-                return;
-            } 
-            if (this.guestemail.length>0 && this.verifyEmail(this.guestemail)!=="OK") {
-                this.guesterror="Please enter valid email address";
-                return;
-            }
-
-            if (this.guestphone.length<1) {
-                this.guestphone="Not Specified";
-            }
-            if (this.guestemail.length<1) {
-                this.guestemail="Not Specified";
-            }
-
+        addEditGuest: function() {
+            
         
             var self=this;
             this.$http({
                 method:'post',                  
                 url:this.$hostname+'/getbyphoneoremail',
                 data: {
-                    PhoneNumber: this.guestphone,
-                    EmailAddress: this.guestemail 
+                    PhoneNumber: this.$refs.aeAttendee.guestphone,
+                    EmailAddress: this.$refs.aeAttendee.guestemail 
                 }
             }).then(r=> {
 
@@ -572,9 +647,9 @@ export default {
                 if (self.guesteditmode===null) {
                     self.guests.push({
                             gid: clid,    
-                            gname: self.guestname,
-                            gphone: self.guestphone,
-                            gemail: self.guestemail,
+                            gname: self.$refs.aeAttendee.guestname,
+                            gphone: self.$refs.aeAttendee.guestphone,
+                            gemail: self.$refs.aeAttendee.guestemail,
                             greq: false,
                             photo: hasc,
                             cphoto: null
@@ -591,9 +666,9 @@ export default {
                 }
                 else {
                     
-                    self.guesteditmode.gname=self.guestname;
-                    self.guesteditmode.gphone=self.guestphone;
-                    self.guesteditmode.gemail=self.guestemail;
+                    self.guesteditmode.gname=self.$refs.aeAttendee.guestname;
+                    self.guesteditmode.gphone=self.$refs.aeAttendee.guestphone;
+                    self.guesteditmode.gemail=self.$refs.aeAttendee.guestemail;
                     self.guesteditmode.gid=self.gid;
                     self.guesteditmode.photo=hasc;
 
@@ -613,19 +688,29 @@ export default {
 
                 }
 
-                self.guesterror=""; 
-                self.guestname=""; 
-                self.guestphone="";
-                self.guestemail=""; 
                 self.formStep=1;
                 self.$forceUpdate();
             })
          
         },
+        clearWatch: function() {
+            localStorage.removeItem("evlocation");
+            localStorage.removeItem("evcity");
+            localStorage.removeItem("evstate");
+            localStorage.removeItem("evzip");
+            localStorage.removeItem("evstreet");
+            localStorage.removeItem("cliname");
+            localStorage.removeItem("evname");
+            localStorage.removeItem("guests");
+            localStorage.removeItem("evdescription");
+        },
         closeContacts: function() {
             this.formStep=1;
             this.$forceUpdate();
             window.scrollTo(0,0);
+        },
+        closeGroupManager: function() {
+            this.$modal.hide("addGroupModal");
         },
         closeLocationFinder: function() {
             this.formStep=0;
@@ -711,7 +796,58 @@ export default {
             this.$forceUpdate();
             window.scrollTo(0,0);
         },
-       
+        doAddFromGroup: function(item) {
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/getclientsforgroup',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"), 
+                    ClientGroupID: item.ClientGroupID
+            }}).then(r=>{
+                if (r.status===200 && r.data.status===200) {
+                     if (r.data.message!=="NOCLIENTS") {
+                         this.fillFromGroup(JSON.parse(r.data.message));                       
+                     }
+                     else {
+                         this.errorMessage="This group has no members";
+                     }
+                }
+                else {
+                    this.errorMessage="Could not contact backend service";
+                }
+
+                this.$modal.hide("addGroupModal");
+            })        
+
+        },
+        doAddGroupModal: function() {
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/getgroupsforclient',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r")
+            }}).then(r=>{
+                if (r.status===200 && r.data.status===200) {
+                    if (r.data.message!=="NOGROUPS") {
+                        this.groups=JSON.parse(r.data.message);
+                    }
+                    else {
+                        this.groups=[];
+                    }
+                }
+                else {
+                    this.errorMessage="Could not contact backend service";
+                }
+
+                this.$modal.show("addGroupModal");
+            })        
+      
+        },
         doSaveGroup: function() {
              if (this.newgroupname.length===0 || this.newgroupname.length>128) {
                  this.errorMessage="Group name is either too long or too short";
@@ -759,9 +895,12 @@ export default {
         editGuest: function(item) {
             this.guesteditmode=item;
             this.gid = item.gid;
-            this.guestname=item.gname;
-            this.guestphone=item.gphone==="Not Specified"?"":item.gphone;
-            this.guestemail=item.gemail==="Not Specified"?"":item.gemail;
+            this.$refs.aeAttendee.gname=item.gname;
+            this.$refs.aeAttendee.gphone=item.gphone===null?"":item.gphone;
+            this.$refs.aeAttendee.gemail=item.gemail===null?"":item.gemail;
+            if (item.gemail!==null) {
+                this.$refs.aeAttendee.isemail='e';
+            }
             this.formStep=3;
             this.$forceUpdate();
             window.scrollTo(0,0);
@@ -772,10 +911,10 @@ export default {
 
                 var nogood=false;
                 for(var q=0; q<this.guests.length; q++) {
-                    if (this.guests[q].gphone!==null && this.guests[q].gphone!=="Not Specified" && this.guests[q].gphone===items.Clients[x].PhoneNumber) {
+                    if (this.guests[q].gphone!==null && this.guests[q].gphone===items.Clients[x].PhoneNumber) {
                         nogood=true;
                     }
-                    if (this.guests[q].gemail!==null && this.guests[q].gemail!=="Not Specified" && this.guests[q].gemail===items.Clients[x].EmailAddress) {
+                    if (this.guests[q].gemail!==null && this.guests[q].gemail===items.Clients[x].EmailAddress) {
                         nogood=true;
                     }
                 }
@@ -905,6 +1044,68 @@ export default {
             var fields  = [navigator.contacts.fieldType.displayName];
             navigator.contacts.find(fields, this.contactSuccess, this.contactFailure, options);
         },
+        loadWatch: function() {
+   
+            var l_evlocation=localStorage.getItem("evlocation");
+            var l_evcity=localStorage.getItem("evcity");
+            var l_evstate=localStorage.getItem("evstate");
+            var l_evzip=localStorage.getItem("evzip");
+            var l_evstreet=localStorage.getItem("evstreet");
+            var l_cliname=localStorage.getItem("cliname");
+            var l_evname=localStorage.getItem("evname");
+            var l_guests=localStorage.getItem("guests");
+            var l_evdescription=localStorage.getItem("evdescription");    
+
+            if (l_evdescription!==null) {
+                this.evdescription=l_evdescription;
+            }
+ 
+            if (l_evlocation!==null) {
+                this.evlocation=l_evlocation;
+            }
+            if (l_evcity!==null) {
+                this.evcity=l_evcity;
+            }
+            if (l_evstate==="--") {
+                l_evstate=null;
+                this.evstate="";
+            }
+            if (l_evstate!==null) {
+                this.evstate=l_evstate;
+            }
+            if (l_evzip!==null) {
+                this.evzip=l_evzip;
+            }
+            if (l_evstreet!==null) {
+                this.evstreet=l_evstreet;
+            }
+            if (l_cliname!==null) {
+                this.cliname=l_cliname;
+            }
+            if (l_evname!==null) {
+                this.evname=l_evname;
+            }
+        
+        
+            if (l_guests!==null) {
+                this.guests=JSON.parse(l_guests);
+                if (this.guests===null) {
+                    this.guests=[];
+                }
+                for(var q=0; q<this.guests.length; q++) {
+                    this.imageloaded.push(false);
+                    if (this.guests[q].gid!==null) {
+                        this.imageurl.push("https://avatars.schd.us/"+this.guests[q].gid);
+                    }
+                    else {
+                        this.imageurl.push(null);
+                    }
+                }
+               
+            }
+
+             this.$forceUpdate();
+        },
         loadedImage: function(i) {
             this.imageloaded[i]=true;
             this.$forceUpdate();
@@ -922,6 +1123,7 @@ export default {
                 }
             }
         },
+
         saveContacts: function() {   
             for(var x=0; x<this.contacts.length; x++) {
                 if (this.contacts[x].isselected) {
@@ -962,10 +1164,42 @@ export default {
                  return;
              }
 
+             if (this.eventrecurring===true) {
+
+                 if (this.freqtype>0 && (this.week_frequency>0||this.mth_frequency>0)) {
+                     if (this.exacttime==0) {
+                         if (this.day_week<1 || this.recur_time==="") {
+                            this.errorMessage="All recurring event fields must be filled out"
+                            return;
+                         }
+                         if (this.freqtype==2 && this.week_month<1) {
+                              this.errorMessage="All recurring event fields must be filled out"
+                            return;
+                         }
+                     }
+                     
+                 }
+                 else {
+                     this.errorMessage="All recurring event fields must be filled out"
+                     return;
+                 }
+
+                 var calculatedTime=0;
+
+                 this.recurringpackage.push({
+                     IsMonthly: this.freqtype>1?true:false,
+                     Frequency: this.freqtype>1?this.mth_frequency:this.week_frequency,
+                     Week: this.week_month,
+                     Day: this.day_week,
+                     Time: this.recur_time
+                 })
+             }
+
              this.sschit=true;
 
              var dt = this.makeDate(this.$refs.pt.evday,this.$refs.pt.evtime);
 
+        
              this.$http({
                 method:'post',
                 url:this.$hostname+'/createevent',
@@ -975,7 +1209,7 @@ export default {
                     SessionLong: localStorage.getItem("_r"),
                     EventName: this.evname,
                     ClientName: this.cliname,
-                    EndDate: this.evlength==="i"?(this.makeDate(this.$refs.pt.endevday,this.$refs.pt.endevtime)):null,
+                    EndDate: this.$refs.pt.evlength==="i"?(this.makeDate(this.$refs.pt.endevday,this.$refs.pt.endevtime)):null,
                     EventDate: dt,
                     EventLength: this.$refs.pt.evlength,
                     EventDescription: this.evdescription,
@@ -994,9 +1228,9 @@ export default {
                     GuestsSeeRSVPs: this.guestsseersvps,
                     GuestsReschedule: this.guestsreschedule,
                     GuestsChangeLocation: this.guestschangelocation,
-                    EventIsRecurring: this.eventrecurring,
                     Guests: this.guests,
                     Location: this.evlocation,
+                    RecurringPackage: this.recurringpackage,
                     ReminderTime: this.$refs.pt.remindertime,
                     MustApproveDiffTime: this.guestsrescheduleperm,
                     MustApproveDiffLocation: this.guestschangelocationperm,
@@ -1008,21 +1242,17 @@ export default {
                 if (r.status===200) {
                     if (r.data.status===200) {
                         this.errorMessage=null;
-                        if (this.loggedin===true) {
-                            if (r.data.message==="OK") {
-                                this.$modal.show("doneModal");
-                                this.formStep=8;
-                                window.scrollTo(0,0);
-                            }
-                            else {
-                                this.errorMessage=r.data.message;
-                            }
-                        }
-                        else {
-                            this.sschit=false;
+                        
+                        if (r.data.message==="OK") {
+                            this.clearWatch();
+                            this.$modal.show("doneModal");
                             this.formStep=8;
                             window.scrollTo(0,0);
                         }
+                        else {
+                            this.errorMessage=r.data.message;
+                        }
+                       
                     }
                     else {
                         this.errorMessage=r.data.message;
@@ -1034,6 +1264,7 @@ export default {
                     this.sschit=false;
                 }
             });
+        
         },
        
         selectContact: function(item) {
@@ -1046,6 +1277,7 @@ export default {
              window.scrollTo(0,0);
         },
         turnOnGroupAddGuest: function() {
+             this.$modal.hide("addGroupModal");
              this.$refs.gmanager.addFromGroup();
              this.formStep=9; 
              window.scrollTo(0,0);
@@ -1130,7 +1362,8 @@ export default {
 
             // Correct users who do dumb stuff with dates
             var dao = new Date(this.makeDate(this.$refs.pt.evday,this.$refs.pt.evtime)); 
-            var diff = dao.getTime()-new Date().getTime();
+            var offset = new Date().getTimezoneOffset()*60*1000;
+            var diff = dao.getTime()+offset-new Date().getTime();
             var hours = Math.round(diff/(1000*60*60))
 
             if (diff<0) {
@@ -1166,68 +1399,49 @@ export default {
 
             return true;
         }
+      
     },
-    beforeRouteLeave(to, from, next) {
-        this.formStep=0;
-        next();
-    },
+   
     mounted() {
-        var c = localStorage.getItem("_c");
-        if (!(typeof(c)==="undefined" || c===null || c==="null")) {    
+        window.scrollTo(0,0);
 
-            this.guestslimittotal=15;
+        EventBus.$on("CloseGroupManagerEvent", () => {
+            this.formStep=1;
+            window.scrollTo(0,0);
+        });
 
-            EventBus.$on("DoAddFromGroupEvent", (items) => {
-                this.fillFromGroup(items);
-            });
-            EventBus.$on("CloseGroupManagerEvent", () => {
-                this.formStep=1;
-                window.scrollTo(0,0);
-            });
+        this.clidetails = JSON.parse(localStorage.getItem("clidetails"));
+        this.cliname=this.clidetails.FirstName+" "+this.clidetails.LastName;
+        this.loggedin=true;
+        this.isPremium=this.clidetails.IsPremium;
+        this.isPro=this.clidetails.IsPro;
 
-            this.$http({
-                method:'post',
-                url:this.$hostname+'/getclient',
-                data: {
-                    ClientID: c,
-                    SessionID: localStorage.getItem("_s"),
-                    SessionLong: localStorage.getItem("_r"),                    
-                }
-            }).then(r=> {
-                if (r.status===200 && r.data.status===200) {
-                    this.clidetails = JSON.parse(r.data.message);
-                    this.cliname=this.clidetails.FirstName+" "+this.clidetails.LastName;
-                    this.loggedin=true;
-                    this.isPremium=this.clidetails.IsPremium;
-                    this.isPro=this.clidetails.IsPro;
-                    this.formStep=0;
-                    window.scrollTo(0,0);
-
-                    if (this.isPremium===false && this.isPro===false) {
-                         if (this.clidetails.EventCount>=3) {
-                             this.formStep=-9;
-                             window.scrollTo(0,0);
-                         }
-                    }
-                    else if (this.isPro===false && this.isPremium===true) {
-                         if (this.clidetails.EventCount>=30) {
-                             this.formStep=-9;
-                             window.scrollTo(0,0);
-                         }
-                    }
-                }
-                else {
-                    this.formStep=-1;
-                    window.scrollTo(0,0);
-                   
-                }
-            }).catch(e=> {
-                this.formStep=-1;
-            })
+        try {
+            this.$refs.aeAttendee.cliemail=this.clidetails.EmailAddress;
+            this.$refs.aeAttendee.cliphone=this.clidetails.PhoneNumber;
         }
-        else {
-            this.formStep=-1;
+        catch(e) {}
+
+        if (this.isPremium) {
+            this.guestslimittotal=50;
         }
+
+        if (this.isPremium===false && this.isPro===false) {
+                if (this.clidetails.EventCount>=3) {
+                    this.formStep=-9;
+                    window.scrollTo(0,0);
+                }
+        }
+        else if (this.isPro===false && this.isPremium===true) {
+                if (this.clidetails.EventCount>=30) {
+                    this.formStep=-9;
+                    window.scrollTo(0,0);
+                }
+        }
+               
+        this.loadWatch();
+        localStorage.setItem("clidetails",null);
+        
     },
     watch: {
         csearch: function(val) {
@@ -1248,6 +1462,33 @@ export default {
             }
 
             this.$forceUpdate();
+        },
+        evlocation: function(val) {
+            localStorage.setItem("evlocation",val);
+        },
+        evcity: function(val) {
+            localStorage.setItem("evcity",val);
+        },
+        evdescription: function(val) {
+            localStorage.setItem("evdescription",val);
+        },
+        evstate: function(val) {
+            localStorage.setItem("evstate",val);
+        },
+        evzip: function(val) {
+            localStorage.setItem("evzip",val);
+        },
+        evstreet: function(val) {
+            localStorage.setItem("evstreet",val);
+        },
+        cliname: function(val) {
+            localStorage.setItem("cliname",val);
+        },
+        evname: function(val) {
+            localStorage.setItem("evname",val);
+        },
+        guests: function(val) {
+            localStorage.setItem("guests",JSON.stringify(val));
         }
     }
 }

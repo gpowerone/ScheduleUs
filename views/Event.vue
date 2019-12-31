@@ -1,6 +1,6 @@
 <template>
     <div class="moduleWrapper">
-         <div id='loading' class='loadingImg' v-show='tev===null'>
+         <div id='loading' class='loadingImg' v-show='loading===true'>
             <img src="@/assets/loading.gif" />
         </div>
         <div v-show="errorMessage!==null" class="errorBox">
@@ -76,7 +76,7 @@
             </div>
         </modal>
 
-        <modal name="commentModal" width="300" height="225">
+        <modal name="commentModal" width="300" height="275">
             <div class="p2">
                 <div class="layout row">
                     <div class="xs9 flex textleft fieldwell mt-2">
@@ -88,7 +88,10 @@
                 </div>
                 <div class="mt-2 layout row fieldwell">
                     <textarea v-model="newComment" rows="1" cols="1"></textarea>
-                </div>       
+                </div>     
+                <div class='mt-2'>
+                     By commenting, you agree to our <a href='/termsofservice'>Terms of Service</a> and <a href='/privacypolicy'>Privacy Policy</a>
+                </div>  
                 <div class="layout row mt-2">
                     <div class="flex xs6">
                         <button @click="closeComment" class="redButton">Cancel</button>
@@ -120,6 +123,15 @@
         <modal name="emojiModal" width="300" height="400">
             <div class="scrollbox">
                  <emojipicker></emojipicker>
+            </div>
+        </modal>
+
+        <modal name="recurringModal" width="300" height="250">
+            <div class="p2 textcenter">
+                <p>Event Will Occur Every {{RecurFreq}} {{RecurUnit}}</p>
+                <p>{{RecurTime}}</p>
+                <p>Each time this event occurs a new message will be sent out to attendees</p>
+                <button @click="recurCloseModal()">Close</button>
             </div>
         </modal>
 
@@ -161,18 +173,29 @@
             </div>
         </modal>
 
+        <div v-show="noevent===true">
+            <h1 class="textcenter">Event Not Found</h1>
+            <div class="mt-2 textcenter fieldwell">This event may have passed already or may have been cancelled :(</div>
+            <div class="mt-3">
+                <div class="textcenter fieldwell">
+                Planning a get together?<br />Use <span class="schdusPurple">Schedule Us</span> to make it much easier!
+                </div>
+                <div class="mt-2 textcenter">
+                    <button class="schdusButton" @click="goHome()">Learn More</button>
+                </div>
+            </div>
+        </div>
 
         <div v-show="tev!==null&&showFinder===false&&showPick===false" class="fieldwell">
             <div class="layout row" style="border-bottom:1px dashed #777" v-show="IsOwner==true"> 
-                <div class="flex xs8 textleft spfield fieldwell" style="padding-top:5px;" @click="goToMyEvents()">
+                <div class="flex xs8 lg11 textleft spfield fieldwell" style="padding-top:5px;padding-bottom:5px;" @click="goToMyEvents()">
                     <v-icon>keyboard_backspace</v-icon> <span>Return to My Events</span>
                 </div>
-                <div class="flex xs2 textright">
-                    <v-icon class="editicon" @click="doEventUpdate()">edit</v-icon>
-                </div>
-                <div class="flex xs2 textright">
+                <div class="flex xs4 lg1 textright" v-show="IsPast===false">
+                    <v-icon class="editicon" @click="doEventUpdate()">edit</v-icon>&nbsp;&nbsp;
                     <v-icon class="editicon" @click="doEventCancel()">remove_circle_outline</v-icon>
                 </div>
+                
             </div>
             
             <div class="layout row">
@@ -186,7 +209,7 @@
                 <div>{{EventDescription}}</div>
             
                 <div class="layout row mt-2">
-                    <div class="flex xs6">
+                    <div class="flex xs6 lg10 md10">
                         <div>
                             {{EventLocation}}
                         </div>
@@ -202,21 +225,30 @@
                         
                     </div>
 
-                    <div class="flex xs6">
+                    <div class="flex xs6 lg2 md2">
                         <div class="layout row">
         
-                            <div class="flex xs4 textright"><a v-show="HasAddress===true" @click="showAddress()" class="eventicons"><v-icon>map</v-icon></a></div>
-                            <div class="flex xs4 textright"><a v-show="HasAddress===true" v-bind:href="EventMap" target="_blank" class="eventicons" rel="nopener noreferrer"><v-icon>navigation</v-icon></a></div>
-                            <div class="flex xs4 textright"><a @click="addToCalendar()" class="eventicons" v-show="imic===true"><v-icon>event</v-icon></a></div>
+                            <div class="flex xs4 lg4 textright"><a v-show="HasAddress===true" @click="showAddress()" class="eventicons"><v-icon>map</v-icon></a></div>
+                            <div class="flex xs4 lg4 textright"><a v-show="HasAddress===true" v-bind:href="EventMap" target="_blank" class="eventicons" rel="nopener noreferrer"><v-icon>navigation</v-icon></a></div>
+                            <div class="flex xs4 lg4 textright"><a @click="addToCalendar()" class="eventicons" ><v-icon>event</v-icon></a></div>
                         </div>
                         
                         
                     </div>
                 </div>
                 <div class="mt-2" v-show="RSVP===true">
-                    Share: {{URL}}
+                    Share: {{URL}} 
                 </div>
-               
+                <div class="layout row mt-2">
+                    <div class="flex xs6 textleft">
+                        <div v-show="IsRecurring===true">
+                            <a href="javascript:void(0)" @click="showRecurring()">Event Will Happen Again</a>
+                        </div>
+                    </div>
+                    <div class="flex xs6 textright">
+                       <a href="javascript:void(0)" @click="addToCalendar()">Add to Calendar</a>
+                    </div>
+                </div>
 
                 <div v-show="needAcceptance===true&&EGID!==null" class="fullborder p2">
                     <div class="fieldwell">
@@ -453,7 +485,7 @@
                                 <template v-for="(item, i) in guests">
                                     <v-list-item :key="i">
                                         <div class='layout row p4'>
-                                            <div class='flex xs1 pl2 relative mt-3' v-show='SeeRSVPs===true'>
+                                            <div class='flex xs1 lg1 md1 pl2 relative mt-3' v-show='SeeRSVPs===true'>
                                                 <div class='greenicon' v-show="item.Acceptance===true">
                                                     <v-icon>check</v-icon>
                                                 </div>
@@ -461,20 +493,16 @@
                                                     <v-icon>close</v-icon>      
                                                 </div>                                         
                                             </div>
-                                            <div class='flex xs3 pl4 relative'>                              
+                                            <div class='flex xs3 lg1 md1 pl4 relative' style='height:50px;'>            
+                                                 <img src="@/assets/SilverCrown.png" width="36" class="crowningAround" v-show="item.Flair===1"  alt="Premium User" />                         
+                                                 <img src="@/assets/GoldCrown.png" class="crowningAround"  v-show="item.Flair===2" width="36" alt="Pro User" />                  
                                                 <avatar class="vertical-center" size="50" :username="item.GuestName" v-show="imageloaded[i]===false"></avatar>   
-                                                <img v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" width=50 height=50 />                        
+                                                <img style="border-radius:50%;" v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" width=50 height=50 />                        
                                             </div>
-                                            <div class='flex xs2 pl2 relative mt-2'>
-                                                <div v-show="item.Flair===1">
-                                                    <img src="@/assets/SilverCrown.png" alt="Premium User" />
-                                                </div> 
-                                                <div v-show="item.Flair===2">
-                                                    <img src="@/assets/GoldCrown.png" alt="Pro User" />
-                                                </div>
-                                            </div>
-                                            <div class='flex xs6 textleft fieldwell indented1 spfield p12 mt-2'>
-                                                {{item.GuestName}}
+                       
+                                            <div class='flex xs8 lg9 md9 textleft fieldwell indented1 spfield p12 mt-2'>
+                                                <div class="boldchoice">{{item.GuestName}}</div>
+                                                <div v-show="IsOwner===true" v-html="iContact(item)"></div>
                                             </div>
                                         </div>
                                     </v-list-item>
@@ -499,12 +527,12 @@
                                     <div>
                                         There are no comments
                                     </div>
-                                    <div class="mt-2" v-show="imic===true">
+                                    <div class="mt-2" v-show="imic===true||hasGU===true">
                                         <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
                                     </div>
                                 </div>
                                 <div v-show="evcomments.length>0">
-                                    <div class="mt-2 mb-2 textright" v-show="imic===true">
+                                    <div class="mt-2 mb-2 textright" v-show="imic===true||hasGU===true">
                                         <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
                                     </div>
                                 <comments v-for="(node,n) in evcomments" v-bind:key="n" :comment="node.item" :children="node.children"></comments> 
@@ -639,20 +667,25 @@ export default {
             guestname: "",
             guestphone: "",
             hasgoogcalendar:false, 
+            hasGU:false,
             imageloaded:[],
             imageurl:[],
             imic: null,
             input: '',
-            loading: null,
+            loading: true,
             locLoading: true,
             needAcceptance: false,
             newComment: '',
+            noevent: false,
             okMessage: null,
             search: '',
             showFinder: false,
             showPick: false,
             suglocations: "",
             sugtimes:"",
+            RecurFreq:null, 
+            RecurUnit:null, 
+            RecurTime:null,
             timeLoading: true,
             tev: null, 
             URL: null
@@ -1167,7 +1200,23 @@ export default {
         goToMyAccount: function() {
             this.$router.push("/myaccount");
         },
+        iContact: function(it) {
+            try {
+                if (it.PhoneNumber!==null && it.PhoneNumber.length>0) {
+                    return this.formatPhone(it.PhoneNumber);
+                }
+                else {
+                    return it.EmailAddress;
+                }
+            }
+            catch(e) {
+                return ""; 
+            }
+        },
         insertEmoji: function(emoji) {
+            if (this.newComment===null) {
+                this.newComment=""; 
+            }
             this.newComment+=emoji;
             this.$modal.hide("emojiModal");
         },
@@ -1231,6 +1280,9 @@ export default {
 
             this.showPick=true; 
         },
+        recurCloseModal: function() {
+            this.$modal.hide("recurringModal");
+        },
         rejectChanges: function() {
               this.$http({
                 method:'post',
@@ -1269,7 +1321,50 @@ export default {
         showAddress: function() {
             this.$modal.show("addressModal");
         },
+        showRecurring: function() {
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/getrecurringinfo',
+                data: {
+                    EventID: this.EventID
+                }
+            }).then(r=> {
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        var e = JSON.parse(r.data.message);
+                        this.RecurFreq = e.Frequency;
+                        this.RecurUnit=e.IsMonthly?" Month(s)":" Week(s)";
+                        this.RecurTime="Day and time will change every event";
+                        if (e.Day!==null) {
+                            var dayofweek="";
+                            switch(e.Day) {
+                                case 1: dayofweek="Monday"; break;
+                                case 2: dayofweek="Tuesday"; break;
+                                case 3: dayofweek="Wednesday"; break;
+                                case 4: dayofweek="Thursday"; break;
+                                case 5: dayofweek="Friday"; break;
+                                case 6: dayofweek="Saturday"; break;
+                                case 7: dayofweek="Sunday"; break;
+                            }
 
+                            if (e.IsMonthly) {
+                                this.RecurTime="Happens on "+dayofweek+" of Week "+e.Week+" at "+e.Time+" (local time)";
+                            }
+                            else {
+                                this.RecurTime="Happens on "+dayofweek+" at "+e.Time+" (local time)";
+                            }
+                        }
+                        this.$modal.show("recurringModal");
+                    }
+                    else {
+                        this.errorMessage="An unexpected error occurred";
+                    }
+                }
+                else {
+                    this.errorMessage="Error contacting backend service";
+                }
+            })
+        },
         submitComment: function() {
             this.btncomment=true;
 
@@ -1338,7 +1433,7 @@ export default {
             }).then(r=> {
                 if (r.status===200 && r.data.status===200) {
                     var loccnt = JSON.parse(r.data.message);
-                    this.suglocations="To reschedule: "+loccnt.length+" of "+Math.ceil(this.tev.Guests.length/2)+" required locations have been submitted"
+                    this.suglocations="At least "+Math.ceil(this.tev.Guests.length/2)+" attendees must request a location change to change locations. "+loccnt.length+" requests have been received."
                 }
                 this.locLoading=false;
             });
@@ -1357,7 +1452,7 @@ export default {
             }).then(r=> {
                 if (r.status===200 && r.data.status===200) {
                     var loccnt = JSON.parse(r.data.message);
-                    this.sugtimes="To reschedule: "+loccnt.length+" of "+Math.ceil(this.tev.Guests.length/2)+" required times have been submitted"
+                    this.sugtimes="At least "+Math.ceil(this.tev.Guests.length/2)+" attendees must request a time change to change times. "+loccnt.length+" requests have been received."
                 }
                 this.timeLoading=false;
             });
@@ -1472,6 +1567,8 @@ export default {
     },
     mounted() {
 
+        window.scrollTo(0,0);
+
         EventBus.$on("CommentReplyEvent", (ec) => {
             this.addComment(ec);
         })
@@ -1498,8 +1595,15 @@ export default {
        
          }
 
+        try {
+          if (gu!==null&&gu.length>0) {
+             this.hasGU=true;
+          }
+        }
+        catch(e) {}
 
-         this.URL=encodeURI("https://schd.us/_"+ev);
+
+         this.URL=encodeURI("https://schd.us/event?e="+ev);
 
          var c = localStorage.getItem("_c");
          if (typeof(c)!=="undefined" && c!==null && c!=="null") {      
@@ -1553,11 +1657,11 @@ export default {
 
                         }
                         else {
-                            this.errorMessage="There was a problem getting the event";
+                            this.noevent=true;
                         }
                     }
                     else {
-                         this.errorMessage="There was a problem getting the event";
+                         this.novevent=true;
                     }
                 })
          }
@@ -1589,13 +1693,13 @@ export default {
           },
           CanRelocate: function() {
               if (this.tev!==null) {
-                  return this.tev.AllowLocationChange;
+                  return this.tev.AllowLocationChange&&this.imic!==true&&this.hasGU===true;
               }
               return false;
           },
           CanReschedule: function() {
               if (this.tev!==null) {
-                  return this.tev.AllowReschedule;
+                  return this.tev.AllowReschedule&&this.imic!==true&&this.hasGU===true;
               }
               return false;
           },
@@ -1837,12 +1941,26 @@ export default {
               }
               return false;
           },
+          IsPast: function() {
+              if (this.tev!==null) {
+                  if (this.tev.Schedules[0].StartDate<new Date().getTime()) {
+                      return true;
+                  }
+              }
+              return false;
+          },
           IsOwner: function() {
               if (this.tev!==null) {
                   return this.tev.IsOwner;          
               }
               return false;
           }, 
+          IsRecurring: function() {
+              if (this.tev!==null) {
+                  return this.tev.IsRecurring;
+              }
+              return false;
+          },
           MaxAttendees: function() {
               if (this.tev!==null) {
                   return this.tev.EventMaxCapacity;

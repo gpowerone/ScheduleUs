@@ -5,11 +5,24 @@
       <v-slide-y-transition mode="out-in">
         <v-container class="dmContainer" pa-0 fluid align-content-center align-center>
           <div class="layout row dmRowContainer">
-            <div class="desktopOnly lg2 toolbarMenu">
+            <div class="desktopOnly toolbarMenu">
                 <myContentDrawer />
+                <div class="mt-5" v-show="blogentries.length>0" style="margin-left:5%;margin-right:5%;">
+                    <h1 class="textcenter">Blog</h1>
+                    <template v-for="(item, i) in blogentries">
+                        <div :key="i" class="mt-3">
+                           <div class="boldchoice">
+                           {{item.title}}
+                           </div>
+                           <div class="textright">
+                              <a :href="item.link" target="_blank" >Read -></a>
+                           </div>
+                         </div>
+                     </template>
+                </div>
             </div>
             <div class="dmRouter">
-              <router-view></router-view>
+                <router-view></router-view>
             </div>
           </div>
         </v-container>
@@ -33,15 +46,22 @@
 <style>
    @import 'assets/coreStyles.css';
    @import 'assets/desktopStyles.css';
+   @import 'assets/tabletStyles.css';
 </style>
 
 <script>
 import myToolbar from "@/components/Toolbar"
 import myFooter from "@/components/Footer"
 import myContentDrawer from "@/components/Drawer"
+
 export default {
   name: 'app',
-  components: {myToolbar, myFooter, myContentDrawer},
+  components: {myToolbar, myFooter, myContentDrawer },
+  data() {
+    return {
+      blogentries:[]
+    }
+  },
   methods: {
       closeThis: function(prps) {
          
@@ -90,6 +110,19 @@ export default {
   },
   mounted() {
        this.pollNotifications();
+
+       if (!(typeof window.cordova !== "undefined")) {
+          this.$http({
+                method:'post',
+                url:this.$hostname+'/getfeed'
+          }).then(fr=>{
+               if (fr.status===200 && fr.data.status===200) {
+                   var feed = JSON.parse(fr.data.message);
+                   this.blogentries=feed.items;
+               }
+          })
+       }
+
        var self=this;
        window.setTimeout(function() {
           self.pollNotifications();

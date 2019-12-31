@@ -12,9 +12,14 @@
     font-family: "Aileron";
     src: url("Aileron-Regular.otf") format("otf");
   }
+
+  @font-face {
+      font-family: "Arimo";
+      src: url("Arimo-Regular.ttf") format("ttf");
+  }
   
   button {
-      background:#990033;
+      background:#a80cba;
       color:#FFF;
       padding:2px 8px;
       border-radius:6px;
@@ -25,11 +30,15 @@
       opacity:0.5;
   }
   
+  .mobileCenter {
+      text-align:center;
+  }
+
   .linkbtn {
       background:transparent;
       border:none;
       padding:2px;
-      color:#777;
+      color:#555;
       padding:0%;
       font-weight:bold;
       text-decoration:underline;
@@ -57,12 +66,11 @@
      background:transparent;
      border:none;
      text-decoration:none;
-     color:#777;
      height:inherit;
   }
   
   .modifiedNormal {
-     border:1px solid #777;
+     border:1px solid #555;
      padding:2px 4px;
   }
   
@@ -86,21 +94,20 @@
   
   h1 {
       color:royalblue;
-      font-size:1.4rem;
+      font-size:1.6rem;
+      font-family:Arimo;
   }
   
   h4 {
-    color:#777;
+    color:#555;
 }
 
 
   /* Layout specific */
-  .v-content {
-     background-color:#FFF!important;
-  }
+
   .v-toolbar {
-      background-color:#FFF!important;
-      border-bottom:1px solid #777;
+  
+      border-bottom:1px dotted #999;
   }
   .v-toolbar__side-icon {
       color: #666699!important;
@@ -129,7 +136,7 @@
   }
   .accheader {
   
-      border:1px solid #777;
+      border:1px solid #555;
       padding:2%;
       margin-top:10px;
   }
@@ -137,7 +144,7 @@
       vertical-align:middle;
   }
   .accheader i {
-      color: #777;
+      color: #555;
   }
   .accheader span {
       color: #a80cba;
@@ -159,7 +166,7 @@
       font-weight:bold;
   }
   .btop {
-      border-top:1px solid #777;
+      border-top:1px solid #555;
   }
   .fullborder {
       border:1px solid #a80cba;
@@ -172,10 +179,10 @@
       font-weight:bold;
   }
   .fieldwell {
-      color:#777;
+      color:#555;
   }
   .grayborder {
-      border:1px solid #777;
+      border:1px solid #555;
   }
   .schdusborder {
     border:1px solid #a80cba;
@@ -187,7 +194,7 @@
       padding-left:5%;
   }
   .spfield span, .spfield i {
-    color:#777;
+    color:#555;
     vertical-align:middle;
   }
   .greenicon, .greenicon i, .greenicon span {
@@ -236,7 +243,7 @@
         padding:3px;
         width:100%;
         border-radius:6px;
-        color:#777;
+        color:#555;
   }   
   .fieldwell input:focus, .fieldwell select:focus, .fieldwell textarea:focus {
        box-shadow: 0 0 5px #a80cba;
@@ -368,9 +375,9 @@
      padding:5%;
   }
   .borderTopLinks {
-     border-left:1px solid #777;
-     border-bottom:1px solid #777;
-     border-right:1px solid #777;
+     border-left:1px solid #555;
+     border-bottom:1px solid #555;
+     border-right:1px solid #555;
   }
    .year-month-wrapper, .nav-r, .nav-l, .activePort {
       background-color: #a80cba!important;
@@ -383,6 +390,19 @@
   .relative {
       position:relative;
   }
+
+  .primary--text {
+      background:#EEE;
+  }
+
+  .theme--light.v-toolbar, .theme--light.v-list {
+      background-color:inherit!important;
+  }
+
+  .theme--light.application {
+      background:#FFFFFC!important;
+  }
+  
   
  .vertical-center {
     margin: 0;
@@ -393,7 +413,6 @@
   }
 
 .myevscheduling {
-    background-color:white;
     color:#a80cba;
     font-size:1.3em;
     padding:7px 5px;
@@ -448,15 +467,26 @@
 }
 
 .guestlist, .manualaddguest {
-    border:1px solid #777;
+    border:1px solid #555;
     border-radius:6px;
     color:#777;
 }
 
-.videowindow {
-    width:300px;
-    height:169px;
-    margin:0 auto;
-    border:1px solid #777;
-    padding:20%;
+.curvedBorder {
+    border:1px dotted #555;
+    border-radius:5px;
 }
+
+.crowningAround {
+    position:absolute;
+    top:-8px;
+    left:19px;
+    z-index:5;
+}
+
+.betaVersion {
+    border-bottom:1px dotted #999;
+    color:royalblue;
+    text-align:center;
+}
+

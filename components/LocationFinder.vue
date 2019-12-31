@@ -4,8 +4,8 @@
             {{errorMessage}}
         </div>
 
-        <div v-show="loading===true">
-             Loading...
+        <div v-show="loading===true" class="loadingImg">
+              <img src="@/assets/loading.gif" />
         </div>
     
         <modal name="locationDetails" width="300" height="90%">

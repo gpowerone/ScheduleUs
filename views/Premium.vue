@@ -5,7 +5,7 @@
             {{ errorMessage }}
         </div>
 
-        <h1 class="valign">Schedule Us Premium&nbsp;&nbsp;<img src="@/assets/SilverCrown.png" height=20 /></h1>
+        <h1 class="valign">Schedule Us Premium&nbsp;&nbsp;<img src="@/assets/SilverCrown.png" width="36" /></h1>
         <div class='mt-3 fieldwell'>
             <span class='boldchoice'>Benefits</span>
             <ul>
@@ -21,7 +21,7 @@
         <div class='mt-2 schdusPurple' v-show="ispremium===true">You are currently a Premium member. To manage your account please click on the Subscriptions tab on the My Account page</div>
 
 
-        <h1 class="mt-5 valign">Schedule Us Pro&nbsp;&nbsp;<img src="@/assets/GoldCrown.png" height=20 /></h1>
+        <h1 class="mt-5 valign">Schedule Us Pro&nbsp;&nbsp;<img src="@/assets/GoldCrown.png" width="36" /></h1>
         <div class='mt-3 fieldwell'>
             <span class='boldchoice'>Benefits</span>
             <ul>              
@@ -32,7 +32,7 @@
                 <li>All other features of Premium</li>
             </ul>
         </div>
-        <div class='mt-2 schdusPurple' v-show="ispro===false">Cost: $19.99 per month, first 3 months paid upfront.</div>
+        <div class='mt-2 schdusPurple' v-show="ispro===false">Cost: $9.99 per month, first 3 months paid upfront.</div>
         <div class='mt-2' v-show="ispro===false"><button @click="doProPlan()" class="schdusButton">Subscribe!</button></div>
          <div class='mt-2 schdusPurple' v-show="ispro===true">You are currently a Pro member. To manage your account please click on the Subscriptions tab on the My Account page</div>
 
@@ -78,38 +78,21 @@ export default {
         }
     },
     mounted() {
-        var c = localStorage.getItem("_c");
-        if (!(typeof(c)==="undefined" || c===null || c==="null")) {    
+        window.scrollTo(0,0);
+       
+        var cli = JSON.parse(localStorage.getItem("clidetails"));
 
-            this.$http({
-                method:'post',
-                url:this.$hostname+'/getclient',
-                data: {
-                    ClientID: c,
-                    SessionID: localStorage.getItem("_s"),
-                    SessionLong: localStorage.getItem("_r"),                    
-                }
-            }).then(r=> {
-                if (r.status!==200 || r.data.status!==200) {
-                
-                }
-                else {
-                    var cli = JSON.parse(r.data.message);
-        
-                    this.ispro=cli.IsPro;
-                    this.ispremium=cli.IsPremium;
-                }
-            }).catch(e=> {
-                this.errorMessage="Something went wrong"; 
-            }) 
-        }
-        else {
-           this.errorMessage="Something went wrong"; 
-        }
+        this.ispro=cli.IsPro;
+        this.ispremium=cli.IsPremium;
+       
+        localStorage.setItem("clidetails",null);
 
-        let stripeJS = document.createElement('script')
-        stripeJS.setAttribute('src', 'https://js.stripe.com/v3/')
-        document.head.appendChild(stripeJS)
+        if (typeof(window.StripeLoaded)==="undefined") {
+            window.StripeLoaded=true;
+            let stripeJS = document.createElement('script')
+            stripeJS.setAttribute('src', 'https://js.stripe.com/v3/')
+            document.head.appendChild(stripeJS)
+        }
     }
 }
 </script>
