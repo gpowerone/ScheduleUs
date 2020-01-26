@@ -1,4 +1,4 @@
-@media (min-width: 1025px) {
+@media (min-width: 1264px) {
   
     html {
         background-color: #444;
@@ -11,6 +11,10 @@
 
     h1 {
         font-size:2rem;
+    }
+
+    .crowningAround {
+        left:43px;
     }
 
     .desktopOnly {
@@ -31,7 +35,7 @@
     }
 
     .toolbarMenu {
-        width:300px;
+        width:250px;
         border-right:1px dotted gray;
     }
 
@@ -61,6 +65,7 @@
 
     .moduleWrapper {
         padding:2.5%;
+        max-width:94%;
     }
 
     .dmRouter {
@@ -78,7 +83,7 @@
      }
 
      input.textfield, select.textfield {
-         height:3vh;
+         height:3.7vh;
      }
 
      .accheader {

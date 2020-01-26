@@ -13,6 +13,8 @@ import ToggleButton from 'vue-js-toggle-button'
 import ImageUploader from 'vue-image-upload-resize'
 import UUID from 'vue-uuid';
 import Notifications from 'vue-notification'
+import VueGtag from 'vue-gtag'
+import '../node_modules/nprogress/nprogress.css'
 
 // Determine if we are in a phone app, that changes how we do things a lot
 const isCordovaApp = (typeof window.cordova !== "undefined");
@@ -39,6 +41,14 @@ Vue.use(ToggleButton)
 Vue.use(UUID)
 Vue.use(ImageUploader)
 Vue.use(Notifications)
+
+if (!isCordovaApp) {
+  Vue.use(VueGtag, {
+     config: {
+         id: "G-W1PTB65QMZ" 
+     }
+  })
+}
 
 const init = () => {
   new Vue({
@@ -67,7 +77,6 @@ if (!isCordovaApp){
   document.dispatchEvent(new CustomEvent("deviceready", {}));
 }
 else {
-  //navigator.camera.sourceType=Camera.PictureSourceType.PHOTOLIBRARY;
   if (window.cordova.platformId==="android") {
     Vue.prototype.$hostname="http://10.0.2.2:80";
   }

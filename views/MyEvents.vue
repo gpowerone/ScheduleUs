@@ -54,9 +54,7 @@
                 <div class="mt-3 fieldwell">
                     I am not currently organizing any events
                 </div>
-                <div class="mt-2">
-                    <button class="schdusButton" @click="goToCreateEvent()">Schedule Something!</button>
-                </div>
+              
             </div>
             <div v-show="isParticipating.length>0">
                 <div class="mt-5 fieldwell boldchoice">

@@ -105,7 +105,7 @@
                 <div class="flex xs6">
                     <h1>Edit Event</h1>
                 </div>
-                <div class="flex xs6 textright spfield fieldwell" @click="returnToEvent()">
+                <div class="flex xs6 textright spfield fieldwell" v-show="returnAllowed===true" @click="returnToEvent()">
                     <v-icon>keyboard_backspace</v-icon> <span>Return to Event</span>
                 </div>
             </div>
@@ -186,10 +186,8 @@
                     </div>
 
                     <div class="layout row mt-3">
-                        <div class="xs6 flex textleft">
-                             <button class='schdusButton' v-show="evlength!=='i'" @click='pickForUs'>Help Me Pick a Time</button> 
-                        </div>
-                        <div class="xs6 flex textright">
+                
+                        <div class="xs12 flex textright">
                             <button @click="changeTime()">Submit</button>
                         </div>
                     </div>
@@ -306,11 +304,18 @@
                     </div>
                 </div>
                 <div class="acccontent" v-collapse-content>
-                     <div class='flex xs12 textleft spfield'>
-                            <button class='transButton' @click='addAttendee()'><v-icon>person_add</v-icon>&nbsp;<span>Add</span></button> 
-                            &nbsp;&nbsp;
-                            <button class='transButton' @click='doAddGroupModal()'><v-icon>group_add</v-icon>&nbsp;<span>Add Group</span></button> 
-                     </div>
+                    <div class="layout row">
+                        <div class='flex xs7 textleft spfield'>
+                                <button class='transButton' @click='addAttendee()'><v-icon>person_add</v-icon>&nbsp;<span>Add</span></button> 
+                                &nbsp;&nbsp;
+                                <button class='transButton' @click='doAddGroupModal()'><v-icon>group_add</v-icon>&nbsp;<span>Add Group</span></button> 
+                        </div>
+                        <div class='flex xs5 textright spfield'>
+                            <div v-show="isCordova === true" >
+                                <button @click='loadContacts' class='transButton'><v-icon>contacts</v-icon> <span>Add Contacts</span></button>
+                            </div>
+                        </div>
+                    </div>
                    
                      <v-list v-show="guests.length>0" >
                             <template v-for="(item, i) in guests">
@@ -342,9 +347,12 @@
             <pickforus ref="pt"></pickforus>
         </div>
 
-         <div class='manualaddguest mt-2 p2' v-show="formStep === 3">
-
+         <div class='manualaddguest mt-2 p2' v-show="formStep===3">
             <addeditattendee ref="aeAttendee"></addeditattendee>
+        </div>
+
+        <div v-show="formStep===4">
+            <contactmodule ref="contactModule"></contactmodule>
         </div>
 
 </template>
@@ -354,13 +362,14 @@ import Avatar from 'vue-avatar'
 import locationfinder from "@/components/LocationFinder"
 import pickforus from "@/components/PickForUs"
 import addeditattendee from "@/components/Attendee"
+import contactmodule from '@/components/Contacts'
 import datetime from 'vuejs-datetimepicker'
 import {utilities} from '../mixins/utilities'
 
 export default {
     name: "EventUpdate",
     mixins: [utilities],
-    components: {Avatar,locationfinder,pickforus,datetime,addeditattendee},
+    components: {Avatar,locationfinder,pickforus,datetime,addeditattendee,contactmodule},
     data() {
         return {
             acc1i: "expand_less",
@@ -388,7 +397,9 @@ export default {
             guests:[],
             imageloaded:[],
             imageurl:[],
-            okMessage:null  
+            isCordova: (typeof window.cordova !== "undefined"),
+            okMessage:null,
+            returnAllowed:true 
         }
     },
     mounted() {
@@ -435,6 +446,46 @@ export default {
         addAttendee: function() {
             this.formStep=3;
         },
+        addEditGuest: function(isOverride, gname, gphone, gemail) {
+           
+            if (isOverride!==true) {
+                gname= this.$refs.aeAttendee.guestname;
+                gphone= this.$refs.aeAttendee.guestphone;
+                gemail= this.$refs.aeAttendee.guestemail;
+            }
+
+            this.$http({
+                method:'post',                  
+                url:this.$hostname+'/addguest',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),
+                    EventID: this.eventid,
+                    gname: gname,
+                    gphone: gphone,
+                    gemail: gemail
+                }
+            }).then(r=> {
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                         this.formStep=0;
+                         this.okMessage="Attendee successfully added";
+                            var self=this;
+                            window.setTimeout(function() {
+                                self.okMessage=null;
+                            },3000) 
+                            this.refresh();
+                    }  
+                    else {
+                        this.errorMessage=r.data.message;
+                    }  
+                }
+                else {
+                    this.errorMessage="Could not connect to backend service";
+                }
+            });
+        },
         changeLocation: function() {
             this.$modal.show("changeLocationModal")
         },
@@ -446,6 +497,10 @@ export default {
         },
         closeAttendeeModal: function() {
             this.$modal.hide("removeAttendeeModal")
+        },
+        closeContacts: function() {
+            this.formStep=0;
+            window.scrollTo(0,0);
         },
         closeGroupManager: function() {
             this.$modal.hide("addGroupModal");
@@ -517,41 +572,7 @@ export default {
             })        
 
         },
-        doAddGuest: function() {
-           
-
-            this.$http({
-                method:'post',                  
-                url:this.$hostname+'/addguest',
-                data: {
-                    ClientID: localStorage.getItem("_c"),
-                    SessionID: localStorage.getItem("_s"),
-                    SessionLong: localStorage.getItem("_r"),
-                    EventID: this.eventid,
-                    gname: this.$refs.aeAttendee.guestname,
-                    gphone: this.$refs.aeAttendee.guestphone,
-                    gemail: this.$refs.aeAttendee.guestemail
-                }
-            }).then(r=> {
-                if (r.status===200) {
-                    if (r.data.status===200) {
-                         this.formStep=0;
-                         this.okMessage="Attendee successfully added";
-                            var self=this;
-                            window.setTimeout(function() {
-                                self.okMessage=null;
-                            },3000) 
-                            this.refresh();
-                    }  
-                    else {
-                        this.errorMessage=r.data.message;
-                    }  
-                }
-                else {
-                    this.errorMessage="Could not connect to backend service";
-                }
-            });
-        },
+       
         doChangeLocation: function() {
             this.$modal.hide("changeLocationModal")   
 
@@ -590,6 +611,7 @@ export default {
             }).then(r=> {
                  if (r.status===200) {
                     if (r.data.status===200) {
+                         this.returnAllowed=false;
                          this.okMessage="Location changed successfully";
                             var self=this;
                             window.setTimeout(function() {
@@ -667,6 +689,7 @@ export default {
             }).then(r=> {
                  if (r.status===200) {
                     if (r.data.status===200) {
+                         this.returnAllowed=false;
                          this.okMessage="Time changed successfully";
                             var self=this;
                             window.setTimeout(function() {
@@ -769,6 +792,11 @@ export default {
             this.$refs.lf.doRender();
             this.formStep=1;
         },
+        loadContacts: function() {
+            this.formStep=4;
+            this.$refs.contactModule.selectOneMode=true;
+            this.$refs.contactModule.loadContacts();
+        },
         loadedImage: function(i) {
             this.imageloaded[i]=true;
             this.$forceUpdate();
@@ -786,6 +814,8 @@ export default {
 
             window.scrollTo(0,0);
             localStorage.setItem("clidetails",null);
+            this.imageloaded=[];
+            this.imageurl=[];
 
             var ev=null;
             var gu=null;
@@ -886,6 +916,19 @@ export default {
         },
         returnToEvent: function() {
               this.$router.push("/event?e="+this.tev.Hash)
+        },
+        saveContacts: function() {   
+            for(var x=0; x<this.$refs.contactModule.contacts.length; x++) {
+                if (this.$refs.contactModule.contacts[x].isselected) {
+
+                    this.addEditGuest(true,this.$refs.contactModule.contacts[x].cname,this.$refs.contactModule.contacts[x].cphone,this.$refs.contactModule.contacts[x].cemail);
+                }
+            }
+            
+            this.$refs.contactModule.contacts=[];
+            this.$refs.contactModule.visiblehidecontacts=[];
+            this.formStep=0;
+            window.scrollTo(0,0);
         },
         setPickForUs: function(t) {
              this.evday=t.date;

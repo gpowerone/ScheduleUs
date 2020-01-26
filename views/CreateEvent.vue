@@ -28,6 +28,18 @@
              <p><button @click="goToPremium()">Purchase</button></p>
         </div>
 
+        <modal name="addSchdusModal" width="300" height="250">
+            <div class="p2">
+                <p class="textcenter">
+                This feature will add phone numbers used by Schedule Us to your contacts so that messages appear from 'Schedule Us'. 
+                Please note that if you already have these numbers in your contacts this feature will duplicate them. 
+                </p>
+                <p class="textcenter">
+                    <button class='redButton' @click="cancelSchdusNumber()">Cancel</button>&nbsp;&nbsp;<button @click="addSchdusNumber()">Confirm</button>
+                </p>
+            </div>
+        </modal>
+
         <modal name="addGroupModal" width="300" height="90%">
             <div class="p2" style="overflow:auto;height:100%;">
                 <div class="layout row">
@@ -51,7 +63,7 @@
                         <template v-for="(item, i) in groups">
                             <v-list-item :key="i">
                                 <div class='layout row btop p4'>   
-                                    <div class='flex xs12 textleft fieldwell spfield' @click="doAddFromGroup(item)">
+                                    <div class='flex xs12 textleft fieldwell spfield' @click="doAddFromGroup(item)" style="pointer:cursor;">
                                         <v-icon>group</v-icon>&nbsp;&nbsp;<span>{{item.GroupName}}</span>
                                     </div>
                                     
@@ -90,7 +102,7 @@
             </div>
         </modal>
 
-        <modal name="doneModal" width="300" height="400">
+        <modal name="doneModal" width="300" height="435">
             <div class="p2">
                 <h1>All Done</h1>
                 <div class="mt-2 textcenter">Now you can kick back and relax!</div>
@@ -241,14 +253,14 @@
             
                 <div class='guestlist mt-2'>
                     <div class='layout row p2'>
-                        <div class='flex xs12 textleft spfield'>
+                        <div class='flex xs8 textleft spfield'>
                             <button class='transButton' @click='turnOnManualAddGuest'><v-icon>person_add</v-icon>&nbsp;<span>Add</span></button> 
-                            &nbsp;&nbsp;
+                            &nbsp;
                             <button class='transButton' @click='doAddGroupModal'><v-icon>group_add</v-icon>&nbsp;<span>Add Group</span></button> 
                         </div>
-                        <div class='flex xs6 textright spfield'>
+                        <div class='flex xs4 textright spfield'>
                             <div v-show="isCordova === true" >
-                                Add From:<button @click='loadContacts' class='transButton'><v-icon>contacts</v-icon></button>
+                                <button @click='loadContacts' class='transButton'><v-icon>contacts</v-icon> <span>Contacts</span></button>
                             </div>
                         </div>
                     </div>
@@ -263,10 +275,10 @@
                                         <div class='flex xs2 pl2 relative'  @click="editGuest(item)">
                                              <div v-if="item.cphoto!==null">
                                                 <div class="vertical-center">
-                                                    <img :src="item.cphoto" class="imgcircle" alt="photo" width="30" height="30" />
+                                                    <img :src="item.cphoto" class="imgcircle" alt="photo" width="50" height="50" />
                                                 </div>
                                             </div>
-                                            <div v-if="item.cphoto===null">
+                                            <div v-if="item.cphoto===null" class="textleft">
                                                 <avatar class="vertical-center" size="50" :username="item.gname" v-show="imageloaded[i]===false"></avatar>
                                                 <img v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" style="border-radius:50%;" width=50 height=50 />  
                                             </div>
@@ -275,7 +287,7 @@
                                             {{item.gname}}
                                         </div>
                                         <div class='flex xs1 mt-2'>
-                                            <v-icon @click="removeGuest(item)">remove_circle_outline</v-icon>
+                                            <v-icon @click="removeGuest(i)">remove_circle_outline</v-icon>
                                         </div>
                                     </div>
                                 </v-list-item>
@@ -283,8 +295,14 @@
                         </v-list>
                     </div>
                 </div>
-                <div class="mt-2 fieldwell" v-show="loggedin===true">
-                   <toggle-button width="35" height="16" v-model="willattend" /> I Will Attend
+               
+                <div class="mt-3 layout row" v-show="loggedin===true">
+                    <div class="flex xs5 fieldwell">
+                        <toggle-button width="52" height="24" v-model="willattend" /> I Will Attend
+                    </div>
+                     <div class="flex xs7 fieldwell textright">
+                        <button v-show="isCordova===true"  @click='doAddSchdusModal'>Add # To Contacts</button>
+                    </div>
                 </div>
 
                 <div class="mt-3">
@@ -332,12 +350,10 @@
                </div>
                
                 <div class='mt-2' v-show="isPremium===true||isPro===true">
-                   <toggle-button width="35" height="16" v-model="eventrecurring"/> Event Will Happen Again
+                   <toggle-button width="52" height="24" v-model="eventrecurring"/> Event Will Happen Again
                </div>
                <div v-show="eventrecurring===true" class="mt-1 fieldwell p2" style="border:1px solid #999">
-                    <div class="fieldwell">
-                        Each re-occurring event will count as an additional event towards your monthly limit
-                    </div>
+                   
                     <div class="mt-2 fieldwell">
                        
                         <div class="boldchoice">
@@ -417,31 +433,31 @@
 
               
                <div class="mt-2">
-                   <toggle-button width="35" height="16" v-model="guestlistvisible"/> Attendees List is Visible to All
+                   <toggle-button width="52" height="24" v-model="guestlistvisible"/> Attendees List is Visible to All
                </div>
                <div v-show="guestlistvisible===true" class="indented1">
                    <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="guestscandiscuss"/> Attendees Can Discuss Event
+                        <toggle-button width="52" height="24" v-model="guestscandiscuss"/> Attendees Can Discuss Event
                    </div>
                     <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="guestsseersvps"/> Attendees Can See Who is Coming
+                        <toggle-button width="52" height="24" v-model="guestsseersvps"/> Attendees Can See Who is Coming
                    </div>
                </div>
                <div class='mt-2'>
-                   <toggle-button width="35" height="16" v-model="guestsbringothers"/> Attendees Can Bring Others
+                   <toggle-button width="52" height="24" v-model="guestsbringothers"/> Attendees Can Bring Others
                </div>
                 <div v-show="guestsbringothers===true" class="indented1">
                    <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="guestsmustregister"/> New Attendees Must RSVP
+                        <toggle-button width="52" height="24" v-model="guestsmustregister"/> New Attendees Must RSVP
                    </div>
                    <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="guestsbringchildren"/> Attendees May Bring Children
+                        <toggle-button width="52" height="24" v-model="guestsbringchildren"/> Attendees May Bring Children
                    </div>
                     <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="guestsprovidesharing"/> Provide Social Share Options
+                        <toggle-button width="52" height="24" v-model="guestsprovidesharing"/> Provide Social Share Options
                    </div>
                    <div class="mt-2">
-                        <toggle-button width="35" height="16" v-model="guestslimittotalhas"/> Set Max Attendee Limit
+                        <toggle-button width="52" height="24" v-model="guestslimittotalhas"/> Set Max Attendee Limit
                    </div>
                    <div class="mt-2 indented1" v-show="guestslimittotalhas===true">
                        Limit: <input class="textfield" type="text" v-model="guestslimittotal" />
@@ -449,19 +465,19 @@
 
                </div>
                <div class='mt-2' v-show="evlength!=='i'&&(isPremium===true||isPro===true)">
-                   <toggle-button width="35" height="16" v-model="guestsreschedule"/> Attendees Can Suggest a Different Time
+                   <toggle-button width="52" height="24" v-model="guestsreschedule"/> Attendees Can Suggest a Different Time
                </div>
                <div v-show="guestsreschedule===true" class="indented1">
                    <div class="mt-2">
-                      <toggle-button width="35" height="16" v-model="guestsrescheduleperm"/> I Must Approve Different Time
+                      <toggle-button width="52" height="24" v-model="guestsrescheduleperm"/> I Must Approve Different Time
                     </div>
                </div>
                <div class='mt-2' v-show="isPremium===true||isPro===true">
-                   <toggle-button width="35" height="16" v-model="guestschangelocation"/> Attendees Can Suggest a Different Location
+                   <toggle-button width="52" height="24" v-model="guestschangelocation"/> Attendees Can Suggest a Different Location
                </div>
                <div v-show="guestschangelocation===true" class="indented1">
                    <div class="mt-2">
-                       <toggle-button width="35" height="16" v-model="guestschangelocationperm"/> I Must Approve Different Location
+                       <toggle-button width="52" height="24" v-model="guestschangelocationperm"/> I Must Approve Different Location
                     </div>
                </div>
               
@@ -488,46 +504,8 @@
        
 
         <div class='loadcontacts' v-show="formStep === 4">
-
-            <div class="manualaddguest">
-                <div class="layout row p2">
-                    <div class="flex xs6 textleft">
-                        <button class="tanButton" @click="closeContacts">Close</button>
-                    </div>
-                    <div class="flex xs6 textright">
-                        <button class="modifiedNormal" @click="saveContacts">Done</button>
-                    </div>
-                </div>
-                <div v-show="contacts.length===0">
-                    You don't have any contacts
-                </div>
-                <v-list class="nopadding" v-show="contacts.length>0">
-                    <div class="fieldwell p2">
-                        Search:&nbsp;&nbsp;<input class="textfield" v-model="csearch">
-                    </div>
-                    <template v-for="(item, i) in contacts">
-                        <v-list-item :key="i" >
-                            <div v-bind:class="{ selectedTile: item.isselected }" @click="selectContact(item)">
-                                <div class='layout row btop p4'>
-                                    <div class='flex xs2 pl2 relative'>
-                                        <div v-if="item.hasimage!==null">
-                                            <div class="vertical-center">
-                                                <img :src="item.hasimage" class="imgcircle" style="border-radius:50%;" alt="photo" width="50" height="50" />
-                                            </div>
-                                        </div>
-                                        <div v-if="item.hasimage===null">
-                                                <avatar class="vertical-center" :username="item.cname" size="50"></avatar>
-                                        </div>
-                                    </div>
-                                    <div class='flex xs10 textleft fieldwell indented1 spfield mt-2'>
-                                        {{item.cname}}                                      
-                                    </div>
-                                </div>
-                            </div>
-                        </v-list-item>
-                    </template>
-                </v-list>
-            </div>
+            <contactmodule ref="contactModule"></contactmodule>
+          
         </div>
 
         <div id='addFromGroup' v-show='formStep === 9'>
@@ -553,11 +531,12 @@ import groupmanager from "@/components/GroupManager"
 import picktime from "@/components/PickTime"
 import addeditattendee from "@/components/Attendee"
 import datetime from "vuejs-datetimepicker"
+import contactmodule from '@/components/Contacts'
 import {utilities} from '../mixins/utilities'
 import { EventBus } from '../bus';
 
 export default {
-    components: {Avatar,locationfinder,groupmanager,picktime,addeditattendee,datetime},
+    components: {Avatar,locationfinder,groupmanager,picktime,addeditattendee,datetime,contactmodule},
     mixins: [utilities],
     data: function() {
         return {
@@ -566,11 +545,9 @@ export default {
             buttonsenabled: true,
             cliname: "",
             clinamefe: "",
-            clidetails: null,
-            contacts: [],    
+            clidetails: null,  
             evname: "",
             evnamefe: "",        
-            csearch: "",
             datepicked: false,
             day_week: 0,
             errorMessage: null,
@@ -615,7 +592,6 @@ export default {
             loggedin: false,
             mth_frequency:0,
             sschit:false,
-            visiblehidecontacts:[],
             week_frequency: 0,
             week_month: 0,
             willattend:true
@@ -645,23 +621,36 @@ export default {
                 }
 
                 if (self.guesteditmode===null) {
-                    self.guests.push({
-                            gid: clid,    
-                            gname: self.$refs.aeAttendee.guestname,
-                            gphone: self.$refs.aeAttendee.guestphone,
-                            gemail: self.$refs.aeAttendee.guestemail,
-                            greq: false,
-                            photo: hasc,
-                            cphoto: null
-                    });
 
-                    self.imageloaded.push(false);
+                    var nogood=false;
+                    for (var x=0; x<self.guests.length; x++) {
+                        if (self.guests[x].gid===clid) {
+                            nogood=true;
+                        }
+                    }
 
-                    if (hasc) {
-                        self.imageurl.push("https://avatars.schd.us/"+clid);
+                    if (!nogood) {
+                        self.guests.push({
+                                gid: clid,    
+                                gname: self.$refs.aeAttendee.guestname,
+                                gphone: self.$refs.aeAttendee.guestphone,
+                                gemail: self.$refs.aeAttendee.guestemail,
+                                greq: false,
+                                photo: hasc,
+                                cphoto: null
+                        });
+
+                        self.imageloaded.push(false);
+
+                        if (hasc) {
+                            self.imageurl.push("https://avatars.schd.us/"+clid);
+                        }
+                        else {
+                            self.imageurl.push(null);
+                        }
                     }
                     else {
-                        self.imageurl.push(null);
+                         this.errorMessage="You cannot add the same user twice";
                     }
                 }
                 else {
@@ -693,6 +682,56 @@ export default {
             })
          
         },
+        addSchdusNumber: function() {
+            var sC = navigator.contacts.create({"displayName": "Schedule Us"});
+            sC.phoneNumbers=[];
+            sC.phoneNumbers.push(new ContactField('home','203-635-4194',true))
+
+            var sC1 = navigator.contacts.create({"displayName": "Schedule Us-1"});
+            sC1.phoneNumbers=[];
+            sC1.phoneNumbers.push(new ContactField('home','928-238-5545',false))
+
+
+            var sC2 = navigator.contacts.create({"displayName": "Schedule Us-2"});
+            sC2.phoneNumbers=[];
+            sC2.phoneNumbers.push(new ContactField('home','240-641-0911',false))
+
+
+            var sC3 = navigator.contacts.create({"displayName": "Schedule Us-3"});
+            sC3.phoneNumbers=[];
+            sC3.phoneNumbers.push(new ContactField('home','828-373-8906',false))
+
+
+            var sC4 = navigator.contacts.create({"displayName": "Schedule Us-4"});
+            sC4.phoneNumbers=[];
+            sC4.phoneNumbers.push(new ContactField('home','334-441-3570',false))
+
+
+            var sC5 = navigator.contacts.create({"displayName": "Schedule Us-5"});
+            sC5.phoneNumbers=[];
+            sC5.phoneNumbers.push(new ContactField('home','202-915-6596',false))
+
+
+            sC1.save(function(){},function(){});
+            sC2.save(function(){},function(){});
+            sC3.save(function(){},function(){});
+            sC4.save(function(){},function(){});
+            sC5.save(function(){},function(){});
+
+            var self = this;
+            sC.save(function() {
+                self.okMessage="Schedule Us Contact Saved";
+                window.setTimeout(function() {
+                    self.okMessage=null;
+                },3000)
+            }, function() {
+                self.errorMessage="Schedule Us Contact Did Not Save";
+            });
+            
+        },
+        cancelSchdusNumber: function() {
+             this.$modal.hide("addSchdusModal");
+        },
         clearWatch: function() {
             localStorage.removeItem("evlocation");
             localStorage.removeItem("evcity");
@@ -706,7 +745,6 @@ export default {
         },
         closeContacts: function() {
             this.formStep=1;
-            this.$forceUpdate();
             window.scrollTo(0,0);
         },
         closeGroupManager: function() {
@@ -722,15 +760,6 @@ export default {
             this.$forceUpdate();
             window.scrollTo(0,0);
         },
-        compareContacts: function( a, b ) {
-            if ( a.cname < b.cname ){
-                return -1;
-            }
-            if ( a.cname > b.cname ){
-                return 1;
-            }
-            return 0;
-        },
         compareGuests: function( a, b ) {
             if ( a.guestname < b.guestname ){
                 return -1;
@@ -739,62 +768,9 @@ export default {
                 return 1;
             }
             return 0;
-        },
-        contactFailure: function() {
-            window.alert("Could not load contacts. Please check app contact permissions");
-        },
-        contactSuccess: function(ctcs) {
-            this.contacts=[];
-
-            for (var i=0; i<ctcs.length; i++) {
-
-                var ctcname="Not Specified";
-                var ctcemail="Not Specified";
-                var ctcphone="Not Specified";
-        
-                ctcname = ctcs[i].name.formatted;
-                 
-                if (typeof(ctcs[i].emails)!=="undefined" && ctcs[i].emails.length>0) {
-                    ctcemail = ctcs[i].emails[0].value;
-                }
-        
-                if (typeof(ctcs[i].phoneNumbers)!=="undefined" && ctcs[i].phoneNumbers.length>0) {
-                    for (var x=0; x<ctcs[i].phoneNumbers.length; x++) {
-                        if (ctcs[i].phoneNumbers[x].type==="mobile") {
-                            ctcphone = ctcs[i].phoneNumbers[0].value;
-                            break;
-                        }
-                    }
-                }
-         
-                var hasimage=null;
-          
-                if (typeof(ctcs[i].photos)!=="undefined" && ctcs[i].photos.length>0) {                    
-                    hasimage=window.Ionic.WebView.convertFileSrc(ctcs[i].photos[0].value);                           
-                }
-            
-
-                if (ctcname!=="Not Specified" && (ctcemail!=="Not Specified" || ctcphone!=="Not Specified"))
-                {
-                    this.contacts.push({
-                        cname: ctcname,
-                        cemail: ctcemail,
-                        cphone: ctcphone,
-                        hasimage: hasimage,
-                        isselected: false
-                    })
-                }      
-            } 
-
-            this.contacts.sort(this.compareContacts);
-            this.visiblehidecontacts=[];
-            for(var y=0; y<this.contacts.length; y++) {
-                this.visiblehidecontacts.push(this.contacts[y]);
-            }
-
-            this.formStep=4;
-            this.$forceUpdate();
-            window.scrollTo(0,0);
+        },      
+        doAddSchdusModal: function() {
+            this.$modal.show("addSchdusModal");
         },
         doAddFromGroup: function(item) {
 
@@ -957,6 +933,7 @@ export default {
             return ed.splice(1, 0, "-");
         },
         goLocationFinder: function() {
+            this.errorMessage=null;
             this.$refs.lf.doRender();
             this.formStep=7;
         },
@@ -1037,12 +1014,8 @@ export default {
             this.$router.push('premium');
         },
         loadContacts: function() {
-            var options      = {};
-            options.filter   = "";
-            options.multiple = true;
-            options.desiredFields = [navigator.contacts.fieldType.id, navigator.contacts.fieldType.displayName, navigator.contacts.fieldType.name, navigator.contacts.fieldType.phoneNumbers, navigator.contacts.fieldType.emails, navigator.contacts.fieldType.photos];
-            var fields  = [navigator.contacts.fieldType.displayName];
-            navigator.contacts.find(fields, this.contactSuccess, this.contactFailure, options);
+            this.formStep=4;
+            this.$refs.contactModule.loadContacts();
         },
         loadWatch: function() {
    
@@ -1093,15 +1066,19 @@ export default {
                     this.guests=[];
                 }
                 for(var q=0; q<this.guests.length; q++) {
-                    this.imageloaded.push(false);
+
+                    this.guests[q].cphoto=null;
                     if (this.guests[q].gid!==null) {
                         this.imageurl.push("https://avatars.schd.us/"+this.guests[q].gid);
+                        this.imageloaded.push(false);
                     }
                     else {
                         this.imageurl.push(null);
+                        this.imageloaded.push(false);
                     }
+                    
                 }
-               
+            
             }
 
              this.$forceUpdate();
@@ -1117,40 +1094,73 @@ export default {
             window.scrollTo(0,0);
         },
         removeGuest: function(item) {
+
+            this.guests.splice(item,1);
+                
+            this.imageloaded=[];
+            this.imageurl=[];
+       
             for(var x=0; x<this.guests.length; x++) {
-                if (this.guests[x].gid===item.gid) {
-                    this.guests.splice(x,1);
+           
+                if (this.guests[x].gid!==null) {
+                    this.imageurl.push("https://avatars.schd.us/"+this.guests[x].gid);
+                    this.imageloaded.push(false);
+                }
+                else {
+                    this.imageurl.push(null);
+                    this.imageloaded.push(false);
                 }
             }
+
+             this.$forceUpdate();
+
         },
 
         saveContacts: function() {   
-            for(var x=0; x<this.contacts.length; x++) {
-                if (this.contacts[x].isselected) {
+            for(var x=0; x<this.$refs.contactModule.contacts.length; x++) {
+                if (this.$refs.contactModule.contacts[x].isselected) {
 
-                    var pass=true;
-                    for(var y=0; y<this.guests.length; y++) {
-                        if (this.guests[y].gphone===this.contacts[x].cphone || this.guests[y].gemail===this.contacts[x].cemail) {
-                            pass=false;
+                    var pass=true;            
+                    var poep=null;
+                    var poee=null;
+
+                    if (this.$refs.contactModule.contacts[x].cphone!==null && this.$refs.contactModule.contacts[x].cphone.length>0) {
+                        poep=this.$refs.contactModule.contacts[x].cphone;
+                        for(var y=0; y<this.guests.length; y++) {
+                            if (this.guests[y].gphone===this.$refs.contactModule.contacts[x].cphone) {
+                                pass=false;
+                            }
                         }
                     }
+                    if (this.$refs.contactModule.contacts[x].cemail!==null && this.$refs.contactModule.contacts[x].cemail.length>0) {
+                        poee=this.$refs.contactModule.contacts[x].cemail;
+                        for(var y=0; y<this.guests.length; y++) {
+                            if (this.guests[y].gemail===this.$refs.contactModule.contacts[x].cemail) {
+                                pass=false;
+                            }
+                         }
+                    }
 
-                    if (pass) {
+                    if (pass && (poep!==null || poee!==null)) {
+
                         this.guests.push({    
                             gid: this.$uuid.v1(),               
-                            gname: this.contacts[x].cname,
-                            gphone: this.contacts[x].cphone,
-                            gemail: this.contacts[x].cemail,
-                            cphoto: this.contacts[x].hasimage,
+                            gname: this.$refs.contactModule.contacts[x].cname,
+                            gphone: poep,
+                            gemail: poee,
+                            cphoto: this.$refs.contactModule.contacts[x].hasimage,
                             photo: false,
                             greq: false
                         });
+
+                         this.imageloaded.push(false);                    
+                         this.imageurl.push(null);                      
                     }
                 }
             }
             
-            this.contacts=[];
-            this.visiblehidecontacts=[];
+            this.$refs.contactModule.contacts=[];
+            this.$refs.contactModule.visiblehidecontacts=[];
             this.formStep=1;
             window.scrollTo(0,0);
             this.$forceUpdate();
@@ -1266,11 +1276,7 @@ export default {
             });
         
         },
-       
-        selectContact: function(item) {
-            item.isselected=!item.isselected;
-            this.$forceUpdate();
-        },
+     
        
         turnOnManualAddGuest: function() {
              this.formStep=3;
@@ -1444,25 +1450,6 @@ export default {
         
     },
     watch: {
-        csearch: function(val) {
-            this.contacts=[]; 
-            if (val===null || val.length===0) {     
-                for(var x=0; x<this.visiblehidecontacts.length; x++) {
-                     this.contacts.push(this.visiblehidecontacts[x]);                   
-                }
-                return;
-            }
-   
-            for(var y=0; y<this.visiblehidecontacts.length; y++) {
-                if (this.visiblehidecontacts[y].cname.toLowerCase().indexOf(val.toLowerCase())>-1 ||
-                    this.visiblehidecontacts[y].cemail.toLowerCase().indexOf(val.toLowerCase())>-1 ||
-                    this.visiblehidecontacts[y].cphone.toLowerCase().indexOf(val.toLowerCase())>-1) {
-                    this.contacts.push(this.visiblehidecontacts[y]);
-                }
-            }
-
-            this.$forceUpdate();
-        },
         evlocation: function(val) {
             localStorage.setItem("evlocation",val);
         },

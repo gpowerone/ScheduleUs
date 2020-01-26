@@ -23,6 +23,8 @@ import PrivacyPolicy from '@/views/PrivacyPolicy'
 import Purchase from '@/views/Purchase'
 import Cancel from '@/views/Cancel'
 import Ethics from '@/views/Ethics'
+import AboutGCalendar from '@/views/AboutGCalendar'
+import NProgress from 'nprogress'
 
 Vue.use(Router);
 
@@ -161,9 +163,26 @@ const router =  new Router({
        name: 'Ethics',
        component: Ethics,
        meta: { requiresAuth: false }
+    },
+    {
+       path: '/aboutgcalendar',
+       name: 'AboutGCalendar',
+       component: AboutGCalendar,
+       meta: { requiresAuth: false }
     }
   ]
 })
+
+router.beforeResolve((to, from, next) => {
+   if (to.name) {
+       NProgress.start()
+   }
+   next()
+ })
+ 
+ router.afterEach((to, from) => {
+    NProgress.done()
+ })
 
 router.beforeEach((to,from,next)=> {
   
@@ -180,6 +199,7 @@ router.beforeEach((to,from,next)=> {
       else {
 
          var n=next;
+         NProgress.inc();
 
          Axios({
                method:'post',

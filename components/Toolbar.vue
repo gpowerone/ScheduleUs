@@ -30,9 +30,6 @@
         </div>
     </div>
 
-    <div class="betaVersion">
-        BETA
-    </div>
 
     <modal name="htmlUploader" width=90% height=80%>
         <div class="modalWrapper">
@@ -104,6 +101,10 @@ li {
   margin-top: 4rem;
   margin-bottom: 4rem;
 }
+.mobileOnly .v-navigation-drawer {
+    padding-top: constant(safe-area-inset-top); /* iOS 11.0 */
+    padding-top: env(safe-area-inset-top); /* iOS 11.2 */ 
+}
 </style>
 
 
@@ -129,10 +130,10 @@ export default {
   },
   mounted: function () {
     document.addEventListener("toggleDrawer", this.toggleDrawer);
-    this.updateAvatar();
+    this.updateAvatar(true);
 
     EventBus.$on("AvatarUpdateEvent", () => {
-         this.updateAvatar();
+         this.updateAvatar(true);
     })
   },
   beforeDestroy: function () {
@@ -140,8 +141,47 @@ export default {
   },
   methods: {
     doImageUpload() {
-        if (typeof window.cordova !== "undefined") {
+        if (typeof window.cordova !== "undefined") { 
 
+            var self=this;
+            navigator.camera.getPicture(function(imageURI) {
+
+               window.plugins.imageResizer.resizeImage(function(image) {
+                             
+                  cordova.plugin.http.setDataSerializer('json');
+                    
+                  cordova.plugin.http.sendRequest(self.$hostname+'/addavatar',
+                      { method: 'post', data: {
+                          ClientID: localStorage.getItem("_c"),
+                          SessionID: localStorage.getItem("_s"),
+                          SessionLong: localStorage.getItem("_r"),
+                          Image: image.imageData  
+                      }}, function(response) {  
+
+                          self.$notify({
+                              id: "spcid_toolbar",
+                              group: 'main',
+                              duration: -1,
+                              title: 'Success',
+                              text: "Your image was uploaded, it will appear within a few seconds"
+                          });
+
+                        self.imageuploaded=true;
+                        window.setTimeout(function() { self.updateAvatar(true) },10000);
+                    }, function(response) {
+                         
+                  });
+                    
+               }, function() {
+         
+               }, imageURI, 150, 150, {});
+
+            }, function() {
+               // Silently fail since this can be triggered at different points
+            }, {
+               quality:50,
+               sourceType: Camera.PictureSourceType.SAVEDPHOTOALBUM
+            });
         }
         else {
            this.$modal.show("htmlUploader");
@@ -165,6 +205,7 @@ export default {
         this.hasImage = true
         this.image = file.dataUrl;
     },
+ 
     updateAvatar(ut) {
         var c = localStorage.getItem("_c");
         if (typeof(c)==="undefined" || c===null || c==="null") {          
@@ -176,12 +217,10 @@ export default {
           this.uname=localStorage.getItem("_n");
           this.loggedIn=true;
 
-          if (ut) {
-            this.imageurl="https://avatars.schd.us/"+c+"?q="+new Date().getTime();
-          }
-          else {
-            this.imageurl="https://avatars.schd.us/"+c
-          }
+         
+          this.imageurl="https://avatars.schd.us/"+c+"?q="+new Date().getTime();
+          
+          
         }
     },
     uploadImage() {

@@ -2,7 +2,7 @@
   <div class="footer">
       
       <div class="infoLine">
-          <span class="schdusPurple">Schedule Us</span> v3.0 (BETA 2), &copy;2020 <a href="https://conjurus.com">Conjurus Technologies, LLC</a><br />
+          <span class="schdusPurple">Schedule Us</span> Production v1.0, &copy;2020 <a href="https://conjurus.com">Conjurus Technologies, LLC</a><br />
           <a href="/termsofservice">Terms of Service</a> &bull; <a href="/privacypolicy">Privacy Policy</a> &bull; <a href="/ethics">Code of Ethics</a>
       </div>
   </div>
@@ -11,6 +11,7 @@
 <style scoped>
 .footer {
     width:100%;
+    margin-bottom:20px;
     background-color:#FFF;
 }
 .authLine, .infoLine {

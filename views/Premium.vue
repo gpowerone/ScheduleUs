@@ -5,8 +5,17 @@
             {{ errorMessage }}
         </div>
 
-        <h1 class="valign">Schedule Us Premium&nbsp;&nbsp;<img src="@/assets/SilverCrown.png" width="36" /></h1>
-        <div class='mt-3 fieldwell'>
+        <h1 class="valign">Schedule Us Free</h1>
+        <div class="mt-2 fieldwell">
+        <ul>
+            <li>Create up to 3 events per month</li>
+            <li>Events may not have more than 15 attendees</li>
+            <li>Past events are not saved</li>
+        </ul>
+        </div>
+
+        <h1 class="valign mt-4">Schedule Us Premium&nbsp;&nbsp;<img src="@/assets/SilverCrown.png" width="36" /></h1>
+        <div class='mt-2 fieldwell'>
             <span class='boldchoice'>Benefits</span>
             <ul>
                 <li>Create up to 30 events per month</li>
@@ -16,13 +25,13 @@
                 <li>Premium user flair on event pages</li>
             </ul>
         </div>
-        <div class='mt-2 schdusPurple' v-show="ispro===false&&ispremium===false">Cost: $3.99 per month, first 3 months paid upfront.</div>
+        <div class='mt-2 schdusPurple' v-show="ispro===false&&ispremium===false">Cost: $3.99 per month, first 90 days paid upfront.</div>
         <div class='mt-2' v-show="ispro===false&&ispremium===false"><button @click="doPremiumPlan()" class="schdusButton">Subscribe!</button></div>
-        <div class='mt-2 schdusPurple' v-show="ispremium===true">You are currently a Premium member. To manage your account please click on the Subscriptions tab on the My Account page</div>
+        <div class='mt-2 schdusPurple' v-show="ispremium===true">You are currently a Premium member. To manage your account please click on the Subscriptions tab on the My Account page. Charges will appear as SCHEDULE US on your Credit Card Statement.</div>
 
 
-        <h1 class="mt-5 valign">Schedule Us Pro&nbsp;&nbsp;<img src="@/assets/GoldCrown.png" width="36" /></h1>
-        <div class='mt-3 fieldwell'>
+        <h1 class="mt-4 valign">Schedule Us Pro&nbsp;&nbsp;<img src="@/assets/GoldCrown.png" width="36" /></h1>
+        <div class='mt-2 fieldwell'>
             <span class='boldchoice'>Benefits</span>
             <ul>              
                 <li>Create unlimited events</li>
@@ -32,9 +41,9 @@
                 <li>All other features of Premium</li>
             </ul>
         </div>
-        <div class='mt-2 schdusPurple' v-show="ispro===false">Cost: $9.99 per month, first 3 months paid upfront.</div>
+        <div class='mt-2 schdusPurple' v-show="ispro===false">Cost: $9.99 per month, first 90 days paid upfront.</div>
         <div class='mt-2' v-show="ispro===false"><button @click="doProPlan()" class="schdusButton">Subscribe!</button></div>
-         <div class='mt-2 schdusPurple' v-show="ispro===true">You are currently a Pro member. To manage your account please click on the Subscriptions tab on the My Account page</div>
+         <div class='mt-2 schdusPurple' v-show="ispro===true">You are currently a Pro member. To manage your account please click on the Subscriptions tab on the My Account page. Charges will appear as SCHEDULE US on your Credit Card Statement.</div>
 
     </div>
 </template>
@@ -64,17 +73,20 @@ export default {
                     planId: planID               
                 }
             }).then(r=> {
-                var stripe = Stripe("pk_test_iwwy5i2P24b4VzmePCkvvv4h00zjnLQL6k");
-                 stripe.redirectToCheckout({
+                var stripe = Stripe("pk_live_Bm8pOGfNNY45N1qPF6Quavnt005lhlnLUS");
+           
+                stripe.redirectToCheckout({
                     sessionId: r.data.sessionId
-                }).then(handleResult);
+                }).then(function(result) {
+                    console.log(result);
+                });
             });
         },
         doPremiumPlan: function() {
-            this.doPlan("plan_G9Hls9FqgtFjT7");
+            this.doPlan("plan_GSkdU2M4uopeO2");
         },
         doProPlan: function() {
-            this.doPlan("plan_G9HmWLmLGbPe6m");
+            this.doPlan("plan_GSkenZwDUSheRL");
         }
     },
     mounted() {

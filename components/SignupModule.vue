@@ -22,9 +22,11 @@
 
         <div v-show='formStep === 0'>
 
+            <!--
             <div class="textcenter mt-3 lgLeft">
                 <GoogleLogin class="mt-2 ib" :params="params" :renderParams="renderParams" :onSuccess="onSuccess" :onFailure="onFailure">Login with Google</GoogleLogin>
             </div>
+            //-->
 
             <div class='mt-3'>
                 <div class='boldchoice fieldwell'>First Name</div>
@@ -149,11 +151,11 @@
 
 <script>
 import VueRecaptcha from 'vue-recaptcha'
-import GoogleLogin from 'vue-google-login'
+//import GoogleLogin from 'vue-google-login'
 
 export default {
     components: {
-        'vue-recaptcha': VueRecaptcha, GoogleLogin
+        'vue-recaptcha': VueRecaptcha
     },
     data() {
        return {

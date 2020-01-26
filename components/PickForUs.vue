@@ -178,7 +178,8 @@ export default {
                     LMonthPlus: this.pfusmonthmore,
                     Length: this.$parent.evlength,
                     ForWork: this.pfuswork,
-                    AgeRange: this.pfusage
+                    AgeRange: this.pfusage,
+                    passedCalendars:this.$parent.passedCalendars
                 }
             }).then(r=> {
                 if (r.status===200 && r.data.status===200) {

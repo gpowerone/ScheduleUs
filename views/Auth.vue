@@ -23,10 +23,11 @@
         <div id='loginFlow' v-show="formStep===0">
             <h1>Login</h1>
 
+            <!--
             <div class="textcenter lgLeft">
                 <GoogleLogin class="mt-2 ib" :params="params" :renderParams="renderParams" :onSuccess="onSuccess" :onFailure="onFailure">Login with Google</GoogleLogin>
             </div>
-           
+            //-->
     
             <div class="layout row mt-5">
                 <div class="fieldwell flex xs12">
@@ -50,7 +51,7 @@
                     <button @click="goToCreateAccount()" class="fullWidth blueButton" >Register</button>
                 </div>
     
-                <div class="fieldwell flex xs6 lg9" style="padding-left:7px;">
+                <div class="fieldwell flex xs6 lg9" style="padding-left:17px;">
                     <button @click="goToAccountRecovery()" class="fullWidth blueButton">Forgot Password?</button>
                 </div>
             </div>
@@ -96,12 +97,12 @@
 
 <script>
 import { EventBus } from '../bus';
-import GoogleLogin from 'vue-google-login';
+//import GoogleLogin from 'vue-google-login';
 import {utilities} from '../mixins/utilities'
 
 export default {
     name: "Auth",
-    components: {GoogleLogin},
+    //components: {GoogleLogin},
     mixins: [utilities],
     data() {
         return {
@@ -196,7 +197,7 @@ export default {
         },
         doLogin: function() {
             if (this.Phone.length===0 || this.Passwd.length===0) {
-                this.errorMessage="Invalid username or password";                
+                this.errorMessage="Invalid credentials";                
                 return;
             }
 

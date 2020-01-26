@@ -1,8 +1,15 @@
 /* Define global styles here */
-:focus {
-    outline-color:unset!important;
+  html,body {
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      height:100vh;
   }
-  
+
+  body {
+     padding-top: constant(safe-area-inset-top); /* iOS 11.0 */
+     padding-top: env(safe-area-inset-top); /* iOS 11.2 */ 
+  }
+
   @font-face {
     font-family: "Dream Orphans";
     src: url("DreamOrphans.ttf") format("ttf");
@@ -13,10 +20,10 @@
     src: url("Aileron-Regular.otf") format("otf");
   }
 
-  @font-face {
-      font-family: "Arimo";
-      src: url("Arimo-Regular.ttf") format("ttf");
+  :focus {
+    outline-color:unset!important;
   }
+  
   
   button {
       background:#a80cba;
@@ -95,7 +102,7 @@
   h1 {
       color:royalblue;
       font-size:1.6rem;
-      font-family:Arimo;
+      font-family:Arial, Helvetica, sans-serif;
   }
   
   h4 {
@@ -299,17 +306,19 @@
  
   .errorBox {
      background-color: #cc0033;
-     border-radius:3px;
+     border-radius:8px;
      color:white;
      padding:2%;
      margin-bottom:5px;
+     text-align:center;
   }
   .okBox {
      background-color: forestgreen;
-     border-radius:3px;
+     border-radius:8px;
      color:white;
      padding:2%;
      margin-bottom:5px;
+     text-align:center;
   }
   .p1 {
      padding:1%;

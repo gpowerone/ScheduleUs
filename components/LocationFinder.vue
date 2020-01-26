@@ -285,31 +285,44 @@ export default {
                 kwrd=this.keyword; 
             }
 
-            this.$http({
-                method:'post',
-                url:this.$hostname+'/locationfinder',
-                data: {
+            var dobj = {
                     ClientID: localStorage.getItem("_c"),
                     SessionID: localStorage.getItem("_s"),
                     SessionLong: localStorage.getItem("_r"),
                     Place: qry,
                     PickLocation: this.picklocation,
                     Geocode: geocode,
-                    Keyword: kwrd,
-                    Coords: [this.theseCoords.coords.latitude, this.theseCoords.coords.longitude]                            
-                }
+                    Keyword: kwrd                         
+            }
+
+            try {
+                dobj.Coords= [this.theseCoords.coords.latitude, this.theseCoords.coords.longitude];   
+            }
+            catch(e) {
+
+            }
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/locationfinder',
+                data: dobj
             }).then(r=> {
                 this.loading=null;
                 if (r.status===200) {
                     if (r.data.status===200) {
                         var dd = JSON.parse(r.data.message);
-                        this.locations=dd.results;
+
                         if (typeof(dd.foundCoords)!=="undefined") {
                             this.foundCoords=dd.foundCoords;
+                            this.theseCoords={};
+                            this.theseCoords.coords={};
+                            this.theseCoords.coords.latitude=this.foundCoords[0];
+                            this.theseCoords.coords.longitude=this.foundCoords[1];
                         }
                         else {
                             this.foundCoords=null;
                         }
+                         this.locations=dd.results;
                         
                         if (this.locations.length===0) {
                             this.errorMessage="No locations were found near your area";

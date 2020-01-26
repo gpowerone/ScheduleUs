@@ -1,217 +1,565 @@
 <template>
     <div class="moduleWrapper">
-         <div id='loading' class='loadingImg' v-show='loading===true'>
-            <img src="@/assets/loading.gif" />
-        </div>
-        <div v-show="errorMessage!==null" class="errorBox">
-            {{errorMessage}}
-        </div>
-        <div v-show="okMessage!==null" class="okBox">
-            {{okMessage}}
-        </div>
-
-         <modal name="addressModal" width=300 height=150>
-            <div class='paddedField textcenter'>
-                <div>
-                    {{EventLocation}}<br />
-                    {{EventAddress}}<br />
-                    {{EventCity}}, {{EventState}} {{EventZip}} 
-                </div>
-                <div class='mt-2 textcenter'>
-                    <button class='mr-2' @click="closeAddress()">Close</button>
-                </div>
+  
+            <div id='loading' class='loadingImg' v-show='loading===true'>
+                <img src="@/assets/loading.gif" />
             </div>
-        </modal>
+            <div v-show="errorMessage!==null" class="errorBox">
+                {{errorMessage}}
+            </div>
+            <div v-show="okMessage!==null" class="okBox">
+                {{okMessage}}
+            </div>
 
-        <modal name="calendarAdd" width="300" height="325">
-            <div class="p2">
-                <div v-show="hasgoogcalendar===true">
-                    <div class="mt-2 layout row" @click="addToGoogleCalendar()" style="cursor:pointer;">
+            <modal name="addressModal" width=300 height=150>
+                <div class='paddedField textcenter'>
+                    <div>
+                        {{EventLocation}}<br />
+                        {{EventAddress}}<br />
+                        {{EventCity}}, {{EventState}} {{EventZip}} 
+                    </div>
+                    <div class='mt-2 textcenter'>
+                        <button class='mr-2' @click="closeAddress()">Close</button>
+                    </div>
+                </div>
+            </modal>
+
+            <modal name="calendarAdd" width="300" height="325">
+                <div class="p2">
+                    <div v-show="hasgoogcalendar===true">
+                        <div class="mt-2 layout row" @click="addToGoogleCalendar()" style="cursor:pointer;">
+                            <div class="flex xs3 textcenter">
+                                <img src="@/assets/Google.png" alt="Google" />
+                            </div>
+                            <div class="flex xs9 fieldwell boldchoice mt-1">
+                                Google<br />
+                                Calendar
+                            </div>
+                        </div>
+                    </div>
+                    <div v-show="hasgoogcalendar===false">
+                        <div class="mt-2 layout row" @click="doOUIGoogle()" style="cursor:pointer;">
+                            <div class="flex xs3 textcenter">
+                                <img src="@/assets/Google.png" alt="Google" />
+                            </div>
+                            <div class="flex xs9 fieldwell boldchoice mt-1">
+                                Google<br />
+                                Calendar
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2 layout row" @click="doOUIYahoo()" style="cursor:pointer;">
                         <div class="flex xs3 textcenter">
-                             <img src="@/assets/Google.png" alt="Google" />
+                            <img src="@/assets/Yahoo.png" alt="Yahoo" />
                         </div>
                         <div class="flex xs9 fieldwell boldchoice mt-1">
-                             Google<br />
-                             Calendar
+                                Yahoo<br />
+                                Calendar
                         </div>
                     </div>
-                </div>
-                <div v-show="hasgoogcalendar===false">
-                    <div class="mt-2 layout row" @click="doOUIGoogle()" style="cursor:pointer;">
+                    <div class="mt-2 layout row" @click="doOUIiCal()" style="cursor:pointer;">
                         <div class="flex xs3 textcenter">
-                             <img src="@/assets/Google.png" alt="Google" />
+                            <img src="@/assets/ical.png" alt="iCal" />
                         </div>
                         <div class="flex xs9 fieldwell boldchoice mt-1">
-                             Google<br />
-                             Calendar
+                                iCal
                         </div>
                     </div>
-                </div>
-                <div class="mt-2 layout row" @click="doOUIYahoo()" style="cursor:pointer;">
-                    <div class="flex xs3 textcenter">
-                        <img src="@/assets/Yahoo.png" alt="Yahoo" />
+                    <div class="mt-2 layout row" @click="doOUIOutlook()" style="cursor:pointer;">
+                        <div class="flex xs3 textcenter">
+                            <img src="@/assets/Outlook.png" alt="Outlook" />
+                        </div>
+                        <div class="flex xs9 fieldwell boldchoice mt-1">
+                                Outlook
+                        </div>
                     </div>
-                    <div class="flex xs9 fieldwell boldchoice mt-1">
-                            Yahoo<br />
-                            Calendar
-                    </div>
-                </div>
-                <div class="mt-2 layout row" @click="doOUIiCal()" style="cursor:pointer;">
-                    <div class="flex xs3 textcenter">
-                        <img src="@/assets/ical.png" alt="iCal" />
-                    </div>
-                    <div class="flex xs9 fieldwell boldchoice mt-1">
-                            iCal
-                    </div>
-                </div>
-                <div class="mt-2 layout row" @click="doOUIOutlook()" style="cursor:pointer;">
-                    <div class="flex xs3 textcenter">
-                        <img src="@/assets/Outlook.png" alt="Outlook" />
-                    </div>
-                    <div class="flex xs9 fieldwell boldchoice mt-1">
-                            Outlook
-                    </div>
-                </div>
-             
-            </div>
-        </modal>
-
-        <modal name="commentModal" width="300" height="275">
-            <div class="p2">
-                <div class="layout row">
-                    <div class="xs9 flex textleft fieldwell mt-2">
-                        <label>Comment</label>
-                    </div>
-                    <div class="xs3 flex textright">                             
-                        <img src="@/assets/smileyEmoji.png" width="30" height="30" @click="emojiModal" />                                                        
-                    </div>
-                </div>
-                <div class="mt-2 layout row fieldwell">
-                    <textarea v-model="newComment" rows="1" cols="1"></textarea>
-                </div>     
-                <div class='mt-2'>
-                     By commenting, you agree to our <a href='/termsofservice'>Terms of Service</a> and <a href='/privacypolicy'>Privacy Policy</a>
-                </div>  
-                <div class="layout row mt-2">
-                    <div class="flex xs6">
-                        <button @click="closeComment" class="redButton">Cancel</button>
-                    </div>
-                    <div class="flex xs6 textright">
-                        <button @click="submitComment" :disabled="btncomment">Submit</button>
-                    </div>
-                </div> 
-            </div>
-        </modal>
-
-        <modal name="confirmCancel" width="300" height="175">
-            <div class="p2">
-                <h1>Confirm Cancel Event</h1>
-                <div class="mt-2">
-                    Are you sure you wish to cancel this event? Attendees will receive a message indicating they have been uninvited.
-                </div>
-                <div class="mt-2 layout row">
-                    <div class="flex xs6 textleft">
-                        <button @click="undoEventCancel()">Do Not Cancel</button>
-                    </div>
-                    <div class="flex xs6 textright">
-                        <button @click="confirmEventCancel()" class="redButton">Cancel Event</button>
-                    </div>
-                </div>
-            </div>
-        </modal>
-
-        <modal name="emojiModal" width="300" height="400">
-            <div class="scrollbox">
-                 <emojipicker></emojipicker>
-            </div>
-        </modal>
-
-        <modal name="recurringModal" width="300" height="250">
-            <div class="p2 textcenter">
-                <p>Event Will Occur Every {{RecurFreq}} {{RecurUnit}}</p>
-                <p>{{RecurTime}}</p>
-                <p>Each time this event occurs a new message will be sent out to attendees</p>
-                <button @click="recurCloseModal()">Close</button>
-            </div>
-        </modal>
-
-        <modal name="reportModal" width="300" height="175">
-            <div class="p2">
-                <div>
-                If this content is in violation of the Schedule Us <a href='/termsofservice'>Terms of Service</a> then it will be removed by a moderator. Are you sure you wish to make this report?
-                </div>
                 
-                <div class="mt-3 layout row">
-                    <div class="flex xs6">
-                        <button @click="closeReportModal()" class="redButton">Close</button>
+                </div>
+            </modal>
+
+            <modal name="commentModal" width="300" height="275">
+                <div class="p2">
+                    <div class="layout row">
+                        <div class="xs9 flex textleft fieldwell mt-2">
+                            <label>Comment</label>
+                        </div>
+                        <div class="xs3 flex textright">                             
+                            <img src="@/assets/smileyEmoji.png" width="30" height="30" @click="emojiModal" />                                                        
+                        </div>
                     </div>
-                    <div class="flex xs6 textright">
-                        <button @click="doReportComment()">Report Comment</button>
+                    <div class="mt-2 layout row fieldwell">
+                        <textarea v-model="newComment" rows="1" cols="1"></textarea>
+                    </div>     
+                    <div class='mt-2'>
+                        By commenting, you agree to our <a href='/termsofservice'>Terms of Service</a> and <a href='/privacypolicy'>Privacy Policy</a>
+                    </div>  
+                    <div class="layout row mt-2">
+                        <div class="flex xs6">
+                            <button @click="closeComment" class="redButton">Cancel</button>
+                        </div>
+                        <div class="flex xs6 textright">
+                            <button @click="submitComment" :disabled="btncomment">Submit</button>
+                        </div>
+                    </div> 
+                </div>
+            </modal>
+
+            <modal name="confirmCancel" width="300" height="175">
+                <div class="p2">
+                    <h1>Confirm Cancel Event</h1>
+                    <div class="mt-2">
+                        Are you sure you wish to cancel this event? Attendees will receive a message indicating they have been uninvited.
+                    </div>
+                    <div class="mt-2 layout row">
+                        <div class="flex xs6 textleft">
+                            <button @click="undoEventCancel()">Do Not Cancel</button>
+                        </div>
+                        <div class="flex xs6 textright">
+                            <button @click="confirmEventCancel()" class="redButton">Cancel Event</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </modal>
+            </modal>
 
-        <modal name="rsvpModal" width="300" height="100">
-            <div class="p2">
-                <div v-show="Acceptance===true">
-                    <div class="textcenter">
-                        You are currently attending
+            <modal name="emojiModal" width="300" height="400">
+                <div class="scrollbox">
+                    <emojipicker></emojipicker>
+                </div>
+            </modal>
+
+            <modal name="recurringModal" width="300" height="250">
+                <div class="p2 textcenter">
+                    <p>Event Will Occur Every {{RecurFreq}} {{RecurUnit}}</p>
+                    <p>{{RecurTime}}</p>
+                    <p>Each time this event occurs a new message will be sent out to attendees</p>
+                    <button @click="recurCloseModal()">Close</button>
+                </div>
+            </modal>
+
+            <modal name="reportModal" width="300" height="175">
+                <div class="p2">
+                    <div>
+                    If this content is in violation of the Schedule Us <a href='/termsofservice'>Terms of Service</a> then it will be removed by a moderator. Are you sure you wish to make this report?
+                    </div>
+                    
+                    <div class="mt-3 layout row">
+                        <div class="flex xs6">
+                            <button @click="closeReportModal()" class="redButton">Close</button>
+                        </div>
+                        <div class="flex xs6 textright">
+                            <button @click="doReportComment()">Report Comment</button>
+                        </div>
+                    </div>
+                </div>
+            </modal>
+
+            <modal name="rsvpModal" width="300" height="100">
+                <div class="p2">
+                    <div v-show="Acceptance===true">
+                        <div class="textcenter">
+                            You are currently attending
+                        </div>
+                        <div class="mt-2 textcenter">
+                            <button @click="doNoRSVP()">I can't attend</button>
+                        </div>
+                    </div>
+                    <div v-show="Acceptance===false">
+                        <div class="textcenter">
+                            You are currently not going to attend
+                        </div>
+                        <div class="mt-2 textcenter" v-show="CanRSVP===true">
+                            <button @click="doYesRSVP()">I will attend</button>
+                        </div>
+                    </div>
+                </div>
+            </modal>
+
+            <div v-show="noevent===true">
+                <h1 class="textcenter">Event Not Found</h1>
+                <div class="mt-2 textcenter fieldwell">This event may have passed already or may have been cancelled :(</div>
+                <div class="mt-3">
+                    <div class="textcenter fieldwell">
+                    Planning a get together?<br />Use <span class="schdusPurple">Schedule Us</span> to make it much easier!
                     </div>
                     <div class="mt-2 textcenter">
-                        <button @click="doNoRSVP()">I can't attend</button>
-                    </div>
-                </div>
-                <div v-show="Acceptance===false">
-                    <div class="textcenter">
-                        You are currently not going to attend
-                    </div>
-                    <div class="mt-2 textcenter" v-show="CanRSVP===true">
-                        <button @click="doYesRSVP()">I will attend</button>
+                        <button class="schdusButton" @click="goHome()">Learn More</button>
                     </div>
                 </div>
             </div>
-        </modal>
 
-        <div v-show="noevent===true">
-            <h1 class="textcenter">Event Not Found</h1>
-            <div class="mt-2 textcenter fieldwell">This event may have passed already or may have been cancelled :(</div>
-            <div class="mt-3">
-                <div class="textcenter fieldwell">
-                Planning a get together?<br />Use <span class="schdusPurple">Schedule Us</span> to make it much easier!
-                </div>
-                <div class="mt-2 textcenter">
-                    <button class="schdusButton" @click="goHome()">Learn More</button>
-                </div>
-            </div>
-        </div>
-
-        <div v-show="tev!==null&&showFinder===false&&showPick===false" class="fieldwell">
-            <div class="layout row" style="border-bottom:1px dashed #777" v-show="IsOwner==true"> 
-                <div class="flex xs8 lg11 textleft spfield fieldwell" style="padding-top:5px;padding-bottom:5px;" @click="goToMyEvents()">
-                    <v-icon>keyboard_backspace</v-icon> <span>Return to My Events</span>
-                </div>
-                <div class="flex xs4 lg1 textright" v-show="IsPast===false">
-                    <v-icon class="editicon" @click="doEventUpdate()">edit</v-icon>&nbsp;&nbsp;
-                    <v-icon class="editicon" @click="doEventCancel()">remove_circle_outline</v-icon>
+            <div v-show="tev!==null&&showFinder===false&&showPick===false" class="fieldwell">
+                <div class="layout row" style="border-bottom:1px dashed #777" v-show="IsOwner==true"> 
+                    <div class="flex xs8 lg11 textleft spfield fieldwell" style="padding-top:5px;padding-bottom:5px;" @click="goToMyEvents()">
+                        <v-icon>keyboard_backspace</v-icon> <span>Return to My Events</span>
+                    </div>
+                    <div class="flex xs4 lg1 textright" v-show="IsPast===false">
+                        <v-icon class="editicon" @click="doEventUpdate()">edit</v-icon>&nbsp;&nbsp;
+                        <v-icon class="editicon" @click="doEventCancel()">remove_circle_outline</v-icon>
+                    </div>
+                    
                 </div>
                 
-            </div>
-            
-            <div class="layout row">
-                <div class="flex xs12 mt-2">
-                    <h1>{{EventName}}</h1>
+                <div class="layout row">
+                    <div class="flex xs12 mt-2">
+                        <h1>{{EventName}}</h1>
+                    </div>
+                    
                 </div>
-                  
-            </div>
-            <div v-show="CanRSVP===true">
-                <div v-show="Rescheduled===true">*** Event Has Been Changed ***</div>
-                <div>{{EventDescription}}</div>
+                <div v-show="CanRSVP===true">
+                    <div v-show="Rescheduled===true">*** Event Has Been Changed ***</div>
+                    <div>{{EventDescription}}</div>
+                
+                    <div class="layout row mt-2">
+                        <div class="flex xs6 lg10 md10">
+                            <div>
+                                {{EventLocation}}
+                            </div>
+                            <div v-show="IsMultiDay===false">
+                                <div>{{EventDate}}</div>
+                                <div>{{EventTime}}</div>
+                            </div>
+                            <div v-show="IsMultiDay===true">
+                                <div class="mt-2">
+                                    {{EventMultiDate}}
+                                </div>            
+                            </div>
+                            
+                        </div>
+
+                        <div class="flex xs6 lg2 md2">
+                            <div class="layout row">
             
-                <div class="layout row mt-2">
-                    <div class="flex xs6 lg10 md10">
-                        <div>
-                            {{EventLocation}}
+                                <div class="flex xs4 lg4 textright"><a v-show="HasAddress===true" @click="showAddress()" class="eventicons"><v-icon>map</v-icon></a></div>
+                                <div class="flex xs4 lg4 textright"><a v-show="HasAddress===true" v-bind:href="EventMap" target="_blank" class="eventicons" rel="nopener noreferrer"><v-icon>navigation</v-icon></a></div>
+                                <div class="flex xs4 lg4 textright"><a @click="addToCalendar()" class="eventicons" ><v-icon>event</v-icon></a></div>
+                            </div>
+                            
+                            
+                        </div>
+                    </div>
+                    <div class="mt-2" v-show="RSVP===true">
+                        Share: {{URL}} 
+                    </div>
+                    <div class="layout row mt-2">
+                        <div class="flex xs6 textleft">
+                            <div v-show="IsRecurring===true">
+                                <a href="javascript:void(0)" @click="showRecurring()">Event Will Happen Again</a>
+                            </div>
+                        </div>
+                        <div class="flex xs6 textright">
+                        <a href="javascript:void(0)" @click="addToCalendar()">Add to Calendar</a>
+                        </div>
+                    </div>
+
+                    <div v-show="needAcceptance===true&&EGID!==null" class="fullborder p2">
+                        <div class="fieldwell">
+                            <label>Will you Attend?</label>
+                        </div>
+                        <div class="mt-2 boldchoice">           
+                            <span class="spfield greenicon" @click="doYesRSVP()"><v-icon>check</v-icon> Yes</span>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <span class="spfield redicon" @click="doNoRSVP()"><v-icon>close</v-icon> No</span>
+                        </div> 
+                    </div>
+                    
+                    <div class="mt-2" v-show="needAcceptance===false&&EGID!==null">
+                        <div v-show="Acceptance===true" class="layout row">
+                            <div class="flex xs12 attendingBox textcenter" @click="doRSVPModal()">
+                                You are attending (tap to change)
+                            </div>       
+                        </div>
+
+                        <div v-show="Acceptance===false" class="layout row" @click="doRSVPModal()">
+                            <div class="flex xs12 notAttendingBox textcenter">
+                                You are not attending (tap to change)
+                            </div>
+                                    
+                        </div>
+                    </div>
+
+                    <v-collapse-group>
+
+                        <v-collapse-wrapper @onStatusChange="acc4s" v-show="RSVP===true&&needAcceptance===null" ref="acc4">
+                            <div class="accheader" v-collapse-toggle>
+                                <v-icon>{{ acc4i }}</v-icon> <span>RSVP</span>
+                            </div>
+                            <div class="acccontent fieldwell" v-collapse-content>
+                                <div v-show="MoreAllowed===true">
+                                    <div>
+                                        The host is allowing for additional attendees
+                                    </div>
+                                    <div class="layout row mt-2">
+                                        <div class="flex xs6 textleft">
+                                            Max Attendees:
+                                        </div>
+                                        <div class="flex xs6 textright">
+                                            {{MaxAttendees}}
+                                        </div>
+                                    </div>
+                                    <ul class="mt-2"> 
+                                        <li v-show="AllowChildren===false">Children are not allowed</li>
+                                        <li v-show="AllowChildren===true">Children are allowed</li>
+                                        <li v-show="NewAttendeesRSVP===true">New attendees must RSVP below</li>
+                                        <li v-show="NewAttendeesRSVP===false">New attendees may optionally RSVP below</li>
+                                    </ul>
+                                    <div class="mt-2">
+                                        <div class='fieldwell mt-2'>
+                                            <label>Your Name</label><br />
+                                            <input type='text' class='textfield' v-model='guestname' />
+                                        </div>
+                                        <div class='fieldwell mt-2'>
+                                                <label>Your Phone</label><br />
+                                                <input type='text' class='textfield' v-model='guestphone' />
+                                        </div>
+                                        <div class='fieldwell mt-2'>
+                                                <label>Your Email</label><br />
+                                                <input type='text' class='textfield' v-model='guestemail' />
+                                        </div>
+                                    
+                                        <div class='textright mt-2'>           
+                                            <button @click="addGuest">RSVP</button>                                  
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-show="MoreAllowed===false">
+                                    This event is at maximum capacity. No additional attendees are allowed.
+                                </div>
+                            </div>
+                        </v-collapse-wrapper>
+
+                        <v-collapse-wrapper @onStatusChange="acc2s" v-show="CanRelocate===true" ref="acc2">
+                            <div class="accheader" v-collapse-toggle>
+                                <v-icon>{{ acc2i }}</v-icon> <span>Suggest New Location</span>
+                            </div>
+                            <div class="acccontent fieldwell" v-collapse-content>
+
+                                <div v-show="locLoading===true" class="loadingMod">
+                                    <img src="@/assets/loading.gif" />
+                                </div>
+                                <div v-show="locLoading===false">
+
+                                    <div class='boldchoice'>
+                                        {{suglocations}}
+                                    </div>
+                                    <div class='mt-2'>
+                                        The host has allowed you to suggest a new location for the event.
+                                    </div>
+                                    <div class='fieldwell xs-12 mt-2'>
+                                        <label>Location</label>
+                                    
+                                        <div class="spfield textcenter p2 grayborder" v-show="imic===true" @click="goLocationFinder()">
+                                            <v-icon>location_on</v-icon>&nbsp;<span>Find a Location</span>
+                                        </div>
+                                                                        
+                                        <div class='mt-2'>
+                                            <input type='text' class='textfield' v-model="evlocation" :class='evlocationfe'  />
+                                        </div>
+                                        <div class='mt-1 fieldwell'>
+                                            <label>Address</label><br /> 
+                                            <input type='text' class='textfield' v-model="evstreet" :class='evstreetfe'  />
+                                        </div>
+                                    </div>
+                                    <div class="layout row mt-2">
+                                        <div class='fieldwell flex xs6'>
+                                            <label>City:</label><br />
+                                            <input type='text' class='textfield' v-model="evcity" :class='evcityfe'   />
+                                        </div>
+                                        <div class='fieldwell flex xs3 ml-2'>
+                                            <label>State:</label><br />
+                                            <select class="textfield" v-model="evstate"  >
+                                                <option value="--" selected>-Choose-</option>
+                                                <option value="AL">Alabama</option>
+                                                <option value="AK">Alaska</option>
+                                                <option value="AZ">Arizona</option>
+                                                <option value="AR">Arkansas</option>
+                                                <option value="CA">California</option>
+                                                <option value="CO">Colorado</option>
+                                                <option value="CT">Connecticut</option>
+                                                <option value="DE">Delaware</option>
+                                                <option value="DC">District Of Columbia</option>
+                                                <option value="FL">Florida</option>
+                                                <option value="GA">Georgia</option>
+                                                <option value="HI">Hawaii</option>
+                                                <option value="ID">Idaho</option>
+                                                <option value="IL">Illinois</option>
+                                                <option value="IN">Indiana</option>
+                                                <option value="IA">Iowa</option>
+                                                <option value="KS">Kansas</option>
+                                                <option value="KY">Kentucky</option>
+                                                <option value="LA">Louisiana</option>
+                                                <option value="ME">Maine</option>
+                                                <option value="MD">Maryland</option>
+                                                <option value="MA">Massachusetts</option>
+                                                <option value="MI">Michigan</option>
+                                                <option value="MN">Minnesota</option>
+                                                <option value="MS">Mississippi</option>
+                                                <option value="MO">Missouri</option>
+                                                <option value="MT">Montana</option>
+                                                <option value="NE">Nebraska</option>
+                                                <option value="NV">Nevada</option>
+                                                <option value="NH">New Hampshire</option>
+                                                <option value="NJ">New Jersey</option>
+                                                <option value="NM">New Mexico</option>
+                                                <option value="NY">New York</option>
+                                                <option value="NC">North Carolina</option>
+                                                <option value="ND">North Dakota</option>
+                                                <option value="OH">Ohio</option>
+                                                <option value="OK">Oklahoma</option>
+                                                <option value="OR">Oregon</option>
+                                                <option value="PA">Pennsylvania</option>
+                                                <option value="RI">Rhode Island</option>
+                                                <option value="SC">South Carolina</option>
+                                                <option value="SD">South Dakota</option>
+                                                <option value="TN">Tennessee</option>
+                                                <option value="TX">Texas</option>
+                                                <option value="UT">Utah</option>
+                                                <option value="VT">Vermont</option>
+                                                <option value="VA">Virginia</option>
+                                                <option value="WA">Washington</option>
+                                                <option value="WV">West Virginia</option>
+                                                <option value="WI">Wisconsin</option>
+                                                <option value="WY">Wyoming</option>
+                                            </select>				
+                                        </div>
+                                        <div class='fieldwell flex xs3 ml-2'>
+                                            <label>Zip:</label><br />
+                                            <input type='text' class='textfield' id='eventZip'   v-model='evzip' />
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 fieldwell textright">
+                                        <button @click="doLocationChange" :disabled="btnlocationchange">Submit</button> 
+                                    </div>
+                                </div>
+                            </div>
+                        </v-collapse-wrapper>
+
+                        <v-collapse-wrapper @onStatusChange="acc3s" v-show="CanReschedule===true" ref="acc3">
+                            <div class="accheader" v-collapse-toggle>
+                                <v-icon>{{ acc3i }}</v-icon> <span>Suggest New Date/Time</span>
+                            </div>
+                            <div class="acccontent fieldwell" v-collapse-content>
+
+                                <div v-show="timeLoading===true" class="loadingMod">
+                                    <img src="@/assets/loading.gif" />
+                                </div>
+                                <div v-show="timeLoading===false">
+                                    <div class='boldchoice'>
+                                        {{sugtimes}}
+                                    </div>
+                                    <div class='mt-2'>
+                                        The host has allowed you to suggest a new date/time for the event. 
+                                    </div>
+
+                                    <div class="fieldwell mt-3">
+                                        <label>Date:</label>
+                                        <datetime format="MM-DD-YYYY" v-model="evday"></datetime>
+                                    </div>
+                                    <div class="fieldwell mt-3">
+                                        <label>Time:</label>
+                                        <datetime format="h:i" v-model="evtime" ></datetime>
+                                    </div>
+                                    <div class="mt-2 fieldwell layout row">
+                                        <div class="flex xs6">
+                                            <button class='schdusButton' @click='pickForUs'>Help Me Pick a Time</button>
+                                        </div>
+                                        <div class="flex xs6 textright">
+                                            <button @click="doTimeChange" :disabled="btntimechange">Submit</button> 
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </v-collapse-wrapper>
+
+                        <v-collapse-wrapper @onStatusChange="acc1s" ref="acc1">
+                            <div class="accheader" v-collapse-toggle>
+                                <div class="layout row">
+                                    <div class="flex xs12">
+                                        <v-icon>{{ acc1i }}</v-icon> <span>Attendees</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="acccontent" v-collapse-content>
+                                <div v-show="AttendeesVisible===false">
+                                    The attendee list is hidden
+                                </div>
+                                <v-list v-show="AttendeesVisible===true&&guests.length>0" >
+                                    <template v-for="(item, i) in guests">
+                                        <v-list-item :key="i">
+                                            <div class='layout row p4'>
+                                                <div class='flex xs1 lg1 md1 pl2 relative mt-3' v-show='SeeRSVPs===true'>
+                                                    <div class='greenicon' v-show="item.Acceptance===true">
+                                                        <v-icon>check</v-icon>
+                                                    </div>
+                                                    <div class='redicon' v-show="item.Acceptance===false">
+                                                        <v-icon>close</v-icon>      
+                                                    </div>                                         
+                                                </div>
+                                                <div class='flex xs3 lg1 md1 pl4 relative' style='height:50px;'>            
+                                                    <img src="@/assets/SilverCrown.png" width="36" class="crowningAround" v-show="item.Flair===1"  alt="Premium User" />                         
+                                                    <img src="@/assets/GoldCrown.png" class="crowningAround"  v-show="item.Flair===2" width="36" alt="Pro User" />                  
+                                                    <avatar class="vertical-center" size="50" :username="item.GuestName" v-show="imageloaded[i]===false"></avatar>   
+                                                    <img style="border-radius:50%;" v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" width=50 height=50 />                        
+                                                </div>
+                        
+                                                <div class='flex xs8 lg9 md9 textleft fieldwell indented1 spfield p12 mt-2'>
+                                                    <div class="boldchoice">{{item.GuestName}}</div>
+                                                    <div v-show="IsOwner===true" v-html="iContact(item)"></div>
+                                                </div>
+                                            </div>
+                                        </v-list-item>
+                                    </template>
+                                </v-list>
+                            </div>
+                        </v-collapse-wrapper>
+
+                    
+
+                        <v-collapse-wrapper @onStatusChange="acc6s" v-show="CanChat===true" ref="acc6" >
+                            <div class="accheader" v-collapse-toggle>
+                                <v-icon>{{ acc6i }}</v-icon> <span>Conversation</span>
+                            </div>
+                            <div class="acccontent" v-collapse-content>
+
+                                <div v-show="commentsLoading===true" class="loadingMod">
+                                    <img src="@/assets/loading.gif" />
+                                </div>
+                                <div v-show="commentsLoading===false">
+                                    <div v-show="evcomments.length===0">
+                                        <div>
+                                            There are no comments
+                                        </div>
+                                        <div class="mt-2" v-show="imic===true||hasGU===true">
+                                            <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
+                                        </div>
+                                    </div>
+                                    <div v-show="evcomments.length>0">
+                                        <div class="mt-2 mb-2 textright" v-show="imic===true||hasGU===true">
+                                            <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
+                                        </div>
+                                    <comments v-for="(node,n) in evcomments" v-bind:key="n" :comment="node.item" :children="node.children"></comments> 
+                                    </div>
+                                </div>
+                                                    
+                            </div>
+                        </v-collapse-wrapper>
+
+                    </v-collapse-group> 
+
+                    <div v-show="CanShare===true" class="mt-2 accheader p2 textcenter" >
+                            <a v-bind:href="TwitterURL" class="twitter-share-button" data-show-count="false"><img src="@/assets/TwitterIcon.png" alt="Tweet" width="30" height="30" /></a>  
+                            &nbsp;&nbsp;<a v-bind:href="LinkedInURL"><img src="@/assets/LIIcon.png" width="30" height="30" alt="Share on Linked In" /></a> 
+                            &nbsp;&nbsp;<a v-bind:href="FacebookURL"><img src="@/assets/Facebook.png" width="30" height="30" alt="Share on Facebook" /></a>  
+                            &nbsp;&nbsp;<a v-bind:href="PinterestURL"><img src="@/assets/Pinterest.png" width="30" height="30" alt="Share on Pinterest" /></a>
+                            &nbsp;&nbsp;<a v-bind:href="EmailURL"><img src="@/assets/Mail.png" width="30" height="30" alt="Share via Email" /></a>                      
+                    </div>
+                </div>
+                <div v-show="CanRSVP===false">
+                    <div v-show="IsOwner===true">
+                        <div class="mt-2">
+                            Accept or reject the schedule changes:
+                        </div>
+                        <div class="mt-2">
+                                {{EventLocation}}
                         </div>
                         <div v-show="IsMultiDay===false">
                             <div>{{EventDate}}</div>
@@ -222,384 +570,38 @@
                                 {{EventMultiDate}}
                             </div>            
                         </div>
-                        
-                    </div>
-
-                    <div class="flex xs6 lg2 md2">
-                        <div class="layout row">
-        
-                            <div class="flex xs4 lg4 textright"><a v-show="HasAddress===true" @click="showAddress()" class="eventicons"><v-icon>map</v-icon></a></div>
-                            <div class="flex xs4 lg4 textright"><a v-show="HasAddress===true" v-bind:href="EventMap" target="_blank" class="eventicons" rel="nopener noreferrer"><v-icon>navigation</v-icon></a></div>
-                            <div class="flex xs4 lg4 textright"><a @click="addToCalendar()" class="eventicons" ><v-icon>event</v-icon></a></div>
-                        </div>
-                        
-                        
-                    </div>
-                </div>
-                <div class="mt-2" v-show="RSVP===true">
-                    Share: {{URL}} 
-                </div>
-                <div class="layout row mt-2">
-                    <div class="flex xs6 textleft">
-                        <div v-show="IsRecurring===true">
-                            <a href="javascript:void(0)" @click="showRecurring()">Event Will Happen Again</a>
+                        <div class="layout row mt-2">
+                            <div class="flex xs6 textleft">
+                                <button @click="rejectChanges()" class="redButton">Reject</button>
+                            </div>
+                            <div class="flex xs6 textright">
+                                <button @click="acceptChanges()">Accept</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex xs6 textright">
-                       <a href="javascript:void(0)" @click="addToCalendar()">Add to Calendar</a>
+                    <div v-show="IsOwner===false" class="mt-2">
+                        Schedule changes have been submitted to the host for review. The event page will become available again once these changes have been approved or rejected.
                     </div>
-                </div>
-
-                <div v-show="needAcceptance===true&&EGID!==null" class="fullborder p2">
-                    <div class="fieldwell">
-                        <label>Will you Attend?</label>
-                    </div>
-                    <div class="mt-2 boldchoice">           
-                        <span class="spfield greenicon" @click="doYesRSVP()"><v-icon>check</v-icon> Yes</span>
-                        &nbsp;&nbsp;&nbsp;&nbsp;
-                        <span class="spfield redicon" @click="doNoRSVP()"><v-icon>close</v-icon> No</span>
-                    </div> 
-                </div>
-                
-                <div class="mt-2" v-show="needAcceptance===false&&EGID!==null">
-                    <div v-show="Acceptance===true" class="layout row">
-                        <div class="flex xs12 attendingBox textcenter" @click="doRSVPModal()">
-                            You are attending (tap to change)
-                        </div>       
-                    </div>
-
-                    <div v-show="Acceptance===false" class="layout row" @click="doRSVPModal()">
-                        <div class="flex xs12 notAttendingBox textcenter">
-                            You are not attending (tap to change)
-                        </div>
-                                
-                    </div>
-                </div>
-
-                <v-collapse-group>
-
-                    <v-collapse-wrapper @onStatusChange="acc4s" v-show="RSVP===true&&needAcceptance===null" ref="acc4">
-                        <div class="accheader" v-collapse-toggle>
-                            <v-icon>{{ acc4i }}</v-icon> <span>RSVP</span>
-                        </div>
-                        <div class="acccontent fieldwell" v-collapse-content>
-                            <div v-show="MoreAllowed===true">
-                                <div>
-                                    The host is allowing for additional attendees
-                                </div>
-                                <div class="layout row mt-2">
-                                    <div class="flex xs6 textleft">
-                                        Max Attendees:
-                                    </div>
-                                    <div class="flex xs6 textright">
-                                        {{MaxAttendees}}
-                                    </div>
-                                </div>
-                                <ul class="mt-2"> 
-                                    <li v-show="AllowChildren===false">Children are not allowed</li>
-                                    <li v-show="AllowChildren===true">Children are allowed</li>
-                                    <li v-show="NewAttendeesRSVP===true">New attendees must RSVP below</li>
-                                    <li v-show="NewAttendeesRSVP===false">New attendees may optionally RSVP below</li>
-                                </ul>
-                                <div class="mt-2">
-                                    <div class='fieldwell mt-2'>
-                                        <label>Your Name</label><br />
-                                        <input type='text' class='textfield' v-model='guestname' />
-                                    </div>
-                                    <div class='fieldwell mt-2'>
-                                            <label>Your Phone</label><br />
-                                            <input type='text' class='textfield' v-model='guestphone' />
-                                    </div>
-                                    <div class='fieldwell mt-2'>
-                                            <label>Your Email</label><br />
-                                            <input type='text' class='textfield' v-model='guestemail' />
-                                    </div>
-                                
-                                    <div class='textright mt-2'>           
-                                        <button @click="addGuest">RSVP</button>                                  
-                                    </div>
-                                </div>
-                            </div>
-                            <div v-show="MoreAllowed===false">
-                                This event is at maximum capacity. No additional attendees are allowed.
-                            </div>
-                        </div>
-                    </v-collapse-wrapper>
-
-                    <v-collapse-wrapper @onStatusChange="acc2s" v-show="CanRelocate===true" ref="acc2">
-                        <div class="accheader" v-collapse-toggle>
-                            <v-icon>{{ acc2i }}</v-icon> <span>Suggest New Location</span>
-                        </div>
-                        <div class="acccontent fieldwell" v-collapse-content>
-
-                            <div v-show="locLoading===true" class="loadingMod">
-                                <img src="@/assets/loading.gif" />
-                            </div>
-                            <div v-show="locLoading===false">
-
-                                <div class='boldchoice'>
-                                    {{suglocations}}
-                                </div>
-                                <div class='mt-2'>
-                                    The host has allowed you to suggest a new location for the event.
-                                </div>
-                                <div class='fieldwell xs-12 mt-2'>
-                                    <label>Location</label>
-                                
-                                    <div class="spfield textcenter p2 grayborder" v-show="imic===true" @click="goLocationFinder()">
-                                        <v-icon>location_on</v-icon>&nbsp;<span>Find a Location</span>
-                                    </div>
-                                                                    
-                                    <div class='mt-2'>
-                                        <input type='text' class='textfield' v-model="evlocation" :class='evlocationfe'  />
-                                    </div>
-                                    <div class='mt-1 fieldwell'>
-                                        <label>Address</label><br /> 
-                                        <input type='text' class='textfield' v-model="evstreet" :class='evstreetfe'  />
-                                    </div>
-                                </div>
-                                <div class="layout row mt-2">
-                                    <div class='fieldwell flex xs6'>
-                                        <label>City:</label><br />
-                                        <input type='text' class='textfield' v-model="evcity" :class='evcityfe'   />
-                                    </div>
-                                    <div class='fieldwell flex xs3 ml-2'>
-                                        <label>State:</label><br />
-                                        <select class="textfield" v-model="evstate"  >
-                                            <option value="--" selected>-Choose-</option>
-                                            <option value="AL">Alabama</option>
-                                            <option value="AK">Alaska</option>
-                                            <option value="AZ">Arizona</option>
-                                            <option value="AR">Arkansas</option>
-                                            <option value="CA">California</option>
-                                            <option value="CO">Colorado</option>
-                                            <option value="CT">Connecticut</option>
-                                            <option value="DE">Delaware</option>
-                                            <option value="DC">District Of Columbia</option>
-                                            <option value="FL">Florida</option>
-                                            <option value="GA">Georgia</option>
-                                            <option value="HI">Hawaii</option>
-                                            <option value="ID">Idaho</option>
-                                            <option value="IL">Illinois</option>
-                                            <option value="IN">Indiana</option>
-                                            <option value="IA">Iowa</option>
-                                            <option value="KS">Kansas</option>
-                                            <option value="KY">Kentucky</option>
-                                            <option value="LA">Louisiana</option>
-                                            <option value="ME">Maine</option>
-                                            <option value="MD">Maryland</option>
-                                            <option value="MA">Massachusetts</option>
-                                            <option value="MI">Michigan</option>
-                                            <option value="MN">Minnesota</option>
-                                            <option value="MS">Mississippi</option>
-                                            <option value="MO">Missouri</option>
-                                            <option value="MT">Montana</option>
-                                            <option value="NE">Nebraska</option>
-                                            <option value="NV">Nevada</option>
-                                            <option value="NH">New Hampshire</option>
-                                            <option value="NJ">New Jersey</option>
-                                            <option value="NM">New Mexico</option>
-                                            <option value="NY">New York</option>
-                                            <option value="NC">North Carolina</option>
-                                            <option value="ND">North Dakota</option>
-                                            <option value="OH">Ohio</option>
-                                            <option value="OK">Oklahoma</option>
-                                            <option value="OR">Oregon</option>
-                                            <option value="PA">Pennsylvania</option>
-                                            <option value="RI">Rhode Island</option>
-                                            <option value="SC">South Carolina</option>
-                                            <option value="SD">South Dakota</option>
-                                            <option value="TN">Tennessee</option>
-                                            <option value="TX">Texas</option>
-                                            <option value="UT">Utah</option>
-                                            <option value="VT">Vermont</option>
-                                            <option value="VA">Virginia</option>
-                                            <option value="WA">Washington</option>
-                                            <option value="WV">West Virginia</option>
-                                            <option value="WI">Wisconsin</option>
-                                            <option value="WY">Wyoming</option>
-                                        </select>				
-                                    </div>
-                                    <div class='fieldwell flex xs3 ml-2'>
-                                        <label>Zip:</label><br />
-                                        <input type='text' class='textfield' id='eventZip'   v-model='evzip' />
-                                    </div>
-                                </div>
-                                <div class="mt-2 fieldwell textright">
-                                    <button @click="doLocationChange" :disabled="btnlocationchange">Submit</button> 
-                                </div>
-                            </div>
-                        </div>
-                    </v-collapse-wrapper>
-
-                    <v-collapse-wrapper @onStatusChange="acc3s" v-show="CanReschedule===true" ref="acc3">
-                        <div class="accheader" v-collapse-toggle>
-                            <v-icon>{{ acc3i }}</v-icon> <span>Suggest New Date/Time</span>
-                        </div>
-                        <div class="acccontent fieldwell" v-collapse-content>
-
-                            <div v-show="timeLoading===true" class="loadingMod">
-                                <img src="@/assets/loading.gif" />
-                            </div>
-                            <div v-show="timeLoading===false">
-                                <div class='boldchoice'>
-                                    {{sugtimes}}
-                                </div>
-                                <div class='mt-2'>
-                                    The host has allowed you to suggest a new date/time for the event. 
-                                </div>
-
-                                <div class="fieldwell mt-3">
-                                    <label>Date:</label>
-                                    <datetime format="MM-DD-YYYY" v-model="evday"></datetime>
-                                </div>
-                                <div class="fieldwell mt-3">
-                                    <label>Time:</label>
-                                    <datetime format="h:i" v-model="evtime" ></datetime>
-                                </div>
-                                <div class="mt-2 fieldwell layout row">
-                                    <div class="flex xs6">
-                                        <button class='schdusButton' @click='pickForUs'>Help Me Pick a Time</button>
-                                    </div>
-                                    <div class="flex xs6 textright">
-                                        <button @click="doTimeChange" :disabled="btntimechange">Submit</button> 
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </v-collapse-wrapper>
-
-                    <v-collapse-wrapper @onStatusChange="acc1s" ref="acc1">
-                        <div class="accheader" v-collapse-toggle>
-                            <div class="layout row">
-                                <div class="flex xs12">
-                                    <v-icon>{{ acc1i }}</v-icon> <span>Attendees</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="acccontent" v-collapse-content>
-                            <div v-show="guests.length===0">
-                                The attendee list is hidden
-                            </div>
-                            <v-list v-show="guests.length>0" >
-                                <template v-for="(item, i) in guests">
-                                    <v-list-item :key="i">
-                                        <div class='layout row p4'>
-                                            <div class='flex xs1 lg1 md1 pl2 relative mt-3' v-show='SeeRSVPs===true'>
-                                                <div class='greenicon' v-show="item.Acceptance===true">
-                                                    <v-icon>check</v-icon>
-                                                </div>
-                                                <div class='redicon' v-show="item.Acceptance===false">
-                                                    <v-icon>close</v-icon>      
-                                                </div>                                         
-                                            </div>
-                                            <div class='flex xs3 lg1 md1 pl4 relative' style='height:50px;'>            
-                                                 <img src="@/assets/SilverCrown.png" width="36" class="crowningAround" v-show="item.Flair===1"  alt="Premium User" />                         
-                                                 <img src="@/assets/GoldCrown.png" class="crowningAround"  v-show="item.Flair===2" width="36" alt="Pro User" />                  
-                                                <avatar class="vertical-center" size="50" :username="item.GuestName" v-show="imageloaded[i]===false"></avatar>   
-                                                <img style="border-radius:50%;" v-bind:src="imageurl[i]" v-show="imageurl[i]!==null&&imageloaded[i]===true" @load="loadedImage(i)" width=50 height=50 />                        
-                                            </div>
-                       
-                                            <div class='flex xs8 lg9 md9 textleft fieldwell indented1 spfield p12 mt-2'>
-                                                <div class="boldchoice">{{item.GuestName}}</div>
-                                                <div v-show="IsOwner===true" v-html="iContact(item)"></div>
-                                            </div>
-                                        </div>
-                                    </v-list-item>
-                                </template>
-                            </v-list>
-                        </div>
-                    </v-collapse-wrapper>
-
-                
-
-                    <v-collapse-wrapper @onStatusChange="acc6s" v-show="CanChat===true" ref="acc6" >
-                        <div class="accheader" v-collapse-toggle>
-                            <v-icon>{{ acc6i }}</v-icon> <span>Conversation</span>
-                        </div>
-                        <div class="acccontent" v-collapse-content>
-
-                            <div v-show="commentsLoading===true" class="loadingMod">
-                                <img src="@/assets/loading.gif" />
-                            </div>
-                            <div v-show="commentsLoading===false">
-                                <div v-show="evcomments.length===0">
-                                    <div>
-                                        There are no comments
-                                    </div>
-                                    <div class="mt-2" v-show="imic===true||hasGU===true">
-                                        <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
-                                    </div>
-                                </div>
-                                <div v-show="evcomments.length>0">
-                                    <div class="mt-2 mb-2 textright" v-show="imic===true||hasGU===true">
-                                        <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
-                                    </div>
-                                <comments v-for="(node,n) in evcomments" v-bind:key="n" :comment="node.item" :children="node.children"></comments> 
-                                </div>
-                            </div>
-                                                
-                        </div>
-                    </v-collapse-wrapper>
-
-                </v-collapse-group> 
-
-                <div v-show="CanShare===true" class="mt-2 accheader p2 textcenter" >
-                        <a v-bind:href="TwitterURL" class="twitter-share-button" data-show-count="false"><img src="@/assets/TwitterIcon.png" alt="Tweet" width="30" height="30" /></a>  
-                        &nbsp;&nbsp;<a v-bind:href="LinkedInURL"><img src="@/assets/LIIcon.png" width="30" height="30" alt="Share on Linked In" /></a> 
-                        &nbsp;&nbsp;<a v-bind:href="FacebookURL"><img src="@/assets/Facebook.png" width="30" height="30" alt="Share on Facebook" /></a>  
-                        &nbsp;&nbsp;<a v-bind:href="PinterestURL"><img src="@/assets/Pinterest.png" width="30" height="30" alt="Share on Pinterest" /></a>
-                        &nbsp;&nbsp;<a v-bind:href="EmailURL"><img src="@/assets/Mail.png" width="30" height="30" alt="Share via Email" /></a>                      
                 </div>
             </div>
-            <div v-show="CanRSVP===false">
-                 <div v-show="IsOwner===true">
-                    <div class="mt-2">
-                        Accept or reject the schedule changes:
-                    </div>
-                    <div class="mt-2">
-                            {{EventLocation}}
-                    </div>
-                     <div v-show="IsMultiDay===false">
-                        <div>{{EventDate}}</div>
-                        <div>{{EventTime}}</div>
-                     </div>
-                     <div v-show="IsMultiDay===true">
-                        <div class="mt-2">
-                             {{EventMultiDate}}
-                        </div>            
-                     </div>
-                     <div class="layout row mt-2">
-                         <div class="flex xs6 textleft">
-                             <button @click="rejectChanges()" class="redButton">Reject</button>
-                         </div>
-                         <div class="flex xs6 textright">
-                             <button @click="acceptChanges()">Accept</button>
-                        </div>
-                     </div>
+
+            <div v-show="showFinder===true">
+                <locationfinder ref="lf"></locationfinder>
+            </div>
+
+            <div v-show="showPick===true">
+                <pickforus ref="pt"></pickforus>
+            </div>
+
+            <div class="accheader" v-show="tev!==null&&Owner===false">
+                <div class="textcenter fieldwell">
+                    Planning a get together?<br />Use <span class="schdusPurple">Schedule Us</span> to make it much easier!
                 </div>
-                <div v-show="IsOwner===false" class="mt-2">
-                    Schedule changes have been submitted to the host for review. The event page will become available again once these changes have been approved or rejected.
+                <div class="mt-2 textcenter">
+                    <button class="schdusButton" @click="goHome()">Learn More</button>
                 </div>
             </div>
-        </div>
-
-        <div v-show="showFinder===true">
-              <locationfinder ref="lf"></locationfinder>
-        </div>
-
-        <div v-show="showPick===true">
-              <pickforus ref="pt"></pickforus>
-        </div>
-
-        <div class="accheader" v-show="tev!==null&&Owner===false">
-            <div class="textcenter fieldwell">
-                Planning a get together?<br />Use <span class="schdusPurple">Schedule Us</span> to make it much easier!
-            </div>
-            <div class="mt-2 textcenter">
-                <button class="schdusButton" @click="goHome()">Learn More</button>
-            </div>
-        </div>
+       
     </div>
 </template>
 
@@ -798,13 +800,6 @@ export default {
             if (this.guestemail.length>1 && this.verifyEmail(this.guestemail)!=="OK") {
                 this.errorMessage="Please enter valid email address";
                 return;
-            }
-
-            if (this.guestphone.length<1) {
-                this.guestphone="Not Specified";
-            }
-            if (this.guestemail.length<1) {
-                this.guestemail="Not Specified";
             }
 
               this.$http({
@@ -1172,6 +1167,98 @@ export default {
         doEventUpdate: function() {
             this.$router.push("update?e="+this.tev.Hash);
         },
+        doRefresh: function() {
+            window.scrollTo(0,0);
+
+            var ev=null;
+            var gu=null;
+            this.imic=false;
+
+            try {
+                ev=this.$route.query.e;
+            }
+            catch(e) {
+            
+            }
+
+            try {
+                gu=this.$route.query.g;           
+            }
+            catch(e) {
+        
+            }
+
+            try {
+            if (gu!==null&&gu.length>0) {
+                this.hasGU=true;
+            }
+            }
+            catch(e) {}
+
+
+            this.URL=encodeURI("https://schd.us/event?e="+ev);
+
+            var c = localStorage.getItem("_c");
+            if (typeof(c)!=="undefined" && c!==null && c!=="null") {      
+                gu = c;
+                this.imic=true;
+            }
+
+            if (typeof(ev)!=="undefined" && ev!==null) {
+                this.$http({
+                        method:'post',                  
+                        url:this.$hostname+'/geteventbyhash',
+                        data: {
+                            hsh: ev,
+                            me: gu,
+                            mic: this.imic                    
+                        }
+                    }).then(r=> {
+                        this.loading=false;
+
+                        if (r.status===200) {
+                            if (r.data.status===200) {                         
+                                this.tev = JSON.parse(r.data.message);
+                                this.evlength = this.tev.Schedules[0].EventLength;
+                                this.needAcceptance = this.tev.NeedsAcceptance;
+
+                                for(var x=0; x<this.tev.Guests.length; x++) {
+                                    this.imageloaded.push(false);
+                                    if (this.tev.Guests[x].ClientID!==null) {
+                                        this.imageurl.push("https://avatars.schd.us/"+this.tev.Guests[x].ClientID);
+                                    }
+                                    else {
+                                        this.imageurl.push(null);
+                                    }
+                                }
+
+                                if (this.tev.NeedsAcceptance===null) {
+                                    if (this.RSVP===true&&this.needAcceptance===null&&this.CanRSVP===true) {
+                                        this.$refs.acc4.open();
+                                    }
+                                    else {
+                                        this.$refs.acc1.open();
+                                    }
+                                }
+                                else {
+                                    this.$refs.acc1.open();
+                                }
+
+                                if (this.CanChat===true) {
+                                    this.$refs.acc6.open();
+                                }
+
+                            }
+                            else {
+                                this.noevent=true;
+                            }
+                        }
+                        else {
+                            this.novevent=true;
+                        }
+                    })
+            }
+        },
         doYesRSVP: function() {
             this.doRSVP(true);
         },
@@ -1433,7 +1520,7 @@ export default {
             }).then(r=> {
                 if (r.status===200 && r.data.status===200) {
                     var loccnt = JSON.parse(r.data.message);
-                    this.suglocations="At least "+Math.ceil(this.tev.Guests.length/2)+" attendees must request a location change to change locations. "+loccnt.length+" requests have been received."
+                    this.suglocations="At least "+Math.ceil(this.tev.Guests.length/2)+" attendees must request a location change to change locations. "+loccnt.length+" request(s) have been received."
                 }
                 this.locLoading=false;
             });
@@ -1452,7 +1539,7 @@ export default {
             }).then(r=> {
                 if (r.status===200 && r.data.status===200) {
                     var loccnt = JSON.parse(r.data.message);
-                    this.sugtimes="At least "+Math.ceil(this.tev.Guests.length/2)+" attendees must request a time change to change times. "+loccnt.length+" requests have been received."
+                    this.sugtimes="At least "+Math.ceil(this.tev.Guests.length/2)+" attendees must request a time change to change times. "+loccnt.length+" request(s) have been received."
                 }
                 this.timeLoading=false;
             });
@@ -1566,9 +1653,6 @@ export default {
         
     },
     mounted() {
-
-        window.scrollTo(0,0);
-
         EventBus.$on("CommentReplyEvent", (ec) => {
             this.addComment(ec);
         })
@@ -1577,94 +1661,7 @@ export default {
             this.doReport(ec);
         })
 
-         var ev=null;
-         var gu=null;
-         this.imic=false;
-
-         try {
-             ev=this.$route.query.e;
-         }
-         catch(e) {
-         
-         }
-
-         try {
-             gu=this.$route.query.g;           
-         }
-         catch(e) {
-       
-         }
-
-        try {
-          if (gu!==null&&gu.length>0) {
-             this.hasGU=true;
-          }
-        }
-        catch(e) {}
-
-
-         this.URL=encodeURI("https://schd.us/event?e="+ev);
-
-         var c = localStorage.getItem("_c");
-         if (typeof(c)!=="undefined" && c!==null && c!=="null") {      
-            gu = c;
-            this.imic=true;
-         }
-
-         if (typeof(ev)!=="undefined" && ev!==null) {
-               this.$http({
-                    method:'post',                  
-                    url:this.$hostname+'/geteventbyhash',
-                    data: {
-                        hsh: ev,
-                        me: gu,
-                        mic: this.imic                    
-                    }
-                }).then(r=> {
-                    this.loading=false;
-
-                    if (r.status===200) {
-                        if (r.data.status===200) {                         
-                            this.tev = JSON.parse(r.data.message);
-                            this.evlength = this.tev.Schedules[0].EventLength;
-                            this.needAcceptance = this.tev.NeedsAcceptance;
-
-                            for(var x=0; x<this.tev.Guests.length; x++) {
-                                this.imageloaded.push(false);
-                                if (this.tev.Guests[x].ClientID!==null) {
-                                    this.imageurl.push("https://avatars.schd.us/"+this.tev.Guests[x].ClientID);
-                                }
-                                else {
-                                    this.imageurl.push(null);
-                                }
-                            }
-
-                            if (this.tev.NeedsAcceptance===null) {
-                                if (this.RSVP===true&&this.needAcceptance===null&&this.CanRSVP===true) {
-                                    this.$refs.acc4.open();
-                                }
-                                else {
-                                    this.$refs.acc1.open();
-                                }
-                            }
-                            else {
-                                this.$refs.acc1.open();
-                            }
-
-                            if (this.CanChat===true) {
-                                this.$refs.acc6.open();
-                            }
-
-                        }
-                        else {
-                            this.noevent=true;
-                        }
-                    }
-                    else {
-                         this.novevent=true;
-                    }
-                })
-         }
+        this.doRefresh();
     },
     computed: {
           Acceptance: function() {
@@ -1682,6 +1679,12 @@ export default {
           AllowChildren: function() {
              if (this.tev!==null) {
                   return this.tev.AllowChildren;
+              }
+              return false;
+          },
+          AttendeesVisible: function() {
+              if (this.tev!==null) {
+                  return this.tev.GuestListVisible;
               }
               return false;
           },

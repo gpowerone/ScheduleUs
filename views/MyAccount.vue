@@ -210,7 +210,7 @@
                 </div>
                 <div class="acccontent" v-collapse-content>
                     <div>
-                        Add an email address to login and optionally receive event notices via email
+                        Add an email address to login and optionally receive event notices via email. If you have an existing email address for your account, you can change it here.
                     </div>
                     <div class="layout row mt-3">
                         <div class="flex xs12 fieldwell">
@@ -230,17 +230,33 @@
                 </div>
                 <div class="acccontent" v-collapse-content>
                     <div>
-                        Integrate your calendars to help Schedule Us avoid conflicts when scheduling you
+                        Integrate your calendars to help Schedule Us avoid conflicts when scheduling you.
                     </div>
-                    <div class="mt-2 layout row" tabindex="0" @click="doCalendarGoogle()" style="cursor:pointer;border:1px solid #777;border-radius:5px;width:150px;padding-top:2px;">
-                        <div class="flex xs5 textcenter">
-                             <img src="@/assets/Google.png" alt="Google" />
+                    <div class="layout row" style="border:1px solid #000;padding:5px;">
+                        <div class="flex xs7">
+                            <div style="height:90px;padding-left:10px;padding-right:10px;">
+                                <div class="mt-2 layout row" tabindex="0" @click="doCalendarGoogle()" style="cursor:pointer;border:1px solid #777;border-radius:5px;width:100%;padding-top:2px;">
+                                    <div class="flex xs5 textcenter">
+                                        <img src="@/assets/Google.png" alt="Google" />
+                                    </div>
+                                    <div class="flex xs7 fieldwell boldchoice mt-1">
+                                        Google<br />
+                                        Calendar
+                                    </div>
+                                </div>
+                                <div class="textcenter">
+                                    <a href="/aboutgcalendar" target="_blank">Learn More</a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex xs7 fieldwell boldchoice mt-1">
-                             Google<br />
-                             Calendar
+                        <div class="flex xs5">
+                            <div style="padding-top:25px;" class="textcenter">
+                               <span v-show="googcal!==true" style='color:red;'>Not<br />Integrated</span>
+                               <span v-show="googcal===true" style='color:green;'>Integrated</span>
+                            </div>
                         </div>
                     </div>
+  
                 </div>
             </v-collapse-wrapper>
 
@@ -443,6 +459,7 @@ export default {
             postalcode:"",
             errorMessage: null,
             firstName: "",
+            googcal:false,
             ispro: false,
             ispremium: false,
             isOK: null,
@@ -488,6 +505,7 @@ export default {
             }
             else {
                 this.acc3i="expand_more";
+                this.doGetCalendarIntegration();
             }
         },
         acc4s: function() {
@@ -576,7 +594,16 @@ export default {
             this.$forceUpdate();         
         },
         doCalendarGoogle: function() { 
-            window.open("https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id=801199894294-iei4roo6p67hitq9sc2tat5ft24qfakt.apps.googleusercontent.com&scope=https://www.googleapis.com/auth/calendar.readonly%20https://www.googleapis.com/auth/calendar.events&response_type=code&redirect_uri=https://stage.schd.us/googcalendar");
+
+            var url ="https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id=801199894294-iei4roo6p67hitq9sc2tat5ft24qfakt.apps.googleusercontent.com&scope=https://www.googleapis.com/auth/calendar.readonly%20https://www.googleapis.com/auth/calendar.events&response_type=code&redirect_uri=https://schd.us/googcalendar";
+
+            if (typeof window.cordova !== "undefined")
+            {
+                cordova.InAppBrowser.open(url);
+            }
+            else {
+                window.open(url);
+            }
         },
         doChangePassword: function() {
 
@@ -607,6 +634,28 @@ export default {
                 this.cpassrnew="";
                 this.handleHTTPResult(r, "Password changed successfully");                
             })   
+        },
+        doGetCalendarIntegration: function() {
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/getcalendarintegrationstatus',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r")
+                }
+             }).then(r=>{
+                 if (r.status===200) {
+                     if (r.data.status===200) {
+                         for(var x=0; x<r.data.message.length; x++) {
+                             if (r.data.message[x].CalendarType===0) {
+                                this.googcal=true;
+                             }
+                         }
+                     } 
+                 }
+                
+             })
         },
         doGetNextSub: function() {
 
@@ -803,6 +852,15 @@ export default {
                  if (r.status===200) {
                     if (r.data.status === 200) {
                         this.btndelete=false;
+                        localStorage.removeItem("evlocation");
+                        localStorage.removeItem("evcity");
+                        localStorage.removeItem("evstate");
+                        localStorage.removeItem("evzip");
+                        localStorage.removeItem("evstreet");
+                        localStorage.removeItem("cliname");
+                        localStorage.removeItem("evname");
+                        localStorage.removeItem("guests");
+                        localStorage.removeItem("evdescription");
                         this.$router.push("logout")
                     }
                     else {
@@ -836,7 +894,7 @@ export default {
                 }
             }).then(r=> {
                  if (r.status===200) {
-                    var stripe = Stripe("pk_test_iwwy5i2P24b4VzmePCkvvv4h00zjnLQL6k");
+                    var stripe = Stripe("pk_live_Bm8pOGfNNY45N1qPF6Quavnt005lhlnLUS");
                     stripe.redirectToCheckout({
                         sessionId: r.data.sessionId
                     }).then(handleResult);

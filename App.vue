@@ -111,6 +111,11 @@ export default {
   mounted() {
        this.pollNotifications();
 
+       var self=this;
+       window.setTimeout(function() {
+          self.pollNotifications();
+       },300000);
+
        if (!(typeof window.cordova !== "undefined")) {
           this.$http({
                 method:'post',
@@ -122,11 +127,20 @@ export default {
                }
           })
        }
+       else {
+          var self=this;
+          universalLinks.subscribe(null, function(eventData) {
+              self.$router.push({ path: eventData.path.replace("/",""), query: eventData.params});
+          }); 
 
-       var self=this;
-       window.setTimeout(function() {
-          self.pollNotifications();
-       },300000);
+          var c = localStorage.getItem("_c"); 
+          if (typeof(c)!=="undefined" && c!==null && c!=="null") {  
+              this.$router.push("dashboard");
+          }
+          
+       }
+
+      
   }
 }
 </script>

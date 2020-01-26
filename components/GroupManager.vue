@@ -374,6 +374,7 @@ export default {
             }}).then(r=>{
                 if (r.status===200) {
                     if (r.data.status===200) {
+                        this.newgroupname=""; 
                         this.addFromGroup();
                     }
                     else {

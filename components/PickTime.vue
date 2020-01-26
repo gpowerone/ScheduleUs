@@ -108,12 +108,96 @@ export default {
             endevtime:null,
             evlength:"",
             guests:[],
+            passedCalendars:[],
             remindertime:"yes",
             showreminder: false,
             usedpfus: false
         }
     },
     methods: {
+         calendarRecursion: function(s,p,cals) {
+              if (p==="ios") {
+                    
+                    var self=this;
+                    window.plugins.calendar.findAllEventsInNamedCalendar(cals[0],function(ev) {
+                        
+                        var tzOffset = new Date().getTimezoneOffset()*(60*1000);
+                        var tomorrow = new Date();
+                        tomorrow.setHours(24,0,0,0);
+
+                        for (var x=0; x<ev.length; x++) {
+                           
+                            var startDate=new Date(Date.parse(ev[x].startDate.replace(" ","T"))+tzOffset);
+                            var endDate=new Date(Date.parse(ev[x].endDate.replace(" ","T"))+tzOffset);
+
+                            var pc={}; 
+                            if (startDate.getTime()<tomorrow.getTime()) {
+                                pc.startDay=0;
+                            }
+                            else {
+                                var hours = 48;
+                                var foundDate=false;
+                                do {
+                                    var someday = new Date();
+                                    someday.setHours(hours,0,0,0);
+
+                                    if (startDate.getTime()>=someday.getTime()) {
+                                        hours+=24;
+                                    }
+                                    else {
+                                        pc.startDay=(hours/24)-1;
+                                        foundDate=true;
+                                    }
+                                } while (foundDate===false);
+                            }
+
+                            if (endDate.getTime()<tomorrow.getTime()) {
+                                pc.endDay=0;
+                            }
+                            else {
+                                var hours = 48;
+                                var foundDate=false;
+                                do {
+                                    var someday = new Date();
+                                    someday.setHours(hours,0,0,0);
+
+                                    if (endDate.getTime()>=someday.getTime()) {
+                                        hours+=24;
+                                    }
+                                    else {
+                                        pc.endDay=(hours/24)-1;
+                                        foundDate=true;
+                                    }
+                                } while (foundDate===false);
+                            }
+
+                            pc.startHour = startDate.getHours(); 
+                            pc.endHour = endDate.getHours();
+                            pc.startMinute = startDate.getMinutes();
+                            pc.endMinute = endDate.getMinutes();
+
+                            self.passedCalendars.push(pc);
+                        }
+
+                        if (cals.length>1) {
+                             cals.shift();
+                             s.calendarRecursion(s,p,cals);
+                        }
+                        else {
+                            s.formStep=3;
+                        }
+                    },
+                    function(ev) {
+                        if (cals.length>1) {
+                             cals.shift();
+                             s.calendarRecursion(s,p,cals);
+                        }
+                        else {
+                            s.formStep=3;
+                        }
+                    });
+              }
+         },
          closePickForUs: function() {
              this.usedpfus=false;
              this.$parent.buttonsenabled=true;
@@ -141,7 +225,43 @@ export default {
         },
         doPickForUs: function() {
             this.errorMessage=null;
-            this.formStep=3;
+
+            if ((typeof window.cordova !== "undefined")) {
+            
+                this.passedCalendars=[];
+                var self=this;
+                window.plugins.calendar.listCalendars(function(e) {
+                    try {
+                        var passCalendars=[];
+
+                        for (var x=0; x<e.length; x++) {
+                            if (e[x].type==="Local") {
+                                passCalendars.push(e[x].name);
+                            }
+                        }
+
+                        if (passCalendars.length>0) {
+                               self.calendarRecursion(self,window.cordova.platformId,passCalendars);
+                        }
+                        else {            
+                            self.formStep=3;
+                        }
+                        
+                    }
+                    catch(ex) {
+                        self.formStep=3;
+                    }
+
+                },
+                function(e) {
+                    self.formStep=3;
+                });
+            
+                
+            }
+            else {
+                this.formStep=3;
+            }
         },
         doPFUSDefault: function() {
             if (this.evlength==="" || this.evlength==="i") {
@@ -176,7 +296,8 @@ export default {
                         LMonthPlus: false,
                         Length: this.evlength,
                         ForWork: false,
-                        AgeRange: 0
+                        AgeRange: 0,
+                        passedCalendars: this.passedCalendars
                     }
                 }).then(r=> {
                     if (r.status===200 && r.data.status===200) {
