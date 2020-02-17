@@ -105,17 +105,16 @@
         <modal name="doneModal" width="300" height="435">
             <div class="p2">
                 <h1>All Done</h1>
-                <div class="mt-2 textcenter">Now you can kick back and relax!</div>
-                <div class='mt-3 textcenter'>
-                    <img src="@/assets/EventCompleted.png" width="100">
-                </div>
-                <ul class='mt-3'>
+                <ul style='margin-top:25px;'>
                     <li>We are texting or emailing your attendees. No need to send them any additional messages.</li>
                     <li>You will get a message from us when everyone has responded.</li>
                     <li>You can check the status of the event on the dashboard.</li>
                 </ul>
                 <div class='mt-2 textcenter'>
                      <button class='schdusButton' @click="goToDashboard()">Go to Dashboard</button>
+                </div>
+                <div class='mt-2 textcenter'>
+                    <button v-show="isCordova===true"  @click='doAddSchdusModal'>Add Schedule Us # to Contacts</button>
                 </div>
             </div>
         </modal>
@@ -297,12 +296,10 @@
                 </div>
                
                 <div class="mt-3 layout row" v-show="loggedin===true">
-                    <div class="flex xs5 fieldwell">
+                    <div class="flex xs12 fieldwell">
                         <toggle-button width="52" height="24" v-model="willattend" /> I Will Attend
                     </div>
-                     <div class="flex xs7 fieldwell textright">
-                        <button v-show="isCordova===true"  @click='doAddSchdusModal'>Add # To Contacts</button>
-                    </div>
+                  
                 </div>
 
                 <div class="mt-3">
@@ -396,10 +393,12 @@
                             </div>
                          </div> 
                     </div>
+                    <!--
                     <div class="mt-2" v-show="mth_frequency>0||week_frequency>0">
                           <input type="radio" v-model="exacttime" value=0 /> I know exactly when my event should happen<br />
                           <input type="radio" v-model="exacttime" value=1 /> Schedule Us should suggest the date/time for my event (a new date/time will be suggested each time the event occurs)
                     </div>
+                    //-->
                     <div v-show="exacttime==0&&(mth_frequency>0||week_frequency>0)">
                         <div class="mt-2 fieldwell" v-show="mth_frequency>0">
                             <div class="boldchoice">Week of the Month:</div> 
@@ -571,7 +570,7 @@ export default {
             guestsprovidesharing:false,
             guestsbringchildren:false,
             guestslimittotalhas:false,
-            guestslimittotal: 15,
+            guestslimittotal: 50,
             guestlistvisible: true,
             guestsbringothers: false,
             guestsseersvps: true,
@@ -718,6 +717,8 @@ export default {
             sC4.save(function(){},function(){});
             sC5.save(function(){},function(){});
 
+            this.$modal.hide("addSchdusModal");
+
             var self = this;
             sC.save(function() {
                 self.okMessage="Schedule Us Contact Saved";
@@ -770,6 +771,7 @@ export default {
             return 0;
         },      
         doAddSchdusModal: function() {
+            this.$modal.hide("doneModal");
             this.$modal.show("addSchdusModal");
         },
         doAddFromGroup: function(item) {
@@ -920,10 +922,12 @@ export default {
             this.$forceUpdate();
 
         },
-        fillLocation: function(location, address, city) {
+        fillLocation: function(location, address, city, state, zip) {
             this.evlocation=location;
             this.evstreet=address;
             this.evcity=city;
+            this.evstate=state;
+            this.evzip=zip;
             this.formStep=0;
             this.$forceUpdate();
         },
@@ -1117,48 +1121,46 @@ export default {
         },
 
         saveContacts: function() {   
-            for(var x=0; x<this.$refs.contactModule.contacts.length; x++) {
-                if (this.$refs.contactModule.contacts[x].isselected) {
+           
+            if (this.$refs.contactModule.selectedContact!==null) {
+                
+                var g ={    
+                    gid: this.$uuid.v1(),               
+                    gname: this.$refs.contactModule.selectedContact.cname,
+                    gphone: null,
+                    gemail: null,
+                    cphoto: this.$refs.contactModule.selectedContact.hasimage,
+                    photo: false,
+                    greq: false
+                }
 
-                    var pass=true;            
-                    var poep=null;
-                    var poee=null;
+                var pass=true;
 
-                    if (this.$refs.contactModule.contacts[x].cphone!==null && this.$refs.contactModule.contacts[x].cphone.length>0) {
-                        poep=this.$refs.contactModule.contacts[x].cphone;
-                        for(var y=0; y<this.guests.length; y++) {
-                            if (this.guests[y].gphone===this.$refs.contactModule.contacts[x].cphone) {
-                                pass=false;
-                            }
+                if (this.$refs.contactModule.selectedContact.phone!==null) {
+                    for(var y=0; y<this.guests.length; y++) {
+                        if (this.guests[y].gphone===this.$refs.contactModule.selectedContact.phone) {
+                            pass=false;
                         }
                     }
-                    if (this.$refs.contactModule.contacts[x].cemail!==null && this.$refs.contactModule.contacts[x].cemail.length>0) {
-                        poee=this.$refs.contactModule.contacts[x].cemail;
-                        for(var y=0; y<this.guests.length; y++) {
-                            if (this.guests[y].gemail===this.$refs.contactModule.contacts[x].cemail) {
-                                pass=false;
-                            }
-                         }
+                    g.gphone=this.$refs.contactModule.selectedContact.phone;
+                }
+                else {
+                     for(var y=0; y<this.guests.length; y++) {
+                        if (this.guests[y].gemail===this.$refs.contactModule.selectedContact.email) {
+                            pass=false;
+                        }
                     }
+                    g.gemail=this.$refs.contactModule.selectedContact.email;
+                }
 
-                    if (pass && (poep!==null || poee!==null)) {
+                if (pass) {
+                    this.guests.push(g);
 
-                        this.guests.push({    
-                            gid: this.$uuid.v1(),               
-                            gname: this.$refs.contactModule.contacts[x].cname,
-                            gphone: poep,
-                            gemail: poee,
-                            cphoto: this.$refs.contactModule.contacts[x].hasimage,
-                            photo: false,
-                            greq: false
-                        });
-
-                         this.imageloaded.push(false);                    
-                         this.imageurl.push(null);                      
-                    }
+                    this.imageloaded.push(false);                    
+                    this.imageurl.push(null);                      
                 }
             }
-            
+                
             this.$refs.contactModule.contacts=[];
             this.$refs.contactModule.visiblehidecontacts=[];
             this.formStep=1;
@@ -1217,16 +1219,16 @@ export default {
                     ClientID: localStorage.getItem("_c"),
                     SessionID: localStorage.getItem("_s"),
                     SessionLong: localStorage.getItem("_r"),
-                    EventName: this.evname,
-                    ClientName: this.cliname,
+                    EventName: this.evname.trim(),
+                    ClientName: this.cliname.trim(),
                     EndDate: this.$refs.pt.evlength==="i"?(this.makeDate(this.$refs.pt.endevday,this.$refs.pt.endevtime)):null,
                     EventDate: dt,
                     EventLength: this.$refs.pt.evlength,
-                    EventDescription: this.evdescription,
-                    EventStreet: this.evstreet,
-                    EventCity: this.evcity,
-                    EventState: this.evstate,
-                    EventZip: this.evzip,
+                    EventDescription: this.evdescription.trim(),
+                    EventStreet: this.evstreet.trim(),
+                    EventCity: this.evcity.trim(),
+                    EventState: this.evstate.trim(),
+                    EventZip: this.evzip.trim(),
                     GuestsCanDiscuss: this.guestscandiscuss,
                     GuestsMustRegister: this.guestsmustregister,
                     GuestLimitTotal: this.guestslimittotal,
@@ -1313,6 +1315,12 @@ export default {
             this.evlocationfe="";
             this.evstreetfe="";
             this.evcityfe="";
+
+            this.evname=this.evname.trim();
+            this.evlocation=this.evlocation.trim();
+            this.cliname=this.cliname.trim();
+            this.evstreet=this.evstreet.trim();
+            this.evcity=this.evcity.trim();
       
 
             if (this.evname.length<1 || this.evname.length>128) {
@@ -1333,7 +1341,7 @@ export default {
                 return false;
             }
 
-            if (this.evlocation.length>255) {
+            if (this.evstreet.length>255) {
                 this.errorMessage="Street address is invalid";
                 this.evstreetfe="errorHighlight";
                 return false;
@@ -1429,7 +1437,10 @@ export default {
         catch(e) {}
 
         if (this.isPremium) {
-            this.guestslimittotal=50;
+            this.guestslimittotal=150;
+        }
+        if (this.isPro) {
+            this.guestslimittotal=999;
         }
 
         if (this.isPremium===false && this.isPro===false) {

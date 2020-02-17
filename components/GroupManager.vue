@@ -19,7 +19,7 @@
                 </div>
                 <div class="mt-2 layout row">
                     <div class="flex xs6">
-                        <button @click="cancelDeleteGroup()">Cancel</button>
+                        <button class="redButton" @click="cancelDeleteGroup()">Cancel</button>
                     </div>
                     <div class="flex xs6 textright">
                         <button @click="confirmDeleteGroup()">Confirm</button>
@@ -36,7 +36,7 @@
                 </div>
                 <div class="mt-2 layout row">
                     <div class="flex xs6">
-                        <button @click="cancelRemoveGroupMember()">Cancel</button>
+                        <button class="redButton" @click="cancelRemoveGroupMember()">Cancel</button>
                     </div>
                     <div class="flex xs6 textright">
                         <button @click="doRemoveGroupMember()">Confirm</button>
@@ -51,11 +51,11 @@
                 
             <div v-show="groups.length===0" class="mt-2">
                 <div>
-                    You have no groups
+                     You don't have any groups yet, add one now!
                 </div>
                 <div class="mt-2 layout row">
                      <div class="flex xs6">
-                        <button @click="closeGroupManager()">Close</button>
+                        <button class="redButton" @click="closeGroupManager()">Close</button>
                     </div>
                     <div class="flex xs6 textright">
                         <button @click="createGroup()">Create Group</button>
@@ -100,7 +100,7 @@
             </div>
             <div class="mt-2 layout row">
                 <div class="flex xs6">
-                    <button @click="returnToGroupManager()">Cancel</button>
+                    <button class="redButton" @click="returnToGroupManager()">Cancel</button>
                 </div>
                 <div class="flex xs6 textright">
                     <button @click="doCreateGroup(null)">Create Group</button>

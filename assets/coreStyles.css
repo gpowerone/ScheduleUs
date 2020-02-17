@@ -94,6 +94,10 @@
     vertical-align: middle!important;
   }
 
+  .smallgray {
+      font-size:0.9rem;
+      color:#555;
+  }
 
   .valign {
       vertical-align:middle!important;
@@ -246,7 +250,7 @@
   }
   input.textfield, select.textfield {
         border:1px solid #b4cde4;
-        height:4vh;
+        height:30px;
         padding:3px;
         width:100%;
         border-radius:6px;
@@ -311,6 +315,10 @@
      padding:2%;
      margin-bottom:5px;
      text-align:center;
+     position:fixed;
+     bottom:5%;
+     left:5%;
+     right:5%;
   }
   .okBox {
      background-color: forestgreen;
@@ -319,6 +327,10 @@
      padding:2%;
      margin-bottom:5px;
      text-align:center;
+     position:fixed;
+     bottom:1%;
+     left:5%;
+     right:5%;
   }
   .p1 {
      padding:1%;

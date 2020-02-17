@@ -29,6 +29,9 @@ export const utilities = {
                 var ah=0;
                 if (time.indexOf(" PM")>-1) {
                     pt[0] = String(parseInt(pt[0])+12);
+                    if (pt[0]=="24") {
+                        pt[0]="12";
+                    }
                 }
                 else if (pt[0]==="12") {
                     pt[0]="0";

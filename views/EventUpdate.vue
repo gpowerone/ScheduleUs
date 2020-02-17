@@ -54,7 +54,7 @@
                 </div>
                 <div class="layout row mt-2">
                     <div class="flex xs6 textleft">
-                        <button @click="closeLocationModal()">Close</button>
+                        <button class="redButton" @click="closeLocationModal()">Close</button>
                     </div>
                     <div class="flex xs6 textright">
                         <button @click="doChangeLocation()">Continue</button>
@@ -72,7 +72,7 @@
                 </div>
                 <div class="layout row mt-2">
                     <div class="flex xs6 textleft">
-                        <button @click="closeTimeModal()">Close</button>
+                        <button class="redButton" @click="closeTimeModal()">Close</button>
                     </div>
                     <div class="flex xs6 textright">
                         <button @click="doChangeTime()">Continue</button>
@@ -90,7 +90,7 @@
                 </div>
                 <div class="layout row mt-2">
                     <div class="flex xs6 textleft">
-                        <button @click="closeAttendeeModal()">Close</button>
+                        <button class="redButton" @click="closeAttendeeModal()">Close</button>
                     </div>
                     <div class="flex xs6 textright">
                         <button @click="doRemoveAttendee()">Continue</button>
@@ -606,7 +606,8 @@ export default {
                     EventStreet: this.evstreet,
                     EventCity: this.evcity,
                     EventState: this.evstate,
-                    EventZip: this.evzip
+                    EventZip: this.evzip,
+                    EGID: this.tev.EGID
                 }
             }).then(r=> {
                  if (r.status===200) {
@@ -684,7 +685,8 @@ export default {
                     EventID: this.eventid,
                     EventDate: this.makeDate(this.evday,this.evtime),
                     EventLength: this.evlength,
-                    EndDate: edate
+                    EndDate: edate,
+                    EGID: this.tev.EGID
                 }
             }).then(r=> {
                  if (r.status===200) {
@@ -918,13 +920,9 @@ export default {
               this.$router.push("/event?e="+this.tev.Hash)
         },
         saveContacts: function() {   
-            for(var x=0; x<this.$refs.contactModule.contacts.length; x++) {
-                if (this.$refs.contactModule.contacts[x].isselected) {
-
-                    this.addEditGuest(true,this.$refs.contactModule.contacts[x].cname,this.$refs.contactModule.contacts[x].cphone,this.$refs.contactModule.contacts[x].cemail);
-                }
-            }
-            
+          
+            this.addEditGuest(true,this.$refs.contactModule.selectedContact.cname,this.$refs.contactModule.selectedContact.phone,this.$refs.contactModule.selectedContact.email);
+                
             this.$refs.contactModule.contacts=[];
             this.$refs.contactModule.visiblehidecontacts=[];
             this.formStep=0;

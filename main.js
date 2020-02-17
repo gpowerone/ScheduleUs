@@ -14,6 +14,7 @@ import ImageUploader from 'vue-image-upload-resize'
 import UUID from 'vue-uuid';
 import Notifications from 'vue-notification'
 import VueGtag from 'vue-gtag'
+import VueClipboard from 'vue-clipboard2'
 import '../node_modules/nprogress/nprogress.css'
 
 // Determine if we are in a phone app, that changes how we do things a lot
@@ -33,6 +34,7 @@ else {
   Vue.prototype.$hostname="https://api.schd.us";
 }
 
+VueClipboard.config.autoSetContainer = true 
 
 Vue.use(VueAxios, axios)
 Vue.use(VModal)
@@ -41,6 +43,7 @@ Vue.use(ToggleButton)
 Vue.use(UUID)
 Vue.use(ImageUploader)
 Vue.use(Notifications)
+Vue.use(VueClipboard)
 
 if (!isCordovaApp) {
   Vue.use(VueGtag, {
@@ -75,9 +78,4 @@ document.addEventListener("deviceready", () => {
 
 if (!isCordovaApp){
   document.dispatchEvent(new CustomEvent("deviceready", {}));
-}
-else {
-  if (window.cordova.platformId==="android") {
-    Vue.prototype.$hostname="http://10.0.2.2:80";
-  }
 }

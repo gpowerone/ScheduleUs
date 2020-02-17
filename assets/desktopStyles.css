@@ -13,6 +13,13 @@
         font-size:2rem;
     }
 
+    .errorBox,.okBox {
+        position:relative;
+        bottom:inherit;
+        left:inherit;
+        right:inherit;
+    }
+
     .crowningAround {
         left:43px;
     }

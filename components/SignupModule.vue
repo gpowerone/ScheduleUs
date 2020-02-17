@@ -31,23 +31,23 @@
             <div class='mt-3'>
                 <div class='boldchoice fieldwell'>First Name</div>
                 <div class='fieldwell'>
-                <input type='text' v-model="FirstName" class='textfield'/>
+                <input type='text' v-model="FirstName" autocomplete="on" class='textfield'/>
                 </div>
             </div>
 
             <div class='mt-3'>
                 <div class='boldchoice fieldwell'>Last Name</div>
                 <div class='fieldwell'>
-                <input type='text' v-model="LastName" class='textfield'/>
+                <input type='text' v-model="LastName" autocomplete="on"  class='textfield'/>
                 </div>
             </div>
 
             <div class='mt-3'>
                 <div class='boldchoice fieldwell'>
-                Phone Number with Area Code (US only)
+                Username - US Phone Number With Area Code
                 </div>
                 <div class='fieldwell'>
-                <input type='text' v-model="PhoneNumber" class='textfield'/>
+                <input type='tel' v-model="PhoneNumber"  autocomplete="on"  class='textfield'/>
                 </div>
             </div>
 

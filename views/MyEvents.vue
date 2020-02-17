@@ -28,15 +28,13 @@
                 <div class="mt-2 botdot">
                     <template v-for="(item, i) in isOrganizing">
                         <v-list-item :key="i" >
-                            <div v-if="item.ActionReq<9" class="myevscheduling" @click="goEvent(item.Hash)" style="cursor:pointer;">
+                            <div  class="myevscheduling" @click="goEvent(item.Hash)" style="cursor:pointer;">
                                 <div class="layout row">
                                     <div class="flex xs10">
                                       
-                                        <div class='mt-2'>
-                                      
-                                            {{item.EventName}}
-                                         
-                                          
+                                        <div class='mt-2' style='line-height:1.3rem;'>                                     
+                                            {{item.EventName}}<br />
+                                            <span class="smallgray"  v-html="displayDate(item.EventDate)"></span>                                      
                                         </div>
                                         
                                     </div>
@@ -63,12 +61,13 @@
                  <div class="mt-2">
                     <template v-for="(item, i) in isParticipating">
                         <v-list-item :key="i" >
-                            <div v-if="item.ActionReq<9" class="myevscheduling" @click="goEvent(item.Hash)" style="cursor:pointer;">
+                            <div  class="myevscheduling" @click="goEvent(item.Hash)" style="cursor:pointer;">
                                 <div class="layout row">
                                     <div class="flex xs10">
                                       
-                                        <div class='mt-2'>
-                                            {{item.EventName}}
+                                        <div class='mt-2' style='line-height:1.3rem;'>
+                                            {{item.EventName}}<br />
+                                            <span class="smallgray"  v-html="displayDate(item.EventDate)"></span>
                                         </div>
                                         
                                     </div>
@@ -94,8 +93,9 @@
                                 <div class="layout row">
                                     <div class="flex xs10">
                                       
-                                        <div class='mt-2'>
-                                            {{item.EventName}}
+                                        <div class='mt-2' style='line-height:1.3rem;'>
+                                            {{item.EventName}}<br />
+                                            <span class="smallgray" v-html="displayDate(item.EventDate)"></span>
                                         </div>
                                         
                                     </div>
@@ -131,6 +131,25 @@ export default {
         }
     },
     methods: {
+        displayDate: function(tstmp) {
+            var d = new Date(parseInt(tstmp));
+
+            var minute=d.getMinutes();
+            if (minute<10) {
+                minute="0"+minute;
+            }
+            var hour =d.getHours();
+            var ampm="AM";
+            if (hour>=12) {
+                hour=hour-12;
+                ampm="PM";
+            }
+            if (hour===0) {
+                hour=12;
+            }
+
+            return "&nbsp;&nbsp;&nbsp;"+(d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear()+" "+hour+":"+minute+" "+ampm;
+        },
         goToCreateEvent: function() {
             this.$router.push("/create");
         },
@@ -191,6 +210,7 @@ export default {
                         var evdetails = JSON.parse(r.data.message);
                         var rp=[];
 
+
                         if (evdetails.p!==null && evdetails.p.length>0) {
                             for(var q=0; q<evdetails.p.length; q++) {
                                 var include=true;
@@ -204,6 +224,9 @@ export default {
                                     if (include) {
                                         rp.push(evdetails.p[q]);
                                     }
+                                }
+                                else {
+                                    rp.push(evdetails.p[q]);
                                 }
                             }
                         }

@@ -31,14 +31,14 @@
     
             <div class="layout row mt-5">
                 <div class="fieldwell flex xs12">
-                    Phone Number or Email Address:<br />
-                    <input type='text' id='user' v-model="Phone" class='textfield' />
+                    Phone Number:<br />
+                    <input type='text' id='user' v-model="Phone" class='textfield' @change="doFocusPhone"  />
                 </div>
             </div>
             <div class="layout row mt-2">
                 <div class="fieldwell flex xs12">
                     Password:<br />
-                    <input type='password' id='pass' v-model="Passwd" class='textfield' />
+                    <input type='password' id='pass' v-model="Passwd" class='textfield' @change="doFocusPass" />
                 </div>
             </div>
             <div class="layout row mt-4">
@@ -131,6 +131,7 @@ export default {
         this.doLogoutRoutine();
     },
     methods: {
+      
         doAR: function() {
 
             this.errorMessage=null;
@@ -195,7 +196,14 @@ export default {
                 });
             }
         },
+        doFocusPhone: function(ev) {
+            this.Phone=ev.target.value;
+        },
+        doFocusPass: function(ev) {
+            this.Passwd=ev.target.value;
+        },
         doLogin: function() {
+
             if (this.Phone.length===0 || this.Passwd.length===0) {
                 this.errorMessage="Invalid credentials";                
                 return;

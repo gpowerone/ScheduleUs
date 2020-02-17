@@ -89,22 +89,7 @@
                 </div>
             </div>
         </div>
-        <div class="mt-2 layout row btop p2top">
-            <div class="flex xs6 mt-3 fieldwell">
-                Average Attendee Age
-            </div>
-            <div class="flex xs6 fieldwell mt-2">
-            <select v-model="pfusage" class="textfield">
-                <option value='0'>--- Unspecified ---</option>
-                <option value='1'>13-18</option>
-                <option value='2'>18-23</option>
-                <option value='3'>23-28</option>
-                <option value='4'>28-48</option>
-                <option value='5'>48-65</option>
-                <option value='6'>65+</option>
-            </select>
-            </div>
-        </div>
+        
         <div class="mt-5 layout row">
             <div class="flex xs6 textleft">
                 <button @click="pickForUsClose">Cancel</button>

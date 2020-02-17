@@ -10,6 +10,9 @@
     
         <modal name="locationDetails" width="300" height="90%">
             <div class="p2" style="overflow-y:scroll;height:100%;">
+                <div class="textright spfield" style="font-size:1.2rem;">
+                    <button class="transButton" @click="closeLocationDetails()"><span>X</span></button>
+                </div>
                 <h1>{{placename}}</h1>
                 <div class="mt-2">
                     {{placeaddress}}<br />
@@ -66,7 +69,7 @@
                                 <button v-on:click="doDetails(p.reference)" class="tanButton" style="width:75px;">Details</button>
                             </div>
                             <div class="mt-2">
-                                <button v-on:click="selectLocation(p.name, p.vicinity)" style="width:75px;">Select</button>
+                                <button v-on:click="selectLocation(p.reference)" style="width:75px;">Select</button>
                             </div>
                         </div>
                    </div>
@@ -82,10 +85,16 @@
             </div>
         </div>
         <div v-show="locations.length===0&&loading===null" class="relative pbot20">
-            <h1>Your Location</h1>
+            <h1>Find a Location</h1>
              
+            <div v-show="hasGeoLocation===null" class="mt-2">Loading geolocation data...</div>
+            <div v-show="hasGeoLocation===false" class="mt-2">Geolocation is turned off</div>
+            <div v-show="hasGeoLocation===true" class="mt-2">
+                  <input type="radio" name="picklocation" v-model="picklocation" v-bind:value=false /> Search near where I am currently
+            </div>
+            
             <div class="mt-2">
-                 <input type="radio" name="picklocation" v-model="picklocation" v-bind:value=true /> Search locations near:
+                 <input type="radio" name="picklocation" v-model="picklocation" v-bind:value=true /> Search near an address
             </div>
             <div v-show="picklocation===true" class="mt-1">
                 <div class="layout row">
@@ -159,11 +168,7 @@
                     </div>
                 </div>
             </div>
-            <div v-show="hasGeoLocation===null" class="mt-2">Loading your current location...</div>
-            <div v-show="hasGeoLocation===false" class="mt-2">Geolocation is turned off</div>
-            <div v-show="hasGeoLocation===true" class="mt-2">
-                  <input type="radio" name="picklocation" v-model="picklocation" v-bind:value=false /> Search near my current location
-            </div>
+          
 
             <div class="layout row btop mt-2">
                 <div class="flex xs5">
@@ -197,18 +202,29 @@
                     </div>
                 </div>
             </div>
-            <div class="mt-4 layout row">
-                <div class="flex xs12 fieldwell">
-                    <label>Somewhere Else</label><br />
-                    <input type="text" v-model="keyword" class="textfield">
+            <div class="layout row mt-4" v-show="somewhereelse===false">
+                <div class="flex xs12 textright">
+                    <button @click="doSomewhereElse()">Search For Something Else</button>
                 </div>
             </div>
-            <div class="mt-3 layout row">
-                <div class="flex xs6 textleft">
-                    <button @click="locationFinderClose" class="red">Close</button>
+
+            <div class="mt-4" v-show="somewhereelse===true">
+                <div class="layout row">
+                    <div class="flex xs12 fieldwell">
+                        <label>Search:</label><br />
+                        <input type="text" v-model="keyword" v-on:keyup.enter="doCustomFind(null)" class="textfield">
+                    </div>
                 </div>
-                <div class="flex xs6 textright">
-                    <button @click="doCustomFind(null)">Go</button>
+                <div class="mt-3 layout row">
+                    <div class="flex xs12 textright">
+                        <button @click="doCustomFind(null)">Search</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layout row mt-4">
+                <div class="flex xs12 textleft">
+                    <button @click="locationFinderClose" class="red">Close</button>
                 </div>
             </div>
                 
@@ -242,6 +258,7 @@ export default {
             placeratingnum:null,
             placereviews:[],
             placetotalratings:null,
+            somewhereelse:false,
             state:"--"
         }
     },
@@ -264,6 +281,9 @@ export default {
         }
     },
     methods: {
+        closeLocationDetails: function() {
+            this.$modal.hide("locationDetails");
+        },
         doCustomFind: function(qry) {
             this.errorMessage=null;
             var geocode="";
@@ -281,8 +301,13 @@ export default {
 
             this.loading=true;
             var kwrd=null;
-            if (qry===null && this.keyword!==null && this.keyword.length>0) {
-                kwrd=this.keyword; 
+            if (qry===null) {
+                if (this.keyword!==null && this.keyword.length>0) {
+                    kwrd=this.keyword; 
+                }
+                else {
+                    this.errorMessage="Search keywords are required";
+                }
             }
 
             var dobj = {
@@ -322,8 +347,8 @@ export default {
                         else {
                             this.foundCoords=null;
                         }
-                         this.locations=dd.results;
-                        
+                        this.locations=dd.results;
+
                         if (this.locations.length===0) {
                             this.errorMessage="No locations were found near your area";
                             this.$forceUpdate();
@@ -383,6 +408,9 @@ export default {
         doRender: function() { 
             this.theseCoords=this.getCoords();
         }, 
+        doSomewhereElse: function() {                        
+            this.somewhereelse=true;
+        },
         getCoords: function() {
             try {
                 return navigator.geolocation.getCurrentPosition(this.renderOK,this.renderFail);   
@@ -444,6 +472,7 @@ export default {
         renderOK: function(position) {
             if (position!==null) {
                 this.hasGeoLocation=true;
+                this.picklocation=false;
                 this.theseCoords=position;
                 this.$forceUpdate();
             }
@@ -456,11 +485,53 @@ export default {
             this.foundCoords=null;
             this.locations=[];
         },
-        selectLocation: function(name, fulladdress) {
-            var pts=fulladdress.split(',');
-            this.foundCoords=null;
-            this.locations=[];
-            this.$parent.fillLocation(name, pts[0].trim(), pts[1].trim());
+        selectLocation: function(ref) {
+            this.loading=true;
+
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/locationdetails',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),
+                    ref: ref                         
+                }
+            }).then(r=> {
+                this.loading=null;
+                if (r.status===200) {
+                    if (r.data.status===200) {
+                        var pd = JSON.parse(r.data.message);
+
+                        this.foundCoords=null;
+                        this.locations=[];
+
+                        var address="";
+                        var city="";
+                        var state="";
+                        var zip=""; 
+
+                        try {
+                            var adr = pd.result.formatted_address.split(",");
+                            address=adr[0];
+                            city = adr[1].trim();
+                            var statept = adr[2].trim().split(" ");
+                            state = statept[0].trim();
+                            zip = statept[1].trim();
+                        }
+                        catch(e) {}
+
+                        this.$parent.fillLocation(pd.result.name, address, city, state, zip);
+                    }
+                    else {
+                        this.errorMessage="Something went wrong";
+                    }
+                }
+                else {
+                    this.errorMessage="Something went wrong";
+                }
+            });          
+          
         }
     }
 }

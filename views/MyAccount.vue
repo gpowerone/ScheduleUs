@@ -210,7 +210,7 @@
                 </div>
                 <div class="acccontent" v-collapse-content>
                     <div>
-                        Add an email address to login and optionally receive event notices via email. If you have an existing email address for your account, you can change it here.
+                        Add an email address to optionally receive event notices via email. If you have an existing email address for your account, you can change it here.
                     </div>
                     <div class="layout row mt-3">
                         <div class="flex xs12 fieldwell">
@@ -326,7 +326,7 @@
                 </div>
             </v-collapse-wrapper>
 
-            <v-collapse-wrapper @onStatusChange="acc8s"  ref="acc8">
+            <v-collapse-wrapper @onStatusChange="acc8s"  ref="acc8" v-show="isIOS===false">
                 <div class="accheader" v-collapse-toggle>
                     <v-icon>{{ acc8i }}</v-icon> <span>Subscription Status</span>
                 </div>
@@ -373,7 +373,7 @@
                 </div>
             </v-collapse-wrapper>
 
-             <v-collapse-wrapper @onStatusChange="acc9s"  ref="acc9">
+             <v-collapse-wrapper @onStatusChange="acc9s"  ref="acc9" v-show="isIOS===false">
                 <div class="accheader" v-collapse-toggle>
                     <v-icon>{{ acc9i }}</v-icon> <span>Order History</span>
                 </div>
@@ -461,6 +461,7 @@ export default {
             firstName: "",
             googcal:false,
             ispro: false,
+            isIOS:(typeof window.cordova !== "undefined")&&(window.cordova.platformId==="ios"),
             ispremium: false,
             isOK: null,
             lastName: "",
@@ -766,8 +767,13 @@ export default {
         },
         doSavePhone: function() {
 
+            if (this.verifyPhone(this.phone)!=="OK") {
+                this.errorMessage="Phone # Invalid";
+                return;
+            }
+
             var self=this;
-            this.btnchangephone=true;
+  
 
             this.pcallback=function() {
 
@@ -795,12 +801,13 @@ export default {
                 this.$modal.show("verifyPassword");
             }
             else {
+                this.btnchangephone=true;
                 self.vpass="";
                 this.pcallback();
             }
         },
         goToPrePro: function() {
-            this.$router.push("/premium");
+            this.$router.push("premium");
         },
         handleHTTPResult: function(r,okmsg) {
             if (r.status===200) {

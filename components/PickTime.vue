@@ -61,7 +61,26 @@
 
         <div v-show="formStep === 3" class="mt-2">
              
-             <div class="mt-4 textcenter">
+             <div class="mt-2 boldchoice">
+                 Calendars Included
+             </div>
+             <div v-show="calendars.length>0">
+                <div class="mt-2">
+                    The following calendars will be accessed when picking the best time. Only calendars owned by attendees will be considered (calendars subscribed to, default holiday calendars, etc...) are not considered.
+                </div>
+                <template v-for="(item, i) in calendars"> 
+                    <v-list-item :key="i">
+                        <div class="mt-2">
+
+                        </div>
+                    </v-list-item>
+                </template>
+             </div>
+             <div class="mt-2" v-show="calendars.length===0">
+                 No calendars will be included. Integrate your calendars on the <a href="/myaccount">My Account</a> page and have your attendees do the same!
+             </div>
+
+             <div class="mt-2 textcenter">
                 <button class="transButton" @click="doPFUSDefault()"><img src="@/assets/EventImage3.png" width="271" alt="Pick the best time using default options"  /></button>
             </div>
          
@@ -100,6 +119,7 @@ export default {
     mixins: [utilities],
     data() {
         return {
+            calendars: [],
             errorMessage: null,
             formStep: 1,
             endevday:null,
@@ -121,62 +141,12 @@ export default {
                     var self=this;
                     window.plugins.calendar.findAllEventsInNamedCalendar(cals[0],function(ev) {
                         
-                        var tzOffset = new Date().getTimezoneOffset()*(60*1000);
-                        var tomorrow = new Date();
-                        tomorrow.setHours(24,0,0,0);
-
                         for (var x=0; x<ev.length; x++) {
                            
                             var startDate=new Date(Date.parse(ev[x].startDate.replace(" ","T"))+tzOffset);
                             var endDate=new Date(Date.parse(ev[x].endDate.replace(" ","T"))+tzOffset);
 
-                            var pc={}; 
-                            if (startDate.getTime()<tomorrow.getTime()) {
-                                pc.startDay=0;
-                            }
-                            else {
-                                var hours = 48;
-                                var foundDate=false;
-                                do {
-                                    var someday = new Date();
-                                    someday.setHours(hours,0,0,0);
-
-                                    if (startDate.getTime()>=someday.getTime()) {
-                                        hours+=24;
-                                    }
-                                    else {
-                                        pc.startDay=(hours/24)-1;
-                                        foundDate=true;
-                                    }
-                                } while (foundDate===false);
-                            }
-
-                            if (endDate.getTime()<tomorrow.getTime()) {
-                                pc.endDay=0;
-                            }
-                            else {
-                                var hours = 48;
-                                var foundDate=false;
-                                do {
-                                    var someday = new Date();
-                                    someday.setHours(hours,0,0,0);
-
-                                    if (endDate.getTime()>=someday.getTime()) {
-                                        hours+=24;
-                                    }
-                                    else {
-                                        pc.endDay=(hours/24)-1;
-                                        foundDate=true;
-                                    }
-                                } while (foundDate===false);
-                            }
-
-                            pc.startHour = startDate.getHours(); 
-                            pc.endHour = endDate.getHours();
-                            pc.startMinute = startDate.getMinutes();
-                            pc.endMinute = endDate.getMinutes();
-
-                            self.passedCalendars.push(pc);
+                            self.passedCalendars.push(self.createPassedCalendar(startDate,endDate));
                         }
 
                         if (cals.length>1) {
@@ -197,11 +167,85 @@ export default {
                         }
                     });
               }
+              else {
+                    var self=this;
+         
+                    window.plugins.calendar.listEventsInRange(new Date(), new Date(new Date().getTime()+7776000000), function(res) {
+                        for (var x=0; x<res.length; x++) {
+                            for (var y=0; y<cals.length; y++) {
+                                if (cals[y]===res[x].calendar_id) {
+                                     var startDate=new Date(res[x].dtstart);
+                                     var endDate=new Date(res[x].dtend);
+
+                                     self.passedCalendars.push(self.createPassedCalendar(startDate,endDate));
+
+                                    
+                                }
+                            }
+                        }
+                        s.formStep=3;
+                    }, function() {
+                        s.formStep=3;
+                    })
+              }
          },
          closePickForUs: function() {
              this.usedpfus=false;
              this.$parent.buttonsenabled=true;
              this.formStep=3;
+         },
+         createPassedCalendar: function (startDate,endDate) {
+                var tzOffset = new Date().getTimezoneOffset()*(60*1000);
+                var tomorrow = new Date();
+                tomorrow.setHours(24,0,0,0);
+
+                var pc={}; 
+                if (startDate.getTime()<tomorrow.getTime()) {
+                    pc.startDay=0;
+                }
+                else {
+                    var hours = 48;
+                    var foundDate=false;
+                    do {
+                        var someday = new Date();
+                        someday.setHours(hours,0,0,0);
+
+                        if (startDate.getTime()>=someday.getTime()) {
+                            hours+=24;
+                        }
+                        else {
+                            pc.startDay=(hours/24)-1;
+                            foundDate=true;
+                        }
+                    } while (foundDate===false);
+                }
+
+                if (endDate.getTime()<tomorrow.getTime()) {
+                    pc.endDay=0;
+                }
+                else {
+                    var hours = 48;
+                    var foundDate=false;
+                    do {
+                        var someday = new Date();
+                        someday.setHours(hours,0,0,0);
+
+                        if (endDate.getTime()>=someday.getTime()) {
+                            hours+=24;
+                        }
+                        else {
+                            pc.endDay=(hours/24)-1;
+                            foundDate=true;
+                        }
+                    } while (foundDate===false);
+                }
+
+                pc.startHour = startDate.getHours(); 
+                pc.endHour = endDate.getHours();
+                pc.startMinute = startDate.getMinutes();
+                pc.endMinute = endDate.getMinutes();
+
+                return pc;
          },
          dateChanged: function() {
             var dao = new Date(this.makeDate(this.evday,this.evtime));
@@ -235,8 +279,15 @@ export default {
                         var passCalendars=[];
 
                         for (var x=0; x<e.length; x++) {
-                            if (e[x].type==="Local") {
-                                passCalendars.push(e[x].name);
+                            if (window.cordova.platformId==="ios") {
+                                if (e[x].type==="Local") {
+                                    passCalendars.push(e[x].name);
+                                }
+                            }
+                            else {
+                                if (e[x].name.indexOf("Holidays")===-1 && e[x].name.indexOf("Birthdays")===-1 && e[x].name.indexOf("Contacts")===-1) {
+                                    passCalendars.push(e[x].id);
+                                }
                             }
                         }
 
@@ -316,7 +367,21 @@ export default {
         },
         failPickForUs: function() {
             this.errorMessage="We failed to find a good time";
+            this.usedpfus=false;
             this.formStep=3;
+        },
+        getPFUSCalendars: function() {
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/pfuscalendars',
+                data: {                  
+                    Users: this.guests                     
+                }
+            }).then(r=> {
+                if (r.status===200 && r.data.status===200) {
+
+                }
+            });
         },
         pickForUs: function() {
             if (this.evlength==="" || this.evlength==="i") {

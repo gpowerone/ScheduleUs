@@ -188,13 +188,21 @@
             </div>
 
             <div v-show="tev!==null&&showFinder===false&&showPick===false" class="fieldwell">
-                <div class="layout row" style="border-bottom:1px dashed #777" v-show="IsOwner==true"> 
-                    <div class="flex xs8 lg11 textleft spfield fieldwell" style="padding-top:5px;padding-bottom:5px;" @click="goToMyEvents()">
-                        <v-icon>keyboard_backspace</v-icon> <span>Return to My Events</span>
+                <div class="layout row" style="border-bottom:1px dashed #777" > 
+                    <div class="flex xs8 lg9" >
+                        <div class=" textleft spfield fieldwell" v-show="IsOwner===true||isCordova===true" style="padding-top:5px;padding-bottom:5px;" @click="goToMyEvents()">
+                            <v-icon>keyboard_backspace</v-icon> <span>Return to My Events</span>
+                        </div>
                     </div>
-                    <div class="flex xs4 lg1 textright" v-show="IsPast===false">
-                        <v-icon class="editicon" @click="doEventUpdate()">edit</v-icon>&nbsp;&nbsp;
-                        <v-icon class="editicon" @click="doEventCancel()">remove_circle_outline</v-icon>
+                  
+                    <div class="flex xs3 lg2 textright">
+                        <div v-show="IsPast===false&&IsOwner===true">             
+                            <v-icon class="editicon" @click="doEventUpdate()">edit</v-icon>
+                            <v-icon class="editicon" @click="doEventCancel()">remove_circle_outline</v-icon>   
+                        </div>          
+                    </div>
+                     <div class="flex xs1 lg1 textright">
+                        <v-icon class="editicon" @click="doRefresh(true)">refresh</v-icon>
                     </div>
                     
                 </div>
@@ -238,7 +246,7 @@
                         </div>
                     </div>
                     <div class="mt-2" v-show="RSVP===true">
-                        Share: {{URL}} 
+                        Share: <a @click="doCopyToClipboard()" v-html="URL"></a>
                     </div>
                     <div class="layout row mt-2">
                         <div class="flex xs6 textleft">
@@ -262,7 +270,7 @@
                         </div> 
                     </div>
                     
-                    <div class="mt-2" v-show="needAcceptance===false&&EGID!==null">
+                    <div class="mt-2" v-show="needAcceptance===false&&EGID!==null&&IsPast===false">
                         <div v-show="Acceptance===true" class="layout row">
                             <div class="flex xs12 attendingBox textcenter" @click="doRSVPModal()">
                                 You are attending (tap to change)
@@ -304,15 +312,19 @@
                                     </ul>
                                     <div class="mt-2">
                                         <div class='fieldwell mt-2'>
-                                            <label>Your Name</label><br />
+                                            <label>Name of Person Attending</label><br />
                                             <input type='text' class='textfield' v-model='guestname' />
                                         </div>
                                         <div class='fieldwell mt-2'>
-                                                <label>Your Phone</label><br />
+                                                <input type='radio' value="p" v-model='isemail'/> Phone Number<br />
+                                                <input type='radio' value="e" v-model='isemail' /> Email Address
+                                        </div>
+                                        <div class='fieldwell mt-2' v-show="isemail==='p'">
+                                                <label>Phone #</label><br />
                                                 <input type='text' class='textfield' v-model='guestphone' />
                                         </div>
-                                        <div class='fieldwell mt-2'>
-                                                <label>Your Email</label><br />
+                                        <div class='fieldwell mt-2' v-show="isemail==='e'">
+                                                <label>Email Address</label><br />
                                                 <input type='text' class='textfield' v-model='guestemail' />
                                         </div>
                                     
@@ -674,6 +686,8 @@ export default {
             imageurl:[],
             imic: null,
             input: '',
+            isemail: 'p',
+            isCordova: (typeof window.cordova !== "undefined"),
             loading: true,
             locLoading: true,
             needAcceptance: false,
@@ -793,16 +807,23 @@ export default {
                 this.errorMessage="Either guest phone number or email address are required";
                 return;
             }
-            if (this.guestphone.length>1 && this.verifyPhone(this.guestphone)!=="OK") {
+            if (this.isemail==='p' && this.verifyPhone(this.guestphone)!=="OK") {
                 this.errorMessage="Please enter valid phone number with area code in format NNN-NNN-NNNN";
                 return;
             } 
-            if (this.guestemail.length>1 && this.verifyEmail(this.guestemail)!=="OK") {
+            if (this.isemail==='e' && this.verifyEmail(this.guestemail)!=="OK") {
                 this.errorMessage="Please enter valid email address";
                 return;
             }
 
-              this.$http({
+            if (this.isemail==='p') {
+                this.guestemail=null;
+            }
+            else {
+                this.guestphone=null;
+            }
+
+            this.$http({
                 method:'post',
                 url:this.$hostname+'/addguest',
                 data: {
@@ -956,6 +977,15 @@ export default {
                     this.errorMessage="Error contacting backend service";       
                 }
             });
+        },
+        doCopyToClipboard: function() {
+            this.$copyText(this.URL)
+            this.okMessage="Copied to Clipboard";
+                    
+            var self=this;
+            window.setTimeout(function() {
+                 self.okMessage=null;
+             },3000) 
         },
         doLocationChange: function() {
             this.errorMessage=null;
@@ -1167,7 +1197,7 @@ export default {
         doEventUpdate: function() {
             this.$router.push("update?e="+this.tev.Hash);
         },
-        doRefresh: function() {
+        doRefresh: function(showConfirm=false) {
             window.scrollTo(0,0);
 
             var ev=null;
@@ -1199,9 +1229,11 @@ export default {
             this.URL=encodeURI("https://schd.us/event?e="+ev);
 
             var c = localStorage.getItem("_c");
-            if (typeof(c)!=="undefined" && c!==null && c!=="null") {      
-                gu = c;
-                this.imic=true;
+            if (typeof(c)!=="undefined" && c!==null && c!=="null") {   
+                if (gu===null) {   
+                    gu = c;
+                    this.imic=true;
+                } 
             }
 
             if (typeof(ev)!=="undefined" && ev!==null) {
@@ -1246,6 +1278,14 @@ export default {
 
                                 if (this.CanChat===true) {
                                     this.$refs.acc6.open();
+                                }
+
+                                if (showConfirm) {
+                                      this.okMessage="Page Refreshed";
+                                      var self=this;
+                                      window.setTimeout(function() {
+                                            self.okMessage=null;                          
+                                      },3000) 
                                 }
 
                             }
@@ -1661,7 +1701,18 @@ export default {
             this.doReport(ec);
         })
 
+        this.refreshInt = window.setInterval(function() {
+            this.doRefresh();
+        }.bind(this), 60000);
+
         this.doRefresh();
+    },
+    watch:{
+        $route (to, from) {
+            if (to.name==="Event" && from.name==="Event") {
+                this.doRefresh();
+            }
+        }
     },
     computed: {
           Acceptance: function() {
@@ -1696,13 +1747,13 @@ export default {
           },
           CanRelocate: function() {
               if (this.tev!==null) {
-                  return this.tev.AllowLocationChange&&this.imic!==true&&this.hasGU===true;
+                  return this.tev.AllowLocationChange&&(imic===true||hasGU===true);
               }
               return false;
           },
           CanReschedule: function() {
               if (this.tev!==null) {
-                  return this.tev.AllowReschedule&&this.imic!==true&&this.hasGU===true;
+                  return this.tev.AllowReschedule&&(imic===true||hasGU===true);
               }
               return false;
           },
@@ -1945,11 +1996,13 @@ export default {
               return false;
           },
           IsPast: function() {
-              if (this.tev!==null) {
-                  if (this.tev.Schedules[0].StartDate<new Date().getTime()) {
-                      return true;
-                  }
-              }
+              try {
+                if (this.tev!==null) {
+                    if (parseInt(this.tev.Schedules[0].StartDate)+(this.tev.Schedules[0].EventLength*1000*60)<new Date().getTime()) {
+                        return true;
+                    }
+                }
+              } catch(e) {}
               return false;
           },
           IsOwner: function() {

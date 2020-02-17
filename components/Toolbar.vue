@@ -125,7 +125,9 @@ export default {
       hasImage: false,
       loggedIn: false,
       drawer: false,
-      uname: ""
+      reloadimage:0,
+      uname: "",
+      updInt: null
     }
   },
   mounted: function () {
@@ -146,8 +148,26 @@ export default {
             var self=this;
             navigator.camera.getPicture(function(imageURI) {
 
-               window.plugins.imageResizer.resizeImage(function(image) {
-                             
+              if (imageURI===null) {
+                  self.$notify({
+                        id: "noimage_retrieve",
+                        group: 'main',
+                        duration: -1,
+                        title: 'Error',
+                        text: "Could not retrieve image. This may happen when pulling images from Google Drive."
+                    });
+
+                   return;
+              }
+
+              if (window.cordova.platformId==="android") {
+                  if(imageURI.indexOf("?") > 0) {
+                    imageURI = imageURI.trim().split("?")[0];
+                  }
+              }
+    
+
+              window.plugins.imageResizer.resizeImage(function(image) {             
                   cordova.plugin.http.setDataSerializer('json');
                     
                   cordova.plugin.http.sendRequest(self.$hostname+'/addavatar',
@@ -157,17 +177,10 @@ export default {
                           SessionLong: localStorage.getItem("_r"),
                           Image: image.imageData  
                       }}, function(response) {  
-
-                          self.$notify({
-                              id: "spcid_toolbar",
-                              group: 'main',
-                              duration: -1,
-                              title: 'Success',
-                              text: "Your image was uploaded, it will appear within a few seconds"
-                          });
-
                         self.imageuploaded=true;
-                        window.setTimeout(function() { self.updateAvatar(true) },10000);
+                        self.$modal.show("htmlUploader");
+                        
+                        self.updInt =window.setInterval(function() { self.updateAvatar(true) },10000);
                     }, function(response) {
                          
                   });
@@ -179,6 +192,11 @@ export default {
             }, function() {
                // Silently fail since this can be triggered at different points
             }, {
+               mediaType: Camera.MediaType.PICTURE,
+               destinationType: Camera.DestinationType.FILE_URI,
+               allowEdit: false,
+               encodingType: 0,
+               correctOrientation: true,
                quality:50,
                sourceType: Camera.PictureSourceType.SAVEDPHOTOALBUM
             });
@@ -207,6 +225,8 @@ export default {
     },
  
     updateAvatar(ut) {
+
+        this.reloadimage++;
         var c = localStorage.getItem("_c");
         if (typeof(c)==="undefined" || c===null || c==="null") {          
             this.loggedIn=false;
@@ -219,7 +239,10 @@ export default {
 
          
           this.imageurl="https://avatars.schd.us/"+c+"?q="+new Date().getTime();
-          
+          if (this.reloadimage===6) {
+             this.reloadimage=0;
+             window.clearInterval(this.updInt);
+          }
           
         }
     },
@@ -237,7 +260,7 @@ export default {
             }
         }).then(r=>{
             self.imageuploaded=true;
-            window.setTimeout(function() { self.updateAvatar(true) },10000);
+            self.updInt = window.setInterval(function() { self.updateAvatar(true) },10000);
         })
     }
   }
