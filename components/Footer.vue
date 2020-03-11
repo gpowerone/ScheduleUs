@@ -2,8 +2,8 @@
   <div class="footer">
       
       <div class="infoLine">
-          <span class="schdusPurple">Schedule Us</span> Production v1.0.8, &copy;2020 <a href="https://conjurus.com">Conjurus Technologies, LLC</a><br />
-          <a href="/termsofservice">Terms of Service</a> &bull; <a href="/privacypolicy">Privacy Policy</a> &bull; <a href="/ethics">Ethics</a> &bull; <a href="/credits">Credits</a>
+          <span class="schdusPurple">Schedule Us</span> Production v1.3.0, &copy;2020 <a href="https://conjurus.com">Conjurus Technologies, LLC</a><br />
+          <a @click="routeTerms()">Terms of Service</a> &bull; <a @click="routePrivacy()">Privacy Policy</a> &bull; <a @click="routeEthics()">Ethics</a> &bull; <a @click="routeCredits()">Credits</a>
       </div>
   </div>
 </template>
@@ -29,6 +29,20 @@
 
 <script>
 export default {
-    name: "Footer"
+    name: "Footer",
+    methods: {
+        routeTerms: function() {
+            this.$router.push("termsofservice");
+        },
+        routePrivacy: function() {
+            this.$router.push("privacypolicy");
+        },
+        routeEthics: function() {
+            this.$router.push("ethics");
+        },
+        routeCredits: function() {
+            this.$router.push("credits");
+        }
+    }
 }
 </script>

@@ -9,7 +9,7 @@
             <div class="p2">
                 <h1>Phone Number Required</h1>
                 <div class="mt-2">
-                    Enter your phone number to complete<br />sign-up:
+                    Enter your phone number to complete<br />sign-up<br /><em>(phone number must be able to receive text messages)</em>:
                 </div>
                 <div class="mt-2 fieldwell">
                     <input type="text" class="textfield" v-model="ssoPhone" />
@@ -44,7 +44,10 @@
 
             <div class='mt-3'>
                 <div class='boldchoice fieldwell'>
-                Username - US Phone Number With Area Code
+                Username - US Phone Number With Area Code          
+                </div>
+                <div class='highlightbox fieldwell'>
+                     <em>(phone number must be able to receive text messages)</em>
                 </div>
                 <div class='fieldwell'>
                 <input type='tel' v-model="PhoneNumber"  autocomplete="on"  class='textfield'/>

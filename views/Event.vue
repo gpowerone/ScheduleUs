@@ -62,10 +62,10 @@
                             <img src="@/assets/ical.png" alt="iCal" />
                         </div>
                         <div class="flex xs9 fieldwell boldchoice mt-1">
-                                iCal
+                                Local Calendar/iCal
                         </div>
                     </div>
-                    <div class="mt-2 layout row" @click="doOUIOutlook()" style="cursor:pointer;">
+                    <div class="mt-2 layout row" @click="doOUIOutlook()" v-show="isCordova===false" style="cursor:pointer;">
                         <div class="flex xs3 textcenter">
                             <img src="@/assets/Outlook.png" alt="Outlook" />
                         </div>
@@ -189,24 +189,29 @@
 
             <div v-show="tev!==null&&showFinder===false&&showPick===false" class="fieldwell">
                 <div class="layout row" style="border-bottom:1px dashed #777" > 
-                    <div class="flex xs8 lg9" >
+                    <div class="flex xs7 lg9" >
                         <div class=" textleft spfield fieldwell" v-show="IsOwner===true||isCordova===true" style="padding-top:5px;padding-bottom:5px;" @click="goToMyEvents()">
                             <v-icon>keyboard_backspace</v-icon> <span>Return to My Events</span>
                         </div>
                     </div>
                   
-                    <div class="flex xs3 lg2 textright">
-                        <div v-show="IsPast===false&&IsOwner===true">             
-                            <v-icon class="editicon" @click="doEventUpdate()">edit</v-icon>
-                            <v-icon class="editicon" @click="doEventCancel()">remove_circle_outline</v-icon>   
-                        </div>          
+                    <div class="flex xs5 lg3 textright">
+                        <span v-show="IsPast===false&&IsOwner===true">             
+                            <v-icon class="editicon" @click="doEventUpdate()">edit</v-icon>&nbsp;&nbsp;
+                            <v-icon class="editicon" @click="doEventCancel()">remove_circle_outline</v-icon>&nbsp;&nbsp;   
+                            
+                        </span>
+                        <v-icon class="editicon" @click="doRefresh(true)">refresh</v-icon>          
                     </div>
-                     <div class="flex xs1 lg1 textright">
-                        <v-icon class="editicon" @click="doRefresh(true)">refresh</v-icon>
-                    </div>
+                    
+                        
                     
                 </div>
                 
+                <div class="mt-2 textcenter" style="color:red;" v-show="IsPast===true">
+                         *** Events That Have Started Cannot Be Changed ***
+                </div>
+
                 <div class="layout row">
                     <div class="flex xs12 mt-2">
                         <h1>{{EventName}}</h1>
@@ -214,7 +219,7 @@
                     
                 </div>
                 <div v-show="CanRSVP===true">
-                    <div v-show="Rescheduled===true">*** Event Has Been Changed ***</div>
+                    <div v-show="Rescheduled===true&&IsPast===false">*** Event Has Been Changed ***</div>
                     <div>{{EventDescription}}</div>
                 
                     <div class="layout row mt-2">
@@ -270,6 +275,8 @@
                         </div> 
                     </div>
                     
+                  
+
                     <div class="mt-2" v-show="needAcceptance===false&&EGID!==null&&IsPast===false">
                         <div v-show="Acceptance===true" class="layout row">
                             <div class="flex xs12 attendingBox textcenter" @click="doRSVPModal()">
@@ -339,7 +346,7 @@
                             </div>
                         </v-collapse-wrapper>
 
-                        <v-collapse-wrapper @onStatusChange="acc2s" v-show="CanRelocate===true" ref="acc2">
+                        <v-collapse-wrapper @onStatusChange="acc2s" v-show="CanRelocate===true&&IsPast===false" ref="acc2">
                             <div class="accheader" v-collapse-toggle>
                                 <v-icon>{{ acc2i }}</v-icon> <span>Suggest New Location</span>
                             </div>
@@ -445,7 +452,7 @@
                             </div>
                         </v-collapse-wrapper>
 
-                        <v-collapse-wrapper @onStatusChange="acc3s" v-show="CanReschedule===true" ref="acc3">
+                        <v-collapse-wrapper @onStatusChange="acc3s" v-show="CanReschedule===true&&IsPast===false" ref="acc3">
                             <div class="accheader" v-collapse-toggle>
                                 <v-icon>{{ acc3i }}</v-icon> <span>Suggest New Date/Time</span>
                             </div>
@@ -540,12 +547,12 @@
                                         <div>
                                             There are no comments
                                         </div>
-                                        <div class="mt-2" v-show="imic===true||hasGU===true">
+                                        <div class="mt-2" v-show="this.imic===true||this.hasGU===true">
                                             <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
                                         </div>
                                     </div>
                                     <div v-show="evcomments.length>0">
-                                        <div class="mt-2 mb-2 textright" v-show="imic===true||hasGU===true">
+                                        <div class="mt-2 mb-2 textright" v-show="this.imic===true||this.hasGU===true">
                                             <a @click="addComment(null)" class="spfield"><img src="@/assets/greenPlus.png" height="20" width="20" />&nbsp;&nbsp;<span>Add Comment</span></a>
                                         </div>
                                     <comments v-for="(node,n) in evcomments" v-bind:key="n" :comment="node.item" :children="node.children"></comments> 
@@ -1059,7 +1066,7 @@ export default {
             return {
                 title: this.tev.EventName,
                 start: new Date(parseInt(this.tev.Schedules[0].StartDate)),
-                end: this.EventMultiDate===true?new Date(parseInt(this.tev.Schedules[0].EndDate)):null,
+                end: this.EventMultiDate===true?new Date(parseInt(this.tev.Schedules[0].EndDate)):new Date(parseInt(this.tev.Schedules[0].StartDate)+this.tev.Schedules[0].EventLength*1000*60),
                 duration: this.tev.Schedules[0].EventLength,
                 address: this.tev.Schedules[0].Address+" "+this.tev.Schedules[0].City+", "+this.tev.Schedules[0].State+" "+this.tev.Schedules[0].PostalCode,
                 description: this.tev.EventDescription
@@ -1072,7 +1079,18 @@ export default {
             window.location=this.yahoo(this.doOUI());
         },
         doOUIiCal: function() {
-            window.location=this.ical(this.doOUI());
+            if (this.isCordova===true) {
+                window.plugins.calendar.createEventInteractively(this.tev.EventName,
+                this.tev.Schedules[0].Location+" "+this.tev.Schedules[0].Address+" "+this.tev.Schedules[0].City+", "+this.tev.Schedules[0].State+" "+this.tev.Schedules[0].PostalCode,
+                "",new Date(parseInt(this.tev.Schedules[0].StartDate)),
+                this.EventMultiDate===true?new Date(parseInt(this.tev.Schedules[0].EndDate)):new Date(parseInt(this.tev.Schedules[0].StartDate)+this.tev.Schedules[0].EventLength*1000*60),
+                function() {}, function() {})
+                
+                this.$modal.hide("calendarAdd");
+            }
+            else {
+                window.location=this.ical(this.doOUI());
+            }
         },
         doOUIOutlook: function() {
             window.location=this.outlook(this.doOUI());
@@ -1115,13 +1133,16 @@ export default {
                 this.errorMessage="Date and time are required";
             }
 
+            var dt = this.makeDate(this.evday,this.evtime);
+
             this.$http({
                 method:'post',
                 url:this.$hostname+'/suggestnewtime',
                 data: {
                     EventID: this.tev.EventID,
                     EventGuestID: this.EGID,
-                    EvTime: this.makeDate(this.evday,this.evtime)         
+                    EvTime: dt,
+                    TZUpdate: new Date(dt).getTimezoneOffset()         
                 }
             }).then(r=> {
                 if (r.status===200) {
@@ -1230,7 +1251,7 @@ export default {
 
             var c = localStorage.getItem("_c");
             if (typeof(c)!=="undefined" && c!==null && c!=="null") {   
-                if (gu===null) {   
+                if (!this.hasGu) {   
                     gu = c;
                     this.imic=true;
                 } 
@@ -1747,13 +1768,13 @@ export default {
           },
           CanRelocate: function() {
               if (this.tev!==null) {
-                  return this.tev.AllowLocationChange&&(imic===true||hasGU===true);
+                  return this.tev.AllowLocationChange&&(this.imic===true||this.hasGU===true);
               }
               return false;
           },
           CanReschedule: function() {
               if (this.tev!==null) {
-                  return this.tev.AllowReschedule&&(imic===true||hasGU===true);
+                  return this.tev.AllowReschedule&&(this.imic===true||this.hasGU===true);
               }
               return false;
           },
@@ -1998,7 +2019,7 @@ export default {
           IsPast: function() {
               try {
                 if (this.tev!==null) {
-                    if (parseInt(this.tev.Schedules[0].StartDate)+(this.tev.Schedules[0].EventLength*1000*60)<new Date().getTime()) {
+                    if (parseInt(this.tev.Schedules[0].StartDate)<new Date().getTime()) {
                         return true;
                     }
                 }

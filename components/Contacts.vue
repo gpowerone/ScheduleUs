@@ -23,7 +23,7 @@
                       <v-list-item :key="cm">
                           <div class="layout row mt-2">
                               <div class="flex xs8 textleft fieldwell">
-                                  {{cmi.ntype}}<br />
+                                  <b>{{cmi.ntype}}</b><br />
                                   {{cmi.nvalue}}
                               </div>
                               <div class="flex xs4 textright">
@@ -58,7 +58,7 @@
             <template v-for="(item, i) in contacts" v-show="contacts.length>0">
                 <v-list-item :key="i" >
                     <div  @click="selectContact(item)">
-                        <div class='layout row btop p4'>
+                        <div class='layout row btop' style='padding:5%;'>
                             <div class='flex xs2 pl2 relative'>
                                 <div v-if="item.hasimage!==null">
                                     <div class="vertical-center" style="padding-top:5px;">
@@ -143,11 +143,11 @@ export default {
 
                 var cm=[];
                 var ctcname=ctcs[i].name.formatted;
-    
+        
         
                 if (typeof(ctcs[i].emails)!=="undefined" && ctcs[i].emails!==null && ctcs[i].emails.length>0) {
                     for(var q=0; q<ctcs[i].emails.length; q++) {
-                        cm.push({ntype: "email address", nvalue:ctcs[i].emails[0].value});
+                        cm.push({ntype: "email address", nvalue:ctcs[i].emails[q].value});
                     }
                 }
         
@@ -155,7 +155,7 @@ export default {
                     for (var x=0; x<ctcs[i].phoneNumbers.length; x++) {
                        
                         try {
-                            var ctcphone = ctcs[i].phoneNumbers[0].value.replace("+","").replace("(","").replace(")","");
+                            var ctcphone = ctcs[i].phoneNumbers[x].value.replace("+","").replace("(","").replace(")","");
                             if (this.verifyPhone(ctcphone)==="OK") {
                                 cm.push({ntype: ctcs[i].phoneNumbers[x].type, nvalue:ctcphone});
                             }
@@ -177,11 +177,35 @@ export default {
 
                 if (ctcname!==null)
                 {
-                    this.contacts.push({
-                        cname: ctcname,                   
-                        hasimage: hasimage,                     
-                        contactMatrix: cm
-                    })
+                    var hasName=false;
+                    for(var x=0; x<this.contacts.length; x++) {
+                        if (this.contacts[x].cname===ctcname) {
+                            hasName=true;
+                            if (hasimage!==null) {
+                                this.contacts[x].hasimage=hasimage;
+                            }
+                            for(var q=0; q<cm.length; q++) {
+                                var hasCM=false;
+
+                                for(var cdm=0; cdm<this.contacts[x].contactMatrix.length; cdm++) {
+                                    if (this.contacts[x].contactMatrix[cdm].nvalue===cm[q].nvalue) {
+                                        hasCM=true;
+                                    }
+                                }
+                                if (!hasCM) {
+                                    this.contacts[x].contactMatrix.push(cm[q]);
+                                }
+                            }
+                        }
+                    }
+
+                    if (!hasName) {
+                        this.contacts.push({
+                            cname: ctcname,                   
+                            hasimage: hasimage,                     
+                            contactMatrix: cm
+                        })
+                    }
                 }      
             } 
 

@@ -675,6 +675,8 @@ export default {
                 edate=this.makeDate(this.endevday,this.endevtime)
             }
 
+            var dt = this.makeDate(this.evday,this.evtime);
+
             this.$http({
                 method:'post',                  
                 url:this.$hostname+'/updatetime',
@@ -683,10 +685,11 @@ export default {
                     SessionID: localStorage.getItem("_s"),
                     SessionLong: localStorage.getItem("_r"),
                     EventID: this.eventid,
-                    EventDate: this.makeDate(this.evday,this.evtime),
+                    EventDate: dt,
                     EventLength: this.evlength,
                     EndDate: edate,
-                    EGID: this.tev.EGID
+                    EGID: this.tev.EGID,
+                    TZUpdate: new Date(dt).getTimezoneOffset()
                 }
             }).then(r=> {
                  if (r.status===200) {

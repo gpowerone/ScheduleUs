@@ -25,6 +25,7 @@ import Cancel from '@/views/Cancel'
 import Ethics from '@/views/Ethics'
 import AboutGCalendar from '@/views/AboutGCalendar'
 import NProgress from 'nprogress'
+import Credits from '@/views/Credits'
 
 Vue.use(Router);
 
@@ -168,6 +169,12 @@ const router =  new Router({
        path: '/aboutgcalendar',
        name: 'AboutGCalendar',
        component: AboutGCalendar,
+       meta: { requiresAuth: false }
+    },
+    {
+       path: '/credits',
+       name: 'Credits',
+       component: Credits,
        meta: { requiresAuth: false }
     }
   ]

@@ -23,9 +23,9 @@
 
         <div id='limitreached' v-show='formStep === -9'>
              <h1>Schedule Event</h1>
-             <p>You have reached the limit of events that you may schedule or re-schedule this month (3 for free accounts, 30 for premium accounts).</p>
-             <p>To schedule more events, please purchase Premium or Pro access</p>
-             <p><button @click="goToPremium()">Purchase</button></p>
+             <p>You have reached the limit of events that you may schedule or re-schedule this month.</p>
+             <p v-show="!isIOS">To schedule more events, please purchase Premium or Pro access</p>
+             <p v-show="!isIOS"><button @click="goToPremium()">Purchase</button></p>
         </div>
 
         <modal name="addSchdusModal" width="300" height="250">
@@ -580,6 +580,7 @@ export default {
             guests:[],          
             imageloaded:[],
             imageurl:[],  
+            isIOS: (typeof window.cordova !== "undefined")&&window.cordova.platformId==="ios",
             isCordova: (typeof window.cordova !== "undefined"),
             isPremium: false,
             isPro: false,
@@ -657,7 +658,7 @@ export default {
                     self.guesteditmode.gname=self.$refs.aeAttendee.guestname;
                     self.guesteditmode.gphone=self.$refs.aeAttendee.guestphone;
                     self.guesteditmode.gemail=self.$refs.aeAttendee.guestemail;
-                    self.guesteditmode.gid=self.gid;
+                    self.guesteditmode.gid=clid;
                     self.guesteditmode.photo=hasc;
 
                     self.imageurl=[];
@@ -1100,23 +1101,8 @@ export default {
         removeGuest: function(item) {
 
             this.guests.splice(item,1);
-                
-            this.imageloaded=[];
-            this.imageurl=[];
-       
-            for(var x=0; x<this.guests.length; x++) {
-           
-                if (this.guests[x].gid!==null) {
-                    this.imageurl.push("https://avatars.schd.us/"+this.guests[x].gid);
-                    this.imageloaded.push(false);
-                }
-                else {
-                    this.imageurl.push(null);
-                    this.imageloaded.push(false);
-                }
-            }
-
-             this.$forceUpdate();
+            this.imageurl.splice(item,1);
+            this.imageloaded.splice(item,1);     
 
         },
 
@@ -1154,18 +1140,42 @@ export default {
                 }
 
                 if (pass) {
-                    this.guests.push(g);
 
-                    this.imageloaded.push(false);                    
-                    this.imageurl.push(null);                      
+                    this.$http({
+                        method:'post',                  
+                        url:this.$hostname+'/getbyphoneoremail',
+                        data: {
+                            PhoneNumber: g.gphone,
+                            EmailAddress: g.gemail 
+                        }
+                    }).then(r=> {
+
+
+                        if (r.status===200 && r.data.status===200) {    
+                            
+                             g.gid = r.data.message;
+                             this.imageloaded.push(false);   
+                             this.imageurl.push("https://avatars.schd.us/"+g.gid);
+
+                        }
+                        else {
+                             this.imageloaded.push(false);                    
+                             this.imageurl.push(null);    
+                        }
+
+                        this.guests.push(g);  
+
+                        this.$refs.contactModule.contacts=[];
+                        this.$refs.contactModule.visiblehidecontacts=[];
+                        this.formStep=1;
+                        window.scrollTo(0,0);
+                        this.$forceUpdate();
+                    });
                 }
+            
             }
                 
-            this.$refs.contactModule.contacts=[];
-            this.$refs.contactModule.visiblehidecontacts=[];
-            this.formStep=1;
-            window.scrollTo(0,0);
-            this.$forceUpdate();
+           
         },
         scheduleIt: function() {
 

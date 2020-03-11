@@ -133,6 +133,26 @@ export default {
               self.$router.push({ path: eventData.path.replace("/",""), query: eventData.params});
           }); 
 
+          FirebasePlugin.onTokenRefresh(function(fcmToken) {
+              
+              console.log(fcmToken);
+
+              this.$http({
+                method:'post',
+                url:this.$hostname+'/addcm',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),  
+                    Token: fcmToken                  
+                }
+              });
+
+          }, function(error) {
+              console.error("Firebase Error");
+              console.error(error);
+          });
+
           var c = localStorage.getItem("_c"); 
           if (typeof(c)!=="undefined" && c!==null && c!=="null") {  
               this.$router.push("dashboard");

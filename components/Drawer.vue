@@ -86,12 +86,17 @@ export default {
         return true;
      },
      updateMenu: function() {
+        var isIOS=false;
+        if (typeof (window.cordova)!=="undefined" && window.cordova.platformId==="ios") {
+          isIOS=true;
+        }
+
         this.items[0].display=(this.isLoggedIn()===true);
         this.items[1].display=(this.isLoggedIn()===true);
         this.items[2].display=(this.isLoggedIn()===false);
         this.items[3].display=(this.isLoggedIn()===false);
         this.items[4].display=(this.isLoggedIn()===true);
-        this.items[5].display=(this.isLoggedIn()===true);    
+        this.items[5].display=(this.isLoggedIn()===true)&&!isIOS;    
         this.items[6].display=true;
         this.items[8].display=(this.isLoggedIn()===true);
      }

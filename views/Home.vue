@@ -12,7 +12,12 @@
 
             <div class="layout row">
                 <div class="flex xs12 lg6">
+                     <div class="mt-2 textcenter" v-show="isCordova===false">
+                        <a href="https://apps.apple.com/app/id1496235856"><img src="@/assets/AppStore.png" width="120"></a>&nbsp;&nbsp;&nbsp;&nbsp;
+                        <a href="https://play.google.com/store/apps/details?id=schedule.us"><img src="@/assets/GooglePlay.png" width="120"></a>
+                    </div>
                     <h1 class="textcenter mt-3">What is Schedule Us?</h1>
+                    
                     <div class="mt-2 textcenter">
                         Schedule Us is an app that makes it easier to schedule dinner with friends, a group study date, a birthday party, or anything in-between
                     </div>
@@ -30,6 +35,7 @@
                             &nbsp;
                         </div>
                     </div>
+                   
                     <h4 class="mt-4 textcenter">Key Features</h4>
                     <div class="mt-3 layout row">
                     
@@ -125,7 +131,8 @@ export default {
     data() {
         return {
             loading: false,
-            IsLoggedIn: false
+            IsLoggedIn: false,
+            isCordova: (typeof window.cordova !== "undefined")
         }
     },
     mounted() {

@@ -71,8 +71,9 @@ if (!String.prototype.splice) {
 document.addEventListener("deviceready", () => {
   init();
   document.addEventListener("offline", function(){
-    alert("NO_NETWORK");
+    alert("It appears you do not have an internet connection");
   });
+  
 });
 
 

@@ -319,6 +319,7 @@
      bottom:5%;
      left:5%;
      right:5%;
+     z-index:100;
   }
   .okBox {
      background-color: forestgreen;
@@ -331,6 +332,7 @@
      bottom:1%;
      left:5%;
      right:5%;
+     z-index:100;
   }
   .p1 {
      padding:1%;

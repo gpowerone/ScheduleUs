@@ -49,10 +49,7 @@
         <div class='mt-2 schdusPurple' v-show="ispro===true">You are currently a Pro member. To manage your account please click on the Subscriptions tab on the My Account page. Charges will appear as SCHEDULE US on your Credit Card Statement.</div>
 
     </div>
-    <div v-show="isIOS===true">
-        <h1 class="valign mt-4">Premium Options Not Available</h1>
-        <div class="mt-2">To see a list of premium options please visit schd.us on the web</div>
-    </div>
+   
     </div>
 </template>
 

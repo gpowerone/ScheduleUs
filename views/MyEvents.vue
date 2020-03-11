@@ -237,6 +237,27 @@ export default {
                         this.isArchived = evdetails.a;
                         this.isParticipating=rp; 
                         this.loading=false;
+
+                        if (typeof window.cordova !== "undefined") {
+                            FirebasePlugin.getToken(function(fcmToken) {
+                                console.log("gottoken");
+                                console.log(fcmToken);
+
+                                this.$http({
+                                        method:'post',
+                                        url:this.$hostname+'/addcm',
+                                        data: {
+                                            ClientID: localStorage.getItem("_c"),
+                                            SessionID: localStorage.getItem("_s"),
+                                            SessionLong: localStorage.getItem("_r"),  
+                                            Token: fcmToken                  
+                                        }
+                                });
+                            }, function(error) {
+                                console.error("Firebase Error");
+                                console.error(error);
+                            });
+                        }
                     }
                  
                 }
