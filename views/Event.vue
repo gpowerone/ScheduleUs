@@ -127,6 +127,36 @@
                 </div>
             </modal>
 
+
+            <modal name="lateModal" width="300" height="200">
+                <div class="p2 textcenter">
+                    <div>
+                    This feature will notify the host that you are going to be late (use limited to 3 times)
+                    </div>
+                    <div class="mt-2 fieldwell">
+                        How late will you be? <br />
+                        <select @v-model="minutes" class="textfield">
+                            <option value='5'>5 Minutes</option>
+                            <option value='10'>10 Minutes</option>
+                            <option value='15'>15 Minutes</option>
+                            <option value='30'>30 Minutes</option>
+                            <option value='45'>45 Minutes</option>
+                            <option value='60'>60 Minutes</option>
+                            <option value='90'>90 Minutes</option>
+                            <option value='120'>120 Minutes</option>
+                        </select>
+                    </div>
+                      <div class="mt-5 layout row">
+                        <div class="flex xs6 textleft">
+                            <button @click="closeLateModal()" class="redButton">Close</button>
+                        </div>
+                        <div class="flex xs6 textright">
+                            <button @click="doSendLate()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </modal>
+
             <modal name="recurringModal" width="300" height="250">
                 <div class="p2 textcenter">
                     <p>Event Will Occur Every {{RecurFreq}} {{RecurUnit}}</p>
@@ -212,18 +242,26 @@
                          *** Events That Have Started Cannot Be Changed ***
                 </div>
 
-                <div class="layout row">
+
+                <div v-show="CanRSVP===false" class="layout row">
                     <div class="flex xs12 mt-2">
                         <h1>{{EventName}}</h1>
                     </div>
                     
                 </div>
+               
                 <div v-show="CanRSVP===true">
                     <div v-show="Rescheduled===true&&IsPast===false">*** Event Has Been Changed ***</div>
-                    <div>{{EventDescription}}</div>
-                
+                            
                     <div class="layout row mt-2">
                         <div class="flex xs6 lg10 md10">
+                             <div class="layout row">
+                                <div class="flex xs12">
+                                    <h1>{{EventName}}</h1>
+                                </div>
+                                
+                            </div>
+                            <div>{{EventDescription}}</div>
                             <div>
                                 {{EventLocation}}
                             </div>
@@ -239,12 +277,17 @@
                             
                         </div>
 
-                        <div class="flex xs6 lg2 md2">
-                            <div class="layout row">
-            
+                        <div class="flex xs6 lg2 md2 mt-1" v-show="IsPast===false">
+                            <div class="layout row"> 
                                 <div class="flex xs4 lg4 textright"><a v-show="HasAddress===true" @click="showAddress()" class="eventicons"><v-icon>map</v-icon></a></div>
                                 <div class="flex xs4 lg4 textright"><a v-show="HasAddress===true" v-bind:href="EventMap" target="_blank" class="eventicons" rel="nopener noreferrer"><v-icon>navigation</v-icon></a></div>
                                 <div class="flex xs4 lg4 textright"><a @click="addToCalendar()" class="eventicons" ><v-icon>event</v-icon></a></div>
+                            </div>
+
+                             <div class="layout row mt-2">
+                                <div class="flex xs4 lg4 textright">&nbsp;</div>
+                                <div class="flex xs4 lg4 textright"><a class="eventicons" v-show="isCordova===true&&IsOwner===true" rel="nopener noreferrer" @click="sendSms()"><v-icon>message</v-icon></a></div>
+                                <div class="flex xs4 lg4 textright"><a class="eventicons" v-show="IsOwner===false" rel="nopener noreferrer" @click="sendLate()"><v-icon>watch_later</v-icon></a></div>                               
                             </div>
                             
                             
@@ -697,6 +740,7 @@ export default {
             isCordova: (typeof window.cordova !== "undefined"),
             loading: true,
             locLoading: true,
+            minutes: 5,
             needAcceptance: false,
             newComment: '',
             noevent: false,
@@ -934,6 +978,9 @@ export default {
         closeComment: function() {
             this.$modal.hide("commentModal");
         },
+        closeLateModal: function() {
+            this.$modal.hide("lateModal");
+        },
         closeLocationFinder: function() {
             this.showFinder=false;
         },
@@ -1124,6 +1171,30 @@ export default {
             });
 
            
+        },
+        doSendLate: function() {
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/latenotification',
+                data: {
+                    EventID: this.EventID,
+                    EventGuestID: this.EGID,
+                    Minutes: this.minutes
+                }
+            }).then(p=>{
+                if (p==="OK") {
+                    this.$modal.hide("lateModal");
+                    this.okMessage="Late notification sent to the host";
+                    var self=this;
+                    window.setTimeout(function() {
+                        self.okMessage=null;
+                        window.location.reload();
+                    },3000) 
+                }
+                else {
+                    this.errorMessage="Notification error. You may have reached the maximum number of late notifications.";
+                }
+            })
         },
         doTimeChange: function() {
 
@@ -1459,6 +1530,34 @@ export default {
                     this.errorMessage="Error contacting backend service";
                 }
             });
+        },
+        sendLate: function() {
+            this.$modal.show("lateModal");
+        },
+        sendSms: function() {
+
+            var number=""; 
+            var addcomma=false;
+            for (var x=0; x<this.tev.Guests.length; x++) {
+                if (this.tev.Guests[x].EventGuestID!==this.EGID) {
+                    if (addcomma) {
+                        number+=",";
+                    }
+                    number+=this.tev.Guests[x].PhoneNumber.toString();
+                    addcomma=true;
+                }
+            }
+
+            var message = "";
+
+            var options = {
+                replaceLineBreaks: false,
+                android: {
+                    intent: 'INTENT'  
+                }
+            };
+
+            sms.send(number, message, options, function() {}, function(e) { console.log(e); });
         },
         setPickForUs: function(t) {
              this.evday=t.date;

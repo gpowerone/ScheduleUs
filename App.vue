@@ -31,7 +31,7 @@
     <myFooter />
     <notifications group="main" position="bottom center" >
       <template slot="body" slot-scope="props">
-        <div @click="closeThis(props)" class="errorBox">
+        <div @click="closeThis(props)" class="okBox">
             <a style="color:#FFF;font-size:1.2em;">
               {{props.item.title}}
             </a>
@@ -54,9 +54,12 @@ import myToolbar from "@/components/Toolbar"
 import myFooter from "@/components/Footer"
 import myContentDrawer from "@/components/Drawer"
 
+import {utilities} from '@/mixins/utilities'
+
 export default {
   name: 'app',
   components: {myToolbar, myFooter, myContentDrawer },
+  mixins: [utilities],
   data() {
     return {
       blogentries:[]
@@ -80,7 +83,7 @@ export default {
           }
 
           prps.close();
-      },
+      },     
       pollNotifications:function() {
           var c = localStorage.getItem("_c");
           if (typeof(c)!=="undefined" && c!==null && c!=="null") {  
@@ -129,29 +132,59 @@ export default {
        }
        else {
           var self=this;
-          universalLinks.subscribe(null, function(eventData) {
-              self.$router.push({ path: eventData.path.replace("/",""), query: eventData.params});
-          }); 
 
-          FirebasePlugin.onTokenRefresh(function(fcmToken) {
+          try  {
+            universalLinks.subscribe(null, function(eventData) {
+                self.$router.push({ path: eventData.path.replace("/",""), query: eventData.params});
+            }); 
+          }
+          catch(e) {
+            console.log(e);
+          }
+           
+          const push = PushNotification.init({
+              android: {},
+              browser: {},
+              ios: {
+                  alert: 'true',
+                  badge: 'false',
+                  sound: 'false'
+              },
+              windows: {}
+          });    
+
+            
+          push.on('registration', (data)=> {
               
-              console.log(fcmToken);
+              this.haspushed=true;
+              window.deviceRegistrationId=data.registrationId;
 
               this.$http({
-                method:'post',
-                url:this.$hostname+'/addcm',
-                data: {
-                    ClientID: localStorage.getItem("_c"),
-                    SessionID: localStorage.getItem("_s"),
-                    SessionLong: localStorage.getItem("_r"),  
-                    Token: fcmToken                  
-                }
+                  method:'post',
+                  url:self.$hostname+'/addcm',
+                  data: {
+                      Token: window.deviceRegistrationId,
+                      IOSorAndroid: (window.cordova.platformId==="ios"?0:1)                 
+                  }
               });
+              
+              
+          })
 
-          }, function(error) {
-              console.error("Firebase Error");
-              console.error(error);
-          });
+          push.on('notification', (data)=>{
+                this.$notify({
+                    id: "pushNotify",
+                    group: 'main',
+                    duration: -1,
+                    title: 'Notification',
+                    text: data.message
+                });           
+          })
+
+          push.on('error', (data)=>{
+              console.log("push error");
+          })
+
 
           var c = localStorage.getItem("_c"); 
           if (typeof(c)!=="undefined" && c!==null && c!=="null") {  

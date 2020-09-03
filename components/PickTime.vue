@@ -72,7 +72,7 @@
                 </div>
                 <div v-show="calendars.length>0">
                     <div class="mt-2">
-                        The following calendars will be accessed when picking the best time. Only calendars owned by attendees will be considered (calendars subscribed to, default holiday calendars, etc...) are not considered.
+                        The following calendars will be accessed when picking the best time. Only calendars owned by attendees will be considered (calendars subscribed to, default holiday calendars, etc... are not considered.) 
                     </div>
                     <template v-for="(item, i) in calendars"> 
                         <v-list-item :key="i">

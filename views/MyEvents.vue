@@ -156,6 +156,7 @@ export default {
         goEvent: function(evHash) {
             this.$router.push("/event?e="+evHash)
         }
+      
     },
     beforeRouteEnter (to, from, next) {
 
@@ -238,26 +239,26 @@ export default {
                         this.isParticipating=rp; 
                         this.loading=false;
 
-                        if (typeof window.cordova !== "undefined") {
-                            FirebasePlugin.getToken(function(fcmToken) {
-                                console.log("gottoken");
-                                console.log(fcmToken);
-
-                                this.$http({
-                                        method:'post',
-                                        url:this.$hostname+'/addcm',
-                                        data: {
-                                            ClientID: localStorage.getItem("_c"),
-                                            SessionID: localStorage.getItem("_s"),
-                                            SessionLong: localStorage.getItem("_r"),  
-                                            Token: fcmToken                  
-                                        }
-                                });
-                            }, function(error) {
-                                console.error("Firebase Error");
-                                console.error(error);
+                        f (typeof window.cordova !== "undefined" && window.deviceRegistrationId!==null && typeof(window.updatedCM)==="undefined")
+                        {
+                            window.updatedCM=true;
+                            this.$http({
+                                method:'post',
+                                url:this.$hostname+'/updatecm',
+                                data: {
+                                    ClientID: localStorage.getItem("_c"),
+                                    SessionID: localStorage.getItem("_s"),
+                                    SessionLong: localStorage.getItem("_r"),  
+                                    Token: window.deviceRegistrationId,
+                                    IOSorAndroid: (window.cordova.platformId==="ios"?0:1)                
+                                }
                             });
                         }
+                       
+                    }
+                    else {
+                        this.loading=false;
+                        this.errorMessage="Something went wrong"; 
                     }
                  
                 }

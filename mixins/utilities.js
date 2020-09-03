@@ -1,6 +1,7 @@
 import { EventBus } from '../bus';
 
 export const utilities = {
+  
     methods: {
         doLogoutRoutine(nopush) {
             localStorage.setItem("_c",null);

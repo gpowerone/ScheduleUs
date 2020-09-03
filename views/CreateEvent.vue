@@ -1468,6 +1468,22 @@ export default {
                
         this.loadWatch();
         localStorage.setItem("clidetails",null);
+
+        if (typeof window.cordova !== "undefined" && window.deviceRegistrationId!==null && typeof(window.updatedCM)==="undefined")
+        {
+            window.updatedCM=true;
+            this.$http({
+                method:'post',
+                url:this.$hostname+'/updatecm',
+                data: {
+                    ClientID: localStorage.getItem("_c"),
+                    SessionID: localStorage.getItem("_s"),
+                    SessionLong: localStorage.getItem("_r"),  
+                    Token: window.deviceRegistrationId,
+                    IOSorAndroid: (window.cordova.platformId==="ios"?0:1)                
+                }
+            });
+        }
         
     },
     watch: {
